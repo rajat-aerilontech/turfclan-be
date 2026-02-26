@@ -1,0 +1,38 @@
+plugins {
+	id 'java'
+}
+
+allprojects {
+	group = 'com.aerilontech'
+	version = '0.0.1-SNAPSHOT'
+}
+
+subprojects {
+	apply plugin: 'java'
+
+	java {
+		sourceCompatibility = '17'
+		targetCompatibility = '17'
+	}
+
+	repositories {
+		mavenCentral()
+	}
+
+	configurations {
+		compileOnly {
+			extendsFrom annotationProcessor
+		}
+	}
+
+	dependencies {
+		compileOnly 'org.projectlombok:lombok'
+		annotationProcessor 'org.projectlombok:lombok'
+		testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	}
+
+	tasks.named('test') {
+		useJUnitPlatform()
+	}
+}
+
