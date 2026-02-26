@@ -13,3 +13,4 @@ rootProject.name = 'turfclan'
 
 include 'application'
 include 'core'
+include 'common'
