@@ -1,4 +1,4 @@
-package com.aerilon.turfclan.user;
+package com.aerilon.turfclan.user.dto;
 
 import com.aerilon.turfclan.user.enums.UserStatus;
 import com.fasterxml.jackson.annotation.JsonAlias;

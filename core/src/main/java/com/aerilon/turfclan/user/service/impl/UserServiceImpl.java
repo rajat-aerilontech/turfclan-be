@@ -1,7 +1,7 @@
 package com.aerilon.turfclan.user.service.impl;
 
 import com.aerilon.turfclan.exception.UserNotFoundException;
-import com.aerilon.turfclan.user.UserDTO;
+import com.aerilon.turfclan.user.dto.UserDTO;
 import com.aerilon.turfclan.user.converter.UserEntityToUserDTOConverter;
 import com.aerilon.turfclan.user.repository.UserRepository;
 import com.aerilon.turfclan.user.service.UserService;

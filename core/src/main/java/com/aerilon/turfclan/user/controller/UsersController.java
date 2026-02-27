@@ -1,21 +1,30 @@
 package com.aerilon.turfclan.user.controller;
 
-import com.aerilon.turfclan.user.UserDTO;
+import com.aerilon.turfclan.user.dto.OtpRequestDTO;
+import com.aerilon.turfclan.user.dto.OtpResponseDTO;
+import com.aerilon.turfclan.user.service.OtpService;
+import com.aerilon.turfclan.user.dto.UserDTO;
 import com.aerilon.turfclan.user.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
 public class UsersController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+    private final OtpService otpService;
 
     @GetMapping("/{emailId}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable("emailId") String emailId) {
         return ResponseEntity.ok(userService.getUserByEmail(emailId));
+    }
+
+    @PostMapping("/otp/request")
+    public ResponseEntity<OtpResponseDTO> requestOtp(@RequestBody OtpRequestDTO request) {
+        return ResponseEntity.ok(otpService.requestOtp(request));
     }
 }
 

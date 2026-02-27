@@ -1,6 +1,6 @@
 package com.aerilon.turfclan.user.converter;
 
-import com.aerilon.turfclan.user.UserDTO;
+import com.aerilon.turfclan.user.dto.UserDTO;
 import com.aerilon.turfclan.user.entity.UserEntity;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
