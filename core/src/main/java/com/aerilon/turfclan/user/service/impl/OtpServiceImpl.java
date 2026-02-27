@@ -2,7 +2,10 @@ package com.aerilon.turfclan.user.service.impl;
 
 import com.aerilon.turfclan.exception.InvalidRequestException;
 import com.aerilon.turfclan.exception.UserNotFoundException;
+import com.aerilon.turfclan.jwt.JwtProperties;
+import com.aerilon.turfclan.jwt.JwtService;
 import com.aerilon.turfclan.user.converter.UserEntityToUserDTOConverter;
+import com.aerilon.turfclan.user.dto.AuthResponseDTO;
 import com.aerilon.turfclan.user.dto.OtpRequestDTO;
 import com.aerilon.turfclan.user.dto.OtpResponseDTO;
 import com.aerilon.turfclan.user.dto.OtpVerifyRequestDTO;
@@ -20,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -34,6 +38,8 @@ public class OtpServiceImpl implements OtpService {
     private final UserRepository userRepository;
     private final OtpRepository otpRepository;
     private final UserEntityToUserDTOConverter userConverter;
+    private final JwtService jwtService;
+    private final JwtProperties jwtProperties;
 
     @Override
     @Transactional
@@ -84,7 +90,7 @@ public class OtpServiceImpl implements OtpService {
 
     @Override
     @Transactional
-    public UserDTO verifyOtp(OtpVerifyRequestDTO request) {
+    public AuthResponseDTO verifyOtp(OtpVerifyRequestDTO request) {
         String phoneNumber = request.getPhoneNumber();
         String otpCode = request.getOtpCode();
 
@@ -116,7 +122,24 @@ public class OtpServiceImpl implements OtpService {
 
         log.info("OTP verified successfully for phone number ending in {}.", maskPhone(phoneNumber));
 
-        return userConverter.convert(user);
+        String userId = user.getId().toString();
+        Map<String, Object> claims = Map.of(
+                "phoneNumber", user.getPhoneNumber(),
+                "userName", user.getUserName()
+        );
+
+        String accessToken = jwtService.generateAccessToken(userId, claims);
+        String refreshToken = jwtService.generateRefreshToken(userId);
+        long expiresIn = jwtProperties.getAccessTokenExpiryMs() / 1000;
+
+        UserDTO userDTO = userConverter.convert(user);
+
+        return AuthResponseDTO.builder()
+                .user(userDTO)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .expiresIn(expiresIn)
+                .build();
     }
 
     private String generateOtp() {
