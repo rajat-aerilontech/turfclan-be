@@ -1,8 +1,12 @@
 package com.aerilon.turfclan.user.service.impl;
 
 import com.aerilon.turfclan.exception.InvalidRequestException;
+import com.aerilon.turfclan.exception.UserNotFoundException;
+import com.aerilon.turfclan.user.converter.UserEntityToUserDTOConverter;
 import com.aerilon.turfclan.user.dto.OtpRequestDTO;
 import com.aerilon.turfclan.user.dto.OtpResponseDTO;
+import com.aerilon.turfclan.user.dto.OtpVerifyRequestDTO;
+import com.aerilon.turfclan.user.dto.UserDTO;
 import com.aerilon.turfclan.user.entity.OtpEntity;
 import com.aerilon.turfclan.user.repository.OtpRepository;
 import com.aerilon.turfclan.user.service.OtpService;
@@ -29,6 +33,7 @@ public class OtpServiceImpl implements OtpService {
 
     private final UserRepository userRepository;
     private final OtpRepository otpRepository;
+    private final UserEntityToUserDTOConverter userConverter;
 
     @Override
     @Transactional
@@ -75,6 +80,43 @@ public class OtpServiceImpl implements OtpService {
                 .message("OTP sent successfully")
                 .expiresAt(expiresAt)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public UserDTO verifyOtp(OtpVerifyRequestDTO request) {
+        String phoneNumber = request.getPhoneNumber();
+        String otpCode = request.getOtpCode();
+
+        if (phoneNumber == null || phoneNumber.isBlank()) {
+            throw new InvalidRequestException("Phone number must not be blank");
+        }
+        if (otpCode == null || otpCode.isBlank()) {
+            throw new InvalidRequestException("OTP code must not be blank");
+        }
+
+        UserEntity user = userRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new UserNotFoundException("No user found for the given phone number"));
+
+        OtpEntity otpEntity = otpRepository
+                .findTopByPhoneNumberAndIsUsedFalseAndExpiresAtAfterOrderByCreatedAtDesc(phoneNumber, LocalDateTime.now())
+                .orElseThrow(() -> new InvalidRequestException("Invalid or expired OTP"));
+
+        if (!otpEntity.getOtpCode().equals(otpCode)) {
+            throw new InvalidRequestException("Invalid OTP code");
+        }
+
+        otpEntity.setUsed(true);
+        otpRepository.save(otpEntity);
+
+        user.setStatus(UserStatus.ACTIVE);
+        user.setVerified(true);
+        user.setUpdatedBy(LocalDateTime.now());
+        userRepository.save(user);
+
+        log.info("OTP verified successfully for phone number ending in {}.", maskPhone(phoneNumber));
+
+        return userConverter.convert(user);
     }
 
     private String generateOtp() {

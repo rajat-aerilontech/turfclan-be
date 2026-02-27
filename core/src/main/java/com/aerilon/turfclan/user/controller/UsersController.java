@@ -2,8 +2,9 @@ package com.aerilon.turfclan.user.controller;
 
 import com.aerilon.turfclan.user.dto.OtpRequestDTO;
 import com.aerilon.turfclan.user.dto.OtpResponseDTO;
-import com.aerilon.turfclan.user.service.OtpService;
+import com.aerilon.turfclan.user.dto.OtpVerifyRequestDTO;
 import com.aerilon.turfclan.user.dto.UserDTO;
+import com.aerilon.turfclan.user.service.OtpService;
 import com.aerilon.turfclan.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,11 @@ public class UsersController {
     @PostMapping("/otp/request")
     public ResponseEntity<OtpResponseDTO> requestOtp(@RequestBody OtpRequestDTO request) {
         return ResponseEntity.ok(otpService.requestOtp(request));
+    }
+
+    @PostMapping("/otp/verify")
+    public ResponseEntity<UserDTO> verifyOtp(@RequestBody OtpVerifyRequestDTO request) {
+        return ResponseEntity.ok(otpService.verifyOtp(request));
     }
 }
 
