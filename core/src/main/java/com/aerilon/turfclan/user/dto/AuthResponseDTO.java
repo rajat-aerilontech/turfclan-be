@@ -18,4 +18,7 @@ public class AuthResponseDTO {
 
     /** Access token validity period in seconds (convenience field for clients). */
     private long expiresIn;
+
+    /** True if the user has not completed their profile yet — client should navigate to signup screen. */
+    private boolean newUser;
 }

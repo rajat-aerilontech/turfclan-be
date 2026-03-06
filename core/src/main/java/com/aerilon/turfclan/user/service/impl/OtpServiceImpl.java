@@ -123,6 +123,7 @@ public class OtpServiceImpl implements OtpService {
         log.info("OTP verified successfully for phone number ending in {}.", maskPhone(phoneNumber));
 
         String userId = user.getId().toString();
+        boolean isNewUser = user.getFirstName() == null || user.getFirstName().isBlank();
         Map<String, Object> claims = Map.of(
                 "phoneNumber", user.getPhoneNumber(),
                 "userName", user.getUserName()
@@ -139,6 +140,7 @@ public class OtpServiceImpl implements OtpService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .expiresIn(expiresIn)
+                .newUser(isNewUser)
                 .build();
     }
 

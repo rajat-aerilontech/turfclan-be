@@ -21,6 +21,7 @@ public class UserDTO {
     private String dateOfBirth;
     private String gender;
     private String location;
+    private String sport;
     private boolean isVerified;
     @JsonAlias("countryCode")
     private String countryIsoCode;
@@ -41,6 +42,7 @@ public class UserDTO {
                 ", dateOfBirth='" + dateOfBirth + '\'' +
                 ", gender='" + gender + '\'' +
                 ", location='" + location + '\'' +
+                ", sport='" + sport + '\'' +
                 ", isVerified=" + isVerified +
                 ", countryIsoCode='" + countryIsoCode + '\'' +
                 ", status=" + status +

@@ -25,6 +25,7 @@ public class UserEntityToUserDTOConverter implements Converter<UserEntity, UserD
         userDTO.setDateOfBirth(userEntity.getDateOfBirth() != null ? userEntity.getDateOfBirth().toString() : null);
         userDTO.setGender(userEntity.getGender());
         userDTO.setLocation(userEntity.getLocation());
+        userDTO.setSport(userEntity.getSport());
         userDTO.setVerified(userEntity.isVerified());
         userDTO.setCountryIsoCode(userEntity.getCountryIsoCode());
         userDTO.setStatus(userEntity.getStatus());

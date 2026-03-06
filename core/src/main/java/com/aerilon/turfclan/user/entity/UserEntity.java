@@ -55,6 +55,9 @@ public class UserEntity {
     @Column(name = "location", length = 255)
     private String location;
 
+    @Column(name = "sport", length = 500)
+    private String sport;
+
     @Column(name = "is_verified")
     private boolean isVerified;
 

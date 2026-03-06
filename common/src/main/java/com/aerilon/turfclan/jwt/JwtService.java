@@ -1,5 +1,6 @@
 package com.aerilon.turfclan.jwt;
 
+import com.aerilon.turfclan.exception.InvalidRequestException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -74,6 +75,23 @@ public class JwtService {
      */
     public String getSubject(String token) {
         return validateToken(token).getSubject();
+    }
+
+    /**
+     * Parses an {@code Authorization: Bearer <token>} header, validates the JWT,
+     * and returns its subject claim (e.g. user UUID).
+     *
+     * @param authHeader the raw Authorization header value
+     * @return subject of the JWT (e.g. user UUID string)
+     * @throws InvalidRequestException if the header is missing or not a Bearer token
+     * @throws io.jsonwebtoken.JwtException if the token is invalid or expired
+     */
+    public String extractSubjectFromHeader(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new InvalidRequestException("Missing or invalid Authorization header");
+        }
+        String token = authHeader.substring(7);
+        return getSubject(token);
     }
 
     // -----------------------------------------------------------------------
