@@ -13,10 +13,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -46,28 +44,16 @@ public class UsersController {
         return ResponseEntity.ok(otpService.verifyOtp(request));
     }
 
-    /**
-     * POST /api/v1/users/signup
-     *
-     * Completes the user profile after OTP authentication.
-     * Requires a valid Bearer access token in the Authorization header.
-     *
-     * Content-Type: multipart/form-data
-     *   - request   (application/json) : SignupRequestDTO
-     *   - profilePic (image/*)          : optional profile picture file
-     */
-    @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping("/signup")
     @Operation(
             summary = "Complete User Profile (Signup)",
-            description = "Completes the user profile after OTP verification. Requires Bearer token. "
-                    + "Send as multipart/form-data: 'request' part (JSON) + optional 'profilePic' part (image file)."
+            description = "Completes the user profile after OTP verification. Requires Bearer token."
     )
     public ResponseEntity<UserDTO> signup(
             @RequestHeader("Authorization") String authHeader,
-            @RequestPart("request") @Valid SignupRequestDTO request,
-            @RequestPart(value = "profilePic", required = false) MultipartFile profilePic
+            @RequestBody @Valid SignupRequestDTO request
     ) {
         String userId = jwtService.extractSubjectFromHeader(authHeader);
-        return ResponseEntity.ok(userService.signup(userId, request, profilePic));
+        return ResponseEntity.ok(userService.signup(userId, request));
     }
 }

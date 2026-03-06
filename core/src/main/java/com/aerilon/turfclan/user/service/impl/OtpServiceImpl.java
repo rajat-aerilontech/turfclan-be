@@ -59,7 +59,7 @@ public class OtpServiceImpl implements OtpService {
             UserEntity newUser = new UserEntity();
             newUser.setPhoneNumber(phoneNumber);
             newUser.setPhoneCountryCode(request.getPhoneCountryCode());
-            newUser.setUserName("user_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12));
+            newUser.setUserName(UUID.randomUUID().toString().replace("-", "").substring(0, 12));
             newUser.setStatus(UserStatus.PENDING_VERIFICATION);
             newUser.setCreatedBy(LocalDateTime.now());
             userRepository.save(newUser);
