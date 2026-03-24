@@ -11,4 +11,4 @@ set RDS_USERNAME=aerilon_user_2
 set RDS_PASSWORD=aerilon@123
 
 call .\gradlew.bat clean
-call .\gradlew.bat bootRun --debug-jvm
+call .\gradlew.bat bootRun
