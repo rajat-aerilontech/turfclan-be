@@ -74,7 +74,7 @@ jobs:
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/preprod' || github.ref == 'refs/heads/develop')
     runs-on: [self-hosted, aws-ec2-turfclan]
     timeout-minutes: 15
-    environment: production
+    environment: development
 
     steps:
       - name: Login to Docker Hub
@@ -91,9 +91,14 @@ jobs:
             --name "${{ env.APP_NAME }}" \
             --restart unless-stopped \
             -p 8434:8434 \
-            -e SPRING_PROFILES_ACTIVE="${{ secrets.SPRING_PROFILES_ACTIVE }}" \
+            --add-host=host.docker.internal:host-gateway \
+            -e SPRING_PROFILES_ACTIVE="${{ vars.SPRING_PROFILES_ACTIVE }}" \
             -e SERVER_PORT="8434" \
-            -e ALLOWED_ORIGIN="${{ secrets.ALLOWED_ORIGIN }}" \
-            -e LOG_LEVEL="${{ secrets.LOG_LEVEL }}" \
-            -e SPRINGFRAMEWORK_WEB_LOG_LEVEL="${{ secrets.SPRINGFRAMEWORK_WEB_LOG_LEVEL }}" \
+            -e ALLOWED_ORIGIN="*" \
+            -e LOG_LEVEL="DEBUG" \
+            -e SPRINGFRAMEWORK_WEB_LOG_LEVEL="ERROR" \
+            -e AWS_RDS_URL="jdbc:postgresql://host.docker.internal:5432/${{ secrets.DATABASE_NAME }}" \
+            -e RDS_USERNAME="${{ secrets.RDS_USERNAME }}" \
+            -e RDS_PASSWORD="${{ secrets.RDS_PASSWORD }}" \
+            -e RDS_SCHEMA="${{ secrets.RDS_SCHEMA }}" \
             "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}"
