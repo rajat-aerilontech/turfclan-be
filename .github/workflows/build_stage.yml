@@ -83,6 +83,11 @@ jobs:
       - name: Pull image from Docker Hub
         run: docker pull "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}"
 
+      - name: Verify local PostgreSQL is reachable
+        run: |
+          timeout 5 bash -c '</dev/tcp/127.0.0.1/5432'
+          echo "PostgreSQL is reachable on localhost:5432"
+
       - name: Restart container
         run: |
           docker stop "${{ env.APP_NAME }}" || true
@@ -90,14 +95,13 @@ jobs:
           docker run -d \
             --name "${{ env.APP_NAME }}" \
             --restart unless-stopped \
-            -p 8434:8434 \
-            --add-host=host.docker.internal:host-gateway \
+            --network host \
             -e SPRING_PROFILES_ACTIVE="${{ vars.SPRING_PROFILES_ACTIVE }}" \
             -e SERVER_PORT="8434" \
             -e ALLOWED_ORIGIN="*" \
             -e LOG_LEVEL="${{ vars.LOG_LEVEL }}" \
             -e SPRINGFRAMEWORK_WEB_LOG_LEVEL="${{ vars.SPRINGFRAMEWORK_WEB_LOG_LEVEL }}" \
-            -e AWS_RDS_URL="jdbc:postgresql://host.docker.internal:5432/${{ secrets.DATABASE_NAME }}" \
+            -e AWS_RDS_URL="jdbc:postgresql://127.0.0.1:5432/${{ secrets.DATABASE_NAME }}" \
             -e RDS_USERNAME="${{ secrets.RDS_USERNAME }}" \
             -e RDS_PASSWORD="${{ secrets.RDS_PASSWORD }}" \
             -e RDS_SCHEMA="${{ secrets.RDS_SCHEMA }}" \
