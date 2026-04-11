@@ -1,5 +1,8 @@
+import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.api.tasks.testing.Test
+
 plugins {
-	id 'java'
+	id 'base'
 }
 
 allprojects {
@@ -11,12 +14,9 @@ subprojects {
 	apply plugin: 'java'
 
 	java {
-		sourceCompatibility = '17'
-		targetCompatibility = '17'
-	}
-
-	repositories {
-		mavenCentral()
+		toolchain {
+			languageVersion = JavaLanguageVersion.of(17)
+		}
 	}
 
 	configurations {
@@ -26,12 +26,17 @@ subprojects {
 	}
 
 	dependencies {
-		compileOnly 'org.projectlombok:lombok'
-		annotationProcessor 'org.projectlombok:lombok'
-		testImplementation 'org.springframework.boot:spring-boot-starter-test'
+		compileOnly(libs.lombok)
+		annotationProcessor(libs.lombok)
+		testImplementation(libs.junit.jupiter)
+		testRuntimeOnly(libs.junit.platform.launcher)
 	}
 
-	tasks.named('test') {
+	tasks.withType(JavaCompile).configureEach {
+		options.compilerArgs += '-parameters'
+	}
+
+	tasks.withType(Test).configureEach {
 		useJUnitPlatform()
 	}
 }
