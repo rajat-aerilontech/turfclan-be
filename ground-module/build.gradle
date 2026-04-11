@@ -1,0 +1,7 @@
+plugins {
+    id 'java-library'
+}
+
+// Keep dependencies explicit per domain as the module grows.
+dependencies {
+}
