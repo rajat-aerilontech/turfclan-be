@@ -1,0 +1,112 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - preprod
+      - develop
+      - devops/deploy-to-ec2
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  APP_NAME: turfclan-be
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Build and run tests
+        run: ./gradlew clean build --no-daemon
+
+      - name: Build Docker image
+        run: docker build -t ${{ env.APP_NAME }}:${{ env.IMAGE_TAG }} .
+
+      - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push image to Docker Hub
+        if: github.event_name != 'pull_request'
+        run: |
+          docker tag ${{ env.APP_NAME }}:${{ env.IMAGE_TAG }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
+          docker tag ${{ env.APP_NAME }}:${{ env.IMAGE_TAG }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
+
+      - name: Upload application jar
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: turfclan-application-jar
+          path: application/build/libs/*.jar
+          if-no-files-found: error
+
+  deploy:
+    name: Deploy
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+
+    steps:
+      - name: Deployment placeholder
+        run: |
+          echo "Docker image is available on Docker Hub."
+          echo "AWS/EC2 deployment is temporarily disabled."
+          echo "Re-enable the SSH deployment step when the server configuration is ready."
+
+      # Example deployment block for later use:
+      # - name: Deploy latest Docker Hub image to server
+      #   uses: appleboy/ssh-action@v1.2.0
+      #   with:
+      #     host: ${{ secrets.EC2_HOST }}
+      #     username: ${{ secrets.EC2_USER }}
+      #     key: ${{ secrets.EC2_SSH_KEY }}
+      #     script: |
+      #       docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" -p "${{ secrets.DOCKERHUB_TOKEN }}"
+      #       docker pull "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}"
+      #       docker stop "${{ env.APP_NAME }}" || true
+      #       docker rm "${{ env.APP_NAME }}" || true
+      #       docker run -d \
+      #         --name "${{ env.APP_NAME }}" \
+      #         --restart unless-stopped \
+      #         -p 8434:8434 \
+      #         -e SPRING_PROFILES_ACTIVE="${{ secrets.SPRING_PROFILES_ACTIVE }}" \
+      #         -e SERVER_PORT="8434" \
+      #         -e ALLOWED_ORIGIN="${{ secrets.ALLOWED_ORIGIN }}" \
+      #         -e LOG_LEVEL="${{ secrets.LOG_LEVEL }}" \
+      #         -e SPRINGFRAMEWORK_WEB_LOG_LEVEL="${{ secrets.SPRINGFRAMEWORK_WEB_LOG_LEVEL }}" \
+      #         -e AWS_RDS_URL="${{ secrets.AWS_RDS_URL }}" \
+      #         -e RDS_SCHEMA="${{ secrets.RDS_SCHEMA }}" \
+      #         -e RDS_USERNAME="${{ secrets.RDS_USERNAME }}" \
+      #         -e RDS_PASSWORD="${{ secrets.RDS_PASSWORD }}" \
+      #         "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}"
