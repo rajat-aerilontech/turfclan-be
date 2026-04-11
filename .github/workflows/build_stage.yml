@@ -95,8 +95,8 @@ jobs:
             -e SPRING_PROFILES_ACTIVE="${{ vars.SPRING_PROFILES_ACTIVE }}" \
             -e SERVER_PORT="8434" \
             -e ALLOWED_ORIGIN="*" \
-            -e LOG_LEVEL="DEBUG" \
-            -e SPRINGFRAMEWORK_WEB_LOG_LEVEL="ERROR" \
+            -e LOG_LEVEL="${{ vars.LOG_LEVEL }}" \
+            -e SPRINGFRAMEWORK_WEB_LOG_LEVEL="${{ vars.SPRINGFRAMEWORK_WEB_LOG_LEVEL }}" \
             -e AWS_RDS_URL="jdbc:postgresql://host.docker.internal:5432/${{ secrets.DATABASE_NAME }}" \
             -e RDS_USERNAME="${{ secrets.RDS_USERNAME }}" \
             -e RDS_PASSWORD="${{ secrets.RDS_PASSWORD }}" \
