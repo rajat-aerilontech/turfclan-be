@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class OtpRequestDTO {
+public class SendOtpRequestDTO {
 
     @JsonProperty("phone_country_code")
     private String phoneCountryCode;

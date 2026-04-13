@@ -12,12 +12,6 @@ import java.time.LocalDateTime;
 @Builder
 public class OtpResponseDTO {
 
-    @JsonProperty("new_user")
-    private boolean newUser;
-
-    @JsonProperty("old_user")
-    private boolean oldUser;
-
     private String message;
 
     @JsonProperty("expires_at")

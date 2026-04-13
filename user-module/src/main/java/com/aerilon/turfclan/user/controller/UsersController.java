@@ -1,8 +1,7 @@
 package com.aerilon.turfclan.user.controller;
 
-import com.aerilon.turfclan.jwt.JwtService;
 import com.aerilon.turfclan.user.dto.AuthResponseDTO;
-import com.aerilon.turfclan.user.dto.OtpRequestDTO;
+import com.aerilon.turfclan.user.dto.SendOtpRequestDTO;
 import com.aerilon.turfclan.user.dto.OtpResponseDTO;
 import com.aerilon.turfclan.user.dto.OtpVerifyRequestDTO;
 import com.aerilon.turfclan.user.dto.SignupRequestDTO;
@@ -15,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -27,7 +27,6 @@ public class UsersController {
 
     @Autowired
     private final OtpService otpService;
-    private final JwtService jwtService;
 
     @GetMapping("/{emailId}")
     @Operation(summary = "Get User by Email", description = "Fetches a user profile by their email address.")
@@ -36,13 +35,13 @@ public class UsersController {
     }
 
     @PostMapping("/otp/request")
-    @Operation(summary = "Request OTP", description = "Generates and sends an OTP to a given phone number.")
-    public ResponseEntity<OtpResponseDTO> requestOtp(@RequestBody OtpRequestDTO request) {
+    @Operation(summary = "Request OTP", description = "Generates and sends an OTP to a given phone number and confirms that the OTP was sent successfully.")
+    public ResponseEntity<OtpResponseDTO> requestOtp(@RequestBody SendOtpRequestDTO request) {
         return ResponseEntity.ok(otpService.requestOtp(request));
     }
 
     @PostMapping("/otp/verify")
-    @Operation(summary = "Verify OTP", description = "Verifies a submitted OTP and returns the user profile along with access & refresh tokens.")
+    @Operation(summary = "Verify OTP", description = "Verifies a submitted OTP and returns the user profile, tokens, and whether the user is new or existing.")
     public ResponseEntity<AuthResponseDTO> verifyOtp(@RequestBody OtpVerifyRequestDTO request) {
         return ResponseEntity.ok(otpService.verifyOtp(request));
     }
@@ -53,10 +52,10 @@ public class UsersController {
             description = "Completes the user profile after OTP verification. Requires Bearer token."
     )
     public ResponseEntity<UserDTO> signup(
-            @RequestHeader("Authorization") String authHeader,
+            Authentication authentication,
             @RequestBody @Valid SignupRequestDTO request
     ) {
-        String userId = jwtService.extractSubjectFromHeader(authHeader);
+        String userId = authentication.getName();
         return ResponseEntity.ok(userService.signup(userId, request));
     }
 }
