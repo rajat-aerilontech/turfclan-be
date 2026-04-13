@@ -1,5 +1,6 @@
 package com.aerilon.turfclan.user.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -20,5 +21,11 @@ public class AuthResponseDTO {
     private long expiresIn;
 
     /** True if the user has not completed their profile yet — client should navigate to signup screen. */
+    @JsonProperty("new_user")
     private boolean newUser;
+
+    @JsonProperty("old_user")
+    private boolean oldUser;
+
+    private String message;
 }

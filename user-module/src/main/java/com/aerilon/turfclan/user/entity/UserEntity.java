@@ -1,8 +1,12 @@
 package com.aerilon.turfclan.user.entity;
 
+import com.aerilon.turfclan.user.enums.Gender;
 import com.aerilon.turfclan.user.enums.UserStatus;
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -49,17 +53,25 @@ public class UserEntity {
     @Column(name = "date_of_birth", length = 20)
     private String dateOfBirth;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "gender", length = 20)
-    private String gender;
+    private Gender gender;
 
     @Column(name = "location", length = 255)
     private String location;
 
-    @Column(name = "sport", length = 500)
+    @Column(name = "sport", length = 50)
     private String sport;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "sport_profile", columnDefinition = "jsonb")
+    private JsonNode sportProfile;
 
     @Column(name = "is_verified")
     private boolean isVerified;
+
+    @Column(name = "is_profile_complete")
+    private boolean isProfileComplete;
 
     @Column(name = "country_iso_code", length = 10)
     private String countryIsoCode;
@@ -70,10 +82,10 @@ public class UserEntity {
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdBy;
+    private LocalDateTime createdAt;
 
     @LastModifiedDate
     @Column(name = "updated_at", insertable = false)
-    private LocalDateTime updatedBy;
+    private LocalDateTime updatedAt;
 }
 

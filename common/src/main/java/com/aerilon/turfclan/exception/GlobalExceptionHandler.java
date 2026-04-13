@@ -35,11 +35,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
-        log.error("Data integrity violation: {}", ex.getMostSpecificCause().getMessage());
-        String message = "A record with the same value already exists. Please check your input and try again.";
-        if (ex.getMostSpecificCause().getMessage() != null
-                && ex.getMostSpecificCause().getMessage().contains("user_email")) {
+        String rootMessage = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
+        log.error("Data integrity violation: {}", rootMessage);
+
+        String normalized = rootMessage == null ? "" : rootMessage.toLowerCase();
+        String message;
+        if (normalized.contains("user_email")) {
             message = "This email address is already registered to another account.";
+        } else if (normalized.contains("duplicate key") || normalized.contains("unique")) {
+            message = "A record with the same value already exists. Please check your input and try again.";
+        } else if (normalized.contains("null value") || normalized.contains("not-null")) {
+            message = "Required user data is missing. Please request OTP again and retry.";
+        } else if (normalized.contains("value too long") || normalized.contains("too long")) {
+            message = "One or more existing profile values are too long for the current schema.";
+        } else {
+            message = "Data integrity validation failed while updating user state.";
         }
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.CONFLICT.value(),

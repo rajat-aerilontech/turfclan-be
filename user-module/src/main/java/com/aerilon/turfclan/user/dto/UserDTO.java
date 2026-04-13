@@ -1,7 +1,10 @@
 package com.aerilon.turfclan.user.dto;
 
+import com.aerilon.turfclan.user.enums.Gender;
 import com.aerilon.turfclan.user.enums.UserStatus;
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,12 +22,15 @@ public class UserDTO {
     private String profilePictureUrl;
     private String bio;
     private String dateOfBirth;
-    private String gender;
+    private Gender gender;
+    @JsonProperty("city")
     private String location;
     private String sport;
+    private JsonNode sportProfile;
     private boolean isVerified;
     @JsonAlias("countryCode")
     private String countryIsoCode;
+    private boolean isProfileComplete;
     private UserStatus status;
 
     @Override
@@ -45,6 +51,7 @@ public class UserDTO {
                 ", sport='" + sport + '\'' +
                 ", isVerified=" + isVerified +
                 ", countryIsoCode='" + countryIsoCode + '\'' +
+                ", isProfileComplete=" + isProfileComplete +
                 ", status=" + status +
                 '}';
     }

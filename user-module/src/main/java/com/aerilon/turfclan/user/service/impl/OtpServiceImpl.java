@@ -6,7 +6,7 @@ import com.aerilon.turfclan.jwt.JwtProperties;
 import com.aerilon.turfclan.jwt.JwtService;
 import com.aerilon.turfclan.user.converter.UserEntityToUserDTOConverter;
 import com.aerilon.turfclan.user.dto.AuthResponseDTO;
-import com.aerilon.turfclan.user.dto.OtpRequestDTO;
+import com.aerilon.turfclan.user.dto.SendOtpRequestDTO;
 import com.aerilon.turfclan.user.dto.OtpResponseDTO;
 import com.aerilon.turfclan.user.dto.OtpVerifyRequestDTO;
 import com.aerilon.turfclan.user.dto.UserDTO;
@@ -43,7 +43,7 @@ public class OtpServiceImpl implements OtpService {
 
     @Override
     @Transactional
-    public OtpResponseDTO requestOtp(OtpRequestDTO request) {
+    public OtpResponseDTO requestOtp(SendOtpRequestDTO request) {
         String phoneNumber = request.getPhoneNumber();
 
         if (phoneNumber == null || phoneNumber.isBlank()) {
@@ -58,10 +58,12 @@ public class OtpServiceImpl implements OtpService {
             log.info("No user found for phone number ending in {}. Creating new user.", maskPhone(phoneNumber));
             UserEntity newUser = new UserEntity();
             newUser.setPhoneNumber(phoneNumber);
+            newUser.setCountryIsoCode("IN");
             newUser.setPhoneCountryCode(request.getPhoneCountryCode());
             newUser.setUserName(UUID.randomUUID().toString().replace("-", "").substring(0, 12));
             newUser.setStatus(UserStatus.PENDING_VERIFICATION);
-            newUser.setCreatedBy(LocalDateTime.now());
+            newUser.setProfileComplete(false);
+            newUser.setCreatedAt(LocalDateTime.now());
             userRepository.save(newUser);
         } else {
             log.info("Existing user found for phone number ending in {}.", maskPhone(phoneNumber));
@@ -81,8 +83,6 @@ public class OtpServiceImpl implements OtpService {
         log.info("OTP generated and stored for phone number ending in {}.", maskPhone(phoneNumber));
 
         return OtpResponseDTO.builder()
-                .newUser(isNewUser)
-                .oldUser(!isNewUser)
                 .message("OTP sent successfully")
                 .expiresAt(expiresAt)
                 .build();
@@ -93,37 +93,37 @@ public class OtpServiceImpl implements OtpService {
     public AuthResponseDTO verifyOtp(OtpVerifyRequestDTO request) {
         String phoneNumber = request.getPhoneNumber();
         String otpCode = request.getOtpCode();
-
         if (phoneNumber == null || phoneNumber.isBlank()) {
             throw new InvalidRequestException("Phone number must not be blank");
         }
         if (otpCode == null || otpCode.isBlank()) {
             throw new InvalidRequestException("OTP code must not be blank");
         }
-
         UserEntity user = userRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new UserNotFoundException("No user found for the given phone number"));
-
         OtpEntity otpEntity = otpRepository
                 .findTopByPhoneNumberAndIsUsedFalseAndExpiresAtAfterOrderByCreatedAtDesc(phoneNumber, LocalDateTime.now())
                 .orElseThrow(() -> new InvalidRequestException("Invalid or expired OTP"));
-
         if (!otpEntity.getOtpCode().equals(otpCode)) {
             throw new InvalidRequestException("Invalid OTP code");
         }
-
         otpEntity.setUsed(true);
         otpRepository.save(otpEntity);
 
-        user.setStatus(UserStatus.ACTIVE);
+        boolean isProfileComplete = user.isProfileComplete();
+        if (user.getUserName() == null || user.getUserName().isBlank()) {
+            user.setUserName(UUID.randomUUID().toString().replace("-", "").substring(0, 12));
+        }
+        user.setStatus(isProfileComplete ? UserStatus.ACTIVE : UserStatus.PENDING_SIGNUP);
         user.setVerified(true);
-        user.setUpdatedBy(LocalDateTime.now());
+        user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
 
         log.info("OTP verified successfully for phone number ending in {}.", maskPhone(phoneNumber));
 
         String userId = user.getId().toString();
-        boolean isNewUser = user.getFirstName() == null || user.getFirstName().isBlank();
+        boolean isNewUser = !isProfileComplete;
+
         Map<String, Object> claims = Map.of(
                 "phoneNumber", user.getPhoneNumber(),
                 "userName", user.getUserName()
@@ -141,6 +141,8 @@ public class OtpServiceImpl implements OtpService {
                 .refreshToken(refreshToken)
                 .expiresIn(expiresIn)
                 .newUser(isNewUser)
+                .oldUser(isProfileComplete)
+                .message("OTP verified successfully")
                 .build();
     }
 
