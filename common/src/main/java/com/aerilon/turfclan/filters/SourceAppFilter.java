@@ -1,0 +1,116 @@
+package com.aerilon.turfclan.filters;
+
+import com.aerilon.turfclan.response.ErrorResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.List;
+
+@Component
+@RequiredArgsConstructor
+public class SourceAppFilter extends OncePerRequestFilter {
+
+    public static final String SOURCE_APP_HEADER = "source-app";
+    public static final String TURF_ADMIN = "turf-admin";
+    public static final String TURF_MOBILE = "turf-mobile";
+
+    private static final List<String> PUBLIC_PATH_PREFIXES = List.of(
+            "/api/v1/users/otp/",
+            "/api/v1/auth/",
+            "/v3/api-docs",
+            "/swagger-ui",
+            "/swagger-ui.html",
+            "/actuator"
+    );
+
+    private final ObjectMapper objectMapper;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+
+        if (!isApiPath(request) || isPublicPath(request) || isPreflight(request) || !isAuthenticatedRequest()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String sourceApp = request.getHeader(SOURCE_APP_HEADER);
+        if (sourceApp == null || sourceApp.isBlank()) {
+            writeBadRequest(response, "Missing required header: source-app");
+            return;
+        }
+
+        String normalizedSourceApp = sourceApp.trim().toLowerCase();
+        SimpleGrantedAuthority authority = resolveRole(normalizedSourceApp);
+        if (authority == null) {
+            writeBadRequest(response, "Invalid source-app.");
+            return;
+        }
+
+        Authentication existing = SecurityContextHolder.getContext().getAuthentication();
+        UsernamePasswordAuthenticationToken remapped = new UsernamePasswordAuthenticationToken(
+                existing.getPrincipal(),
+                existing.getCredentials(),
+            List.of(authority)
+        );
+        remapped.setDetails(existing.getDetails());
+        SecurityContextHolder.getContext().setAuthentication(remapped);
+
+        request.setAttribute(SOURCE_APP_HEADER, normalizedSourceApp);
+        filterChain.doFilter(request, response);
+    }
+
+    private SimpleGrantedAuthority resolveRole(String sourceApp) {
+        return switch (sourceApp) {
+            case TURF_ADMIN -> new SimpleGrantedAuthority("ROLE_TA_USER");
+            case TURF_MOBILE -> new SimpleGrantedAuthority("ROLE_TM_USER");
+            default -> null;
+        };
+    }
+
+    private boolean isApiPath(HttpServletRequest request) {
+        return request.getServletPath().startsWith("/api/v1/");
+    }
+
+    private boolean isPublicPath(HttpServletRequest request) {
+        String servletPath = request.getServletPath();
+        return PUBLIC_PATH_PREFIXES.stream().anyMatch(servletPath::startsWith);
+    }
+
+    private boolean isPreflight(HttpServletRequest request) {
+        return HttpMethod.OPTIONS.matches(request.getMethod());
+    }
+
+    private boolean isAuthenticatedRequest() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null
+                && authentication.isAuthenticated()
+                && authentication.getPrincipal() != null
+                && !"anonymousUser".equals(authentication.getPrincipal());
+    }
+
+    private void writeBadRequest(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        objectMapper.writeValue(response.getWriter(), new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                message,
+                System.currentTimeMillis()
+        ));
+    }
+}

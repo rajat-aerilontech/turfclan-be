@@ -1,5 +1,6 @@
-package com.aerilon.turfclan.jwt;
+package com.aerilon.turfclan.filters;
 
+import com.aerilon.turfclan.jwt.JwtService;
 import com.aerilon.turfclan.response.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.JwtException;

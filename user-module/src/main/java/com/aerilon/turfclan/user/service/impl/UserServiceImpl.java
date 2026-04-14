@@ -3,6 +3,7 @@ package com.aerilon.turfclan.user.service.impl;
 import com.aerilon.turfclan.exception.InvalidRequestException;
 import com.aerilon.turfclan.exception.UserNotFoundException;
 import com.aerilon.turfclan.user.converter.UserEntityToUserDTOConverter;
+import com.aerilon.turfclan.user.dto.DashboardResponseDTO;
 import com.aerilon.turfclan.user.dto.SignupPersonalDTO;
 import com.aerilon.turfclan.user.dto.SignupRequestDTO;
 import com.aerilon.turfclan.user.dto.UserDTO;
@@ -11,6 +12,7 @@ import com.aerilon.turfclan.user.enums.UserStatus;
 import com.aerilon.turfclan.user.repository.UserRepository;
 import com.aerilon.turfclan.user.service.UserService;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Iterator;
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -70,21 +74,175 @@ public class UserServiceImpl implements UserService {
         return userConverter.convert(saved);
     }
 
-    private JsonNode buildSportPayload(JsonNode sportDetails, JsonNode selectedSports) {
-        ObjectNode sportPayload = JsonNodeFactory.instance.objectNode();
+    @Override
+    public DashboardResponseDTO getDashboard(String userId, String selectedSportExperience) {
+        UserEntity user = userRepository.findById(UUID.fromString(userId))
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
-        if (sportDetails != null && !sportDetails.isNull()) {
-            if (sportDetails.isObject()) {
-                sportPayload.setAll((ObjectNode) sportDetails.deepCopy());
-            } else {
-                sportPayload.set("details", sportDetails);
+        String experienceKey = selectedSportExperience == null ? null : selectedSportExperience.trim();
+        JsonNode sportProfile = user.getSportProfile();
+        JsonNode experienceNode = findExperienceNode(sportProfile, experienceKey);
+
+        DashboardResponseDTO response = new DashboardResponseDTO();
+        response.setUserId(userId);
+        response.setSelectedSportExperience(experienceKey);
+        response.setUserPerformance(extractUserPerformance(sportProfile, experienceNode, experienceKey));
+        response.setSportSpecificDetail(extractSportSpecificDetail(user, sportProfile, experienceNode, experienceKey));
+        return response;
+    }
+
+    private JsonNode findExperienceNode(JsonNode sportProfile, String selectedSportExperience) {
+        if (sportProfile == null || sportProfile.isNull() || selectedSportExperience == null || selectedSportExperience.isBlank()) {
+            return null;
+        }
+
+        JsonNode directExperience = getCaseInsensitiveField(sportProfile, selectedSportExperience);
+        if (directExperience != null && !directExperience.isMissingNode() && !directExperience.isNull()) {
+            return directExperience;
+        }
+
+        JsonNode experiences = getCaseInsensitiveField(sportProfile, "experiences");
+        if (experiences == null || experiences.isNull() || experiences.isMissingNode()) {
+            return null;
+        }
+
+        if (experiences.isObject()) {
+            JsonNode keyedExperience = getCaseInsensitiveField(experiences, selectedSportExperience);
+            if (keyedExperience != null && !keyedExperience.isMissingNode() && !keyedExperience.isNull()) {
+                return keyedExperience;
             }
         }
 
-        if (selectedSports != null && !selectedSports.isNull()) {
-            sportPayload.set("sports", selectedSports);
+        if (!experiences.isArray()) {
+            return null;
         }
 
-        return sportPayload.isEmpty() ? null : sportPayload;
+        ArrayNode experiencesArray = (ArrayNode) experiences;
+        for (JsonNode candidate : experiencesArray) {
+            if (!candidate.isObject()) {
+                continue;
+            }
+
+            String name = readTextField(candidate, "name");
+            String type = readTextField(candidate, "type");
+            String level = readTextField(candidate, "level");
+            if (selectedSportExperience.equalsIgnoreCase(name)
+                    || selectedSportExperience.equalsIgnoreCase(type)
+                    || selectedSportExperience.equalsIgnoreCase(level)) {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private JsonNode extractUserPerformance(JsonNode sportProfile, JsonNode experienceNode, String selectedSportExperience) {
+        if (experienceNode != null) {
+            JsonNode experiencePerformance = getCaseInsensitiveField(experienceNode, "performance");
+            if (experiencePerformance != null && !experiencePerformance.isMissingNode() && !experiencePerformance.isNull()) {
+                return experiencePerformance;
+            }
+        }
+
+        JsonNode profilePerformance = getCaseInsensitiveField(sportProfile, "performance");
+        if (profilePerformance == null || profilePerformance.isMissingNode() || profilePerformance.isNull()) {
+            return null;
+        }
+
+        if (selectedSportExperience != null && !selectedSportExperience.isBlank() && profilePerformance.isObject()) {
+            JsonNode selectedPerformance = getCaseInsensitiveField(profilePerformance, selectedSportExperience);
+            if (selectedPerformance != null && !selectedPerformance.isMissingNode() && !selectedPerformance.isNull()) {
+                return selectedPerformance;
+            }
+        }
+
+        return profilePerformance;
+    }
+
+    private JsonNode extractSportSpecificDetail(UserEntity user,
+                                                JsonNode sportProfile,
+                                                JsonNode experienceNode,
+                                                String selectedSportExperience) {
+        if (experienceNode != null && experienceNode.isObject()) {
+            JsonNode explicitDetail = getCaseInsensitiveField(experienceNode, "sportSpecificDetail");
+            if (explicitDetail != null && !explicitDetail.isMissingNode() && !explicitDetail.isNull()) {
+                return explicitDetail;
+            }
+
+            JsonNode detail = getCaseInsensitiveField(experienceNode, "details");
+            if (detail != null && !detail.isMissingNode() && !detail.isNull()) {
+                return detail;
+            }
+
+            ObjectNode fallback = ((ObjectNode) experienceNode).deepCopy();
+            removeCaseInsensitiveField(fallback, "performance");
+            if (!fallback.isEmpty()) {
+                return fallback;
+            }
+        }
+
+        ObjectNode detail = JsonNodeFactory.instance.objectNode();
+        if (user.getSport() != null && !user.getSport().isBlank()) {
+            detail.put("sport", user.getSport());
+        }
+        if (selectedSportExperience != null && !selectedSportExperience.isBlank()) {
+            detail.put("selectedSportExperience", selectedSportExperience);
+        }
+
+        JsonNode profileDetails = getCaseInsensitiveField(sportProfile, "sportSpecificDetail");
+        if (profileDetails != null && !profileDetails.isMissingNode() && !profileDetails.isNull()) {
+            detail.set("profile", profileDetails);
+        }
+
+        return detail.isEmpty() ? null : detail;
+    }
+
+    private JsonNode getCaseInsensitiveField(JsonNode node, String key) {
+        if (node == null || key == null || !node.isObject()) {
+            return null;
+        }
+
+        JsonNode exact = node.get(key);
+        if (exact != null) {
+            return exact;
+        }
+
+        Iterator<String> fieldNames = node.fieldNames();
+        while (fieldNames.hasNext()) {
+            String fieldName = fieldNames.next();
+            if (fieldName.equalsIgnoreCase(key)) {
+                return node.get(fieldName);
+            }
+        }
+
+        return null;
+    }
+
+    private void removeCaseInsensitiveField(ObjectNode node, String key) {
+        if (node == null || key == null) {
+            return;
+        }
+
+        String toRemove = null;
+        Iterator<String> fieldNames = node.fieldNames();
+        while (fieldNames.hasNext()) {
+            String fieldName = fieldNames.next();
+            if (fieldName.equalsIgnoreCase(key)) {
+                toRemove = fieldName;
+                break;
+            }
+        }
+
+        if (toRemove != null) {
+            node.remove(toRemove);
+        }
+    }
+
+    private String readTextField(JsonNode node, String fieldName) {
+        JsonNode field = getCaseInsensitiveField(node, fieldName);
+        if (field == null || field.isNull()) {
+            return null;
+        }
+        return field.asText().toLowerCase(Locale.ROOT);
     }
 }
