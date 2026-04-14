@@ -53,6 +53,7 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers("/api/v1/users/**").authenticated()
                         .requestMatchers("/api/v1/sports/**").authenticated()
+                        .requestMatchers("/api/v1/tournaments/**").authenticated()
                         .requestMatchers("/api/v1/sports-directory/**").authenticated()
                         .anyRequest().permitAll()
                 )
