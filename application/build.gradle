@@ -11,6 +11,7 @@ dependencies {
     implementation project(':chat-module')
     implementation project(':tournament-module')
     implementation project(':notification-module')
+    implementation project(':sports-directory-module')
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.actuator)
