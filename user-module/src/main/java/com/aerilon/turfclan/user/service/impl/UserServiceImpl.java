@@ -1,7 +1,7 @@
 package com.aerilon.turfclan.user.service.impl;
 
 import com.aerilon.turfclan.exception.InvalidRequestException;
-import com.aerilon.turfclan.exception.UserNotFoundException;
+import com.aerilon.turfclan.exception.ResourceNotFoundException;
 import com.aerilon.turfclan.user.converter.UserEntityToUserDTOConverter;
 import com.aerilon.turfclan.user.dto.DashboardResponseDTO;
 import com.aerilon.turfclan.user.dto.SignupPersonalDTO;
@@ -36,14 +36,14 @@ public class UserServiceImpl implements UserService {
     public UserDTO getUserByEmail(String emailId) {
         return userRepository.findByUserEmail(emailId)
                              .map(userConverter::convert)
-                             .orElseThrow(() -> new UserNotFoundException("User not found with email: " + emailId));
+                             .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + emailId));
     }
 
     @Override
     @Transactional
     public UserDTO signup(String userId, SignupRequestDTO request) {
         UserEntity user = userRepository.findById(UUID.fromString(userId))
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         SignupPersonalDTO personal = request.getPersonal();
 
@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public DashboardResponseDTO getDashboard(String userId, String selectedSportExperience) {
         UserEntity user = userRepository.findById(UUID.fromString(userId))
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         String experienceKey = selectedSportExperience == null ? null : selectedSportExperience.trim();
         JsonNode sportProfile = user.getSportProfile();

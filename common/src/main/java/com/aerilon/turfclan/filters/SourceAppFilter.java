@@ -29,8 +29,6 @@ public class SourceAppFilter extends OncePerRequestFilter {
     public static final String TURF_MOBILE = "turf-mobile";
 
     private static final List<String> PUBLIC_PATH_PREFIXES = List.of(
-            "/api/v1/users/otp/",
-            "/api/v1/auth/",
             "/v3/api-docs",
             "/swagger-ui",
             "/swagger-ui.html",
@@ -43,6 +41,11 @@ public class SourceAppFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+
+        if (isSourceAppOnlyPath(request)) {
+            authenticateSourceAppOnlyRequest(request, response, filterChain);
+            return;
+        }
 
         if (!isApiPath(request) || isPublicPath(request) || isPreflight(request) || !isAuthenticatedRequest()) {
             filterChain.doFilter(request, response);
@@ -75,6 +78,37 @@ public class SourceAppFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    private void authenticateSourceAppOnlyRequest(HttpServletRequest request,
+                                                  HttpServletResponse response,
+                                                  FilterChain filterChain) throws ServletException, IOException {
+        if (isPreflight(request)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String sourceApp = request.getHeader(SOURCE_APP_HEADER);
+        if (sourceApp == null || sourceApp.isBlank()) {
+            writeUnauthorized(response, "Missing required header: source-app");
+            return;
+        }
+
+        String normalizedSourceApp = sourceApp.trim().toLowerCase();
+        SimpleGrantedAuthority authority = resolveRole(normalizedSourceApp);
+        if (authority == null) {
+            writeUnauthorized(response, "Invalid source-app.");
+            return;
+        }
+
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                normalizedSourceApp,
+                null,
+                List.of(authority)
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        request.setAttribute(SOURCE_APP_HEADER, normalizedSourceApp);
+        filterChain.doFilter(request, response);
+    }
+
     private SimpleGrantedAuthority resolveRole(String sourceApp) {
         return switch (sourceApp) {
             case TURF_ADMIN -> new SimpleGrantedAuthority("ROLE_TA_USER");
@@ -90,6 +124,12 @@ public class SourceAppFilter extends OncePerRequestFilter {
     private boolean isPublicPath(HttpServletRequest request) {
         String servletPath = request.getServletPath();
         return PUBLIC_PATH_PREFIXES.stream().anyMatch(servletPath::startsWith);
+    }
+
+    private boolean isSourceAppOnlyPath(HttpServletRequest request) {
+        String servletPath = request.getServletPath();
+        return servletPath.startsWith("/api/v1/users/otp/")
+                || servletPath.equals("/api/v1/auth/refresh");
     }
 
     private boolean isPreflight(HttpServletRequest request) {
@@ -109,6 +149,16 @@ public class SourceAppFilter extends OncePerRequestFilter {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         objectMapper.writeValue(response.getWriter(), new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
+                message,
+                System.currentTimeMillis()
+        ));
+    }
+
+    private void writeUnauthorized(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        objectMapper.writeValue(response.getWriter(), new ErrorResponse(
+                HttpStatus.UNAUTHORIZED.value(),
                 message,
                 System.currentTimeMillis()
         ));

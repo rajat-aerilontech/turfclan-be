@@ -8,9 +8,9 @@ import java.util.List;
 
 public interface SportAssociationService {
 
-    List<SportAssociationSummaryDTO> getAssociations(String selectedSportExperience);
+    List<SportAssociationSummaryDTO> getAssociations();
 
-    SportAssociationDetailDTO getAssociationDetail(String selectedSportExperience, String associationId);
+    SportAssociationDetailDTO getAssociationDetail(String associationId);
 
     SportAssociationDetailDTO createAssociation(SportAssociationUpsertRequestDTO request);
 

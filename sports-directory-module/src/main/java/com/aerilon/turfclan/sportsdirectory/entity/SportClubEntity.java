@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "t_sport_associations", schema = "turfclan_schema", uniqueConstraints = {
+@Table(name = "t_sport_clubs", schema = "turfclan_schema", uniqueConstraints = {
         @UniqueConstraint(columnNames = "name")})
 @Getter
 @Setter
-public class SportAssociationEntity extends BaseAuditableEntity {
+public class SportClubEntity extends BaseAuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
