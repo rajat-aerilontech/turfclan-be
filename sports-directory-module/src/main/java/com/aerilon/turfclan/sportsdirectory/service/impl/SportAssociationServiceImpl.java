@@ -1,5 +1,6 @@
 package com.aerilon.turfclan.sportsdirectory.service.impl;
 
+import com.aerilon.turfclan.exception.ResourceNotFoundException;
 import com.aerilon.turfclan.sportsdirectory.converter.SportAssociationConverter;
 import com.aerilon.turfclan.sportsdirectory.dto.SportAssociationDetailDTO;
 import com.aerilon.turfclan.sportsdirectory.dto.SportAssociationSummaryDTO;
@@ -24,11 +25,12 @@ public class SportAssociationServiceImpl implements SportAssociationService {
     private final SportAssociationResolver sportAssociationResolver;
 
     @Override
-    public List<SportAssociationSummaryDTO> getAssociations(String selectedSportExperience) {
-        String sportExperience = sportAssociationResolver.requireSelectedSportExperience(selectedSportExperience);
+    public List<SportAssociationSummaryDTO> getAssociations() {
+        List<SportAssociationEntity> entities = sportAssociationRepository.findAll();
 
-        List<SportAssociationEntity> entities =
-                sportAssociationRepository.findBySelectedSportExperienceIgnoreCase(sportExperience);
+        if (entities.isEmpty()) {
+            throw new ResourceNotFoundException("No sports associations found");
+        }
 
         List<SportAssociationSummaryDTO> summaries = new ArrayList<>();
         for (SportAssociationEntity entity : entities) {
@@ -39,9 +41,8 @@ public class SportAssociationServiceImpl implements SportAssociationService {
     }
 
     @Override
-    public SportAssociationDetailDTO getAssociationDetail(String selectedSportExperience, String associationId) {
-        SportAssociationEntity entity =
-                sportAssociationResolver.requireByAssociationIdentifier(selectedSportExperience, associationId);
+    public SportAssociationDetailDTO getAssociationDetail(String associationId) {
+        SportAssociationEntity entity = sportAssociationResolver.requireByAssociationIdentifier(associationId);
         return sportAssociationConverter.toDetail(entity);
     }
 

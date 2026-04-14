@@ -7,7 +7,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class SportAssociationSummaryDTO {
+public class SportClubSummaryDTO {
 
     private String id;
     private String sportCategory;

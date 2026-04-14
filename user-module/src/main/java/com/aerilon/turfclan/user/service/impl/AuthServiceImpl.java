@@ -1,7 +1,7 @@
 package com.aerilon.turfclan.user.service.impl;
 
 import com.aerilon.turfclan.exception.InvalidRequestException;
-import com.aerilon.turfclan.exception.UserNotFoundException;
+import com.aerilon.turfclan.exception.ResourceNotFoundException;
 import com.aerilon.turfclan.jwt.JwtProperties;
 import com.aerilon.turfclan.jwt.JwtService;
 import com.aerilon.turfclan.user.dto.TokenRefreshRequestDTO;
@@ -45,7 +45,7 @@ public class AuthServiceImpl implements AuthService {
 
         // Confirm the user still exists and is active
         UserEntity user = userRepository.findById(UUID.fromString(userId))
-                .orElseThrow(() -> new UserNotFoundException("User not found for id: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found for id: " + userId));
 
         // Build access token claims
         Map<String, Object> accessClaims = Map.of(

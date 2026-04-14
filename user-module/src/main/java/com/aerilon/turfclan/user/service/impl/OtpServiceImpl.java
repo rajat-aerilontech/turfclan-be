@@ -1,7 +1,7 @@
 package com.aerilon.turfclan.user.service.impl;
 
 import com.aerilon.turfclan.exception.InvalidRequestException;
-import com.aerilon.turfclan.exception.UserNotFoundException;
+import com.aerilon.turfclan.exception.ResourceNotFoundException;
 import com.aerilon.turfclan.jwt.JwtProperties;
 import com.aerilon.turfclan.jwt.JwtService;
 import com.aerilon.turfclan.user.converter.UserEntityToUserDTOConverter;
@@ -100,7 +100,7 @@ public class OtpServiceImpl implements OtpService {
             throw new InvalidRequestException("OTP code must not be blank");
         }
         UserEntity user = userRepository.findByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new UserNotFoundException("No user found for the given phone number"));
+                .orElseThrow(() -> new ResourceNotFoundException("No user found for the given phone number"));
         OtpEntity otpEntity = otpRepository
                 .findTopByPhoneNumberAndIsUsedFalseAndExpiresAtAfterOrderByCreatedAtDesc(phoneNumber, LocalDateTime.now())
                 .orElseThrow(() -> new InvalidRequestException("Invalid or expired OTP"));

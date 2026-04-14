@@ -27,6 +27,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+        private static final String OTP_PATH_PREFIX = "/api/v1/users/otp/";
+        private static final String REFRESH_PATH = "/api/v1/auth/refresh";
+
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final SourceAppFilter sourceAppFilter;
     private final SelectedSportExperienceFilter selectedSportExperienceFilter;
@@ -55,8 +58,13 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {
+                            String message = isOtpPath(request)
+                                    ? "Missing or invalid source-app for OTP flow"
+                                    : isRefreshPath(request)
+                                    ? "Missing or invalid source-app for refresh flow"
+                                    : "Missing, invalid, or expired access token";
                             UnauthorizedAccessException unauthorizedAccessException =
-                                    new UnauthorizedAccessException("Missing, invalid, or expired access token");
+                                    new UnauthorizedAccessException(message);
                             response.setStatus(HttpStatus.UNAUTHORIZED.value());
                             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                             objectMapper.writeValue(response.getWriter(), new ErrorResponse(
@@ -66,8 +74,13 @@ public class SecurityConfig {
                             ));
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            String message = isOtpPath(request)
+                                    ? "Unauthorized source-app for OTP flow"
+                                    : isRefreshPath(request)
+                                    ? "Unauthorized source-app for refresh flow"
+                                    : "Unauthorized access for this source-app and role";
                             UnauthorizedAccessException unauthorizedAccessException =
-                                    new UnauthorizedAccessException("Unauthorized access for this source-app and role");
+                                    new UnauthorizedAccessException(message);
                             response.setStatus(HttpStatus.UNAUTHORIZED.value());
                             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                             objectMapper.writeValue(response.getWriter(), new ErrorResponse(
@@ -83,4 +96,12 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+        private boolean isOtpPath(jakarta.servlet.http.HttpServletRequest request) {
+                return request.getServletPath().startsWith(OTP_PATH_PREFIX);
+        }
+
+        private boolean isRefreshPath(jakarta.servlet.http.HttpServletRequest request) {
+                return REFRESH_PATH.equals(request.getServletPath());
+        }
 }

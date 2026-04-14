@@ -21,11 +21,17 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final List<String> SOURCE_APP_ONLY_PATH_PREFIXES = List.of(
+        "/api/v1/users/otp/",
+        "/api/v1/auth/refresh"
+    );
 
     private final JwtService jwtService;
     private final ObjectMapper objectMapper;
@@ -57,6 +63,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (JwtException | IllegalArgumentException ex) {
             log.warn("JWT authentication failed: {}", ex.getMessage());
             SecurityContextHolder.clearContext();
+
+            if (isSourceAppOnlyPath(request)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             objectMapper.writeValue(response.getWriter(), new ErrorResponse(
@@ -65,5 +77,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     System.currentTimeMillis()
             ));
         }
+    }
+
+    private boolean isSourceAppOnlyPath(HttpServletRequest request) {
+        String servletPath = request.getServletPath();
+        return SOURCE_APP_ONLY_PATH_PREFIXES.stream().anyMatch(servletPath::startsWith);
     }
 }

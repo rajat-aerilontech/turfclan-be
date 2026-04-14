@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,25 +34,22 @@ public class SportAssociationController {
     @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TA_USER')")
     @Operation(
             summary = "Get Sports Associations",
-                        description = "Returns the list of sports associations based on selected-sport-experience. Requires turf-mobile source-app."
+                        description = "Returns the list of sports associations. Requires turf-mobile source-app."
     )
-    public ResponseEntity<List<SportAssociationSummaryDTO>> getAssociations(
-                        @RequestHeader("selected-sport-experience") String selectedSportExperience
-    ) {
-                return ResponseEntity.ok(sportAssociationService.getAssociations(selectedSportExperience));
+        public ResponseEntity<List<SportAssociationSummaryDTO>> getAssociations() {
+                return ResponseEntity.ok(sportAssociationService.getAssociations());
     }
 
     @GetMapping("/associations/{associationId}")
     @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TA_USER')")
     @Operation(
             summary = "Get Sports Association Detail",
-                        description = "Returns full detail for a sports association based on selected-sport-experience. Requires turf-mobile source-app."
+                        description = "Returns full detail for a sports association. Requires turf-mobile source-app."
     )
     public ResponseEntity<SportAssociationDetailDTO> getAssociationDetail(
-                        @RequestHeader("selected-sport-experience") String selectedSportExperience,
             @PathVariable String associationId
     ) {
-                return ResponseEntity.ok(sportAssociationService.getAssociationDetail(selectedSportExperience, associationId));
+                return ResponseEntity.ok(sportAssociationService.getAssociationDetail(associationId));
     }
 
     @PostMapping("/associations")

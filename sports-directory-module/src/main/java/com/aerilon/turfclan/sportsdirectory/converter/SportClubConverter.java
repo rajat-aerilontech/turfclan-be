@@ -2,10 +2,10 @@ package com.aerilon.turfclan.sportsdirectory.converter;
 
 import com.aerilon.turfclan.enums.RecordStatus;
 import com.aerilon.turfclan.sportsdirectory.dto.AssociationContactDTO;
-import com.aerilon.turfclan.sportsdirectory.dto.SportAssociationDetailDTO;
-import com.aerilon.turfclan.sportsdirectory.dto.SportAssociationSummaryDTO;
-import com.aerilon.turfclan.sportsdirectory.dto.SportAssociationUpsertRequestDTO;
-import com.aerilon.turfclan.sportsdirectory.entity.SportAssociationEntity;
+import com.aerilon.turfclan.sportsdirectory.dto.SportClubDetailDTO;
+import com.aerilon.turfclan.sportsdirectory.dto.SportClubSummaryDTO;
+import com.aerilon.turfclan.sportsdirectory.dto.SportClubUpsertRequestDTO;
+import com.aerilon.turfclan.sportsdirectory.entity.SportClubEntity;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -15,12 +15,12 @@ import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
-public class SportAssociationConverter {
+public class SportClubConverter {
 
     private final ObjectMapper objectMapper;
 
-    public SportAssociationSummaryDTO toSummary(SportAssociationEntity entity) {
-        SportAssociationSummaryDTO summary = new SportAssociationSummaryDTO();
+    public SportClubSummaryDTO toSummary(SportClubEntity entity) {
+        SportClubSummaryDTO summary = new SportClubSummaryDTO();
         summary.setId(entity.getId() != null ? entity.getId().toString() : null);
         summary.setSportCategory(entity.getSportCategory());
         summary.setImages(entity.getImages());
@@ -35,8 +35,8 @@ public class SportAssociationConverter {
         return summary;
     }
 
-    public SportAssociationDetailDTO toDetail(SportAssociationEntity entity) {
-        SportAssociationDetailDTO detail = new SportAssociationDetailDTO();
+    public SportClubDetailDTO toDetail(SportClubEntity entity) {
+        SportClubDetailDTO detail = new SportClubDetailDTO();
         detail.setId(entity.getId() != null ? entity.getId().toString() : null);
         detail.setSportCategory(entity.getSportCategory());
         detail.setImages(entity.getImages());
@@ -54,7 +54,7 @@ public class SportAssociationConverter {
         return detail;
     }
 
-    public void applyUpsertRequest(SportAssociationEntity entity, SportAssociationUpsertRequestDTO request) {
+    public void applyUpsertRequest(SportClubEntity entity, SportClubUpsertRequestDTO request) {
         entity.setSportCategory(request.getSportCategory());
         entity.setImages(request.getImages());
         entity.setName(request.getName() != null ? request.getName().trim() : null);
