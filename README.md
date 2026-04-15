@@ -46,16 +46,7 @@ docker build -t turfclan-be .
 ### Run the container
 
 ```powershell
-docker run --name turfclan-be --rm -p 8434:8434 `
-  -e SPRING_PROFILES_ACTIVE=local `
-  -e SERVER_PORT=8434 `
-  -e LOG_LEVEL=INFO `
-  -e SPRINGFRAMEWORK_WEB_LOG_LEVEL=ERROR `
-  -e AWS_RDS_URL="jdbc:postgresql://host.docker.internal:5432/turfclan" `
-  -e RDS_SCHEMA=<schema_name> `
-  -e RDS_USERNAME=<db_user> `
-  -e RDS_PASSWORD="<db_password>" `
-  turfclan-be
+docker run --name turfclan-be --rm -p 8434:8434 -e SPRING_PROFILES_ACTIVE=local -e SERVER_PORT=8434 -e LOG_LEVEL=INFO -e SPRINGFRAMEWORK_WEB_LOG_LEVEL=ERROR -e AWS_RDS_URL="jdbc:postgresql://host.docker.internal:5432/turfclan" -e RDS_SCHEMA="<schema_name>" -e RDS_USERNAME="<db_user>" -e RDS_PASSWORD="<db_password>3" turfclan-be
 ```
 
 > Replace the placeholder database values with your local setup. Do not commit real credentials or secrets.
