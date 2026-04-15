@@ -26,6 +26,7 @@ public class SelectedSportExperienceFilter extends OncePerRequestFilter {
 
     private static final List<String> PUBLIC_PATH_PREFIXES = List.of(
             "/api/v1/users/otp/",
+            "/api/v1/users/signup",
             "/api/v1/auth/",
             "/v3/api-docs",
             "/swagger-ui",
