@@ -1,5 +1,6 @@
 package com.aerilon.turfclan.user.dto;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -13,7 +14,5 @@ public class SignupRequestDTO {
     @NotNull(message = "Personal details must not be null")
     private SignupPersonalDTO personal;
 
-    @Valid
-    @NotNull(message = "Sport details must not be null")
-    private SignupSportDTO sport;
+    private JsonNode sport;
 }

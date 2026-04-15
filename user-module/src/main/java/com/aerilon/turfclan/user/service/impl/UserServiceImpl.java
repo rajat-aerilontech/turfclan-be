@@ -12,7 +12,6 @@ import com.aerilon.turfclan.user.enums.UserStatus;
 import com.aerilon.turfclan.user.repository.UserRepository;
 import com.aerilon.turfclan.user.service.UserService;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -32,7 +31,6 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserEntityToUserDTOConverter userConverter;
-    private final ObjectMapper objectMapper;
 
     @Override
     public UserDTO getUserByEmail(String emailId) {
@@ -67,7 +65,7 @@ public class UserServiceImpl implements UserService {
         user.setGender(personal.getGender());
         user.setDateOfBirth(personal.getDob());
         user.setSport(personal.getSports());
-        user.setSportProfile(objectMapper.valueToTree(request.getSport()));
+        user.setSportProfile(request.getSport());
         user.setProfileComplete(true);
         user.setStatus(UserStatus.ACTIVE);
 
