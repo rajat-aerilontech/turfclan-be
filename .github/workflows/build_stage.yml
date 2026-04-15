@@ -112,5 +112,5 @@ jobs:
             -e AWS_RDS_URL="jdbc:postgresql://127.0.0.1:5432/${{ secrets.DATABASE_NAME }}" \
             -e RDS_USERNAME="${{ secrets.RDS_USERNAME }}" \
             -e RDS_PASSWORD="${{ secrets.RDS_PASSWORD }}" \
-            -e RDS_SCHEMA="${{ secrets.RDS_SCHEMA }}" \
+            -e RDS_SCHEMA="${{ secrets.RDS_DATABASE_SCHEMA }}" \
             "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}"
