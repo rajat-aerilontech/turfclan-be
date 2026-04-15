@@ -14,6 +14,7 @@ COPY community-module ./community-module
 COPY chat-module ./chat-module
 COPY tournament-module ./tournament-module
 COPY notification-module ./notification-module
+COPY sports-directory-module ./sports-directory-module
 
 RUN chmod +x ./gradlew && ./gradlew :application:bootJar --no-daemon
 

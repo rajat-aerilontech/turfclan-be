@@ -44,6 +44,9 @@ jobs:
       - name: Build and run tests
         run: ./gradlew clean build --no-daemon
 
+      - name: Remove existing Docker image
+        run: docker rmi ${{ env.APP_NAME }}:${{ env.IMAGE_TAG }} || true
+
       - name: Build Docker image
         run: docker build --no-cache -t ${{ env.APP_NAME }}:${{ env.IMAGE_TAG }} .
 
@@ -81,6 +84,9 @@ jobs:
     steps:
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Remove existing Docker image
+        run: docker rmi "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}" || true
 
       - name: Pull image from Docker Hub
         run: docker pull "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}"
