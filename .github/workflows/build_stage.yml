@@ -25,6 +25,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -42,8 +44,11 @@ jobs:
       - name: Build and run tests
         run: ./gradlew clean build --no-daemon
 
+      - name: Remove existing Docker image
+        run: docker rmi ${{ env.APP_NAME }}:${{ env.IMAGE_TAG }} || true
+
       - name: Build Docker image
-        run: docker build -t ${{ env.APP_NAME }}:${{ env.IMAGE_TAG }} .
+        run: docker build --no-cache -t ${{ env.APP_NAME }}:${{ env.IMAGE_TAG }} .
 
       - name: Log in to Docker Hub
         if: github.event_name != 'pull_request'
@@ -80,6 +85,9 @@ jobs:
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
+      - name: Remove existing Docker image
+        run: docker rmi "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}" || true
+
       - name: Pull image from Docker Hub
         run: docker pull "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}"
 
@@ -104,5 +112,5 @@ jobs:
             -e AWS_RDS_URL="jdbc:postgresql://127.0.0.1:5432/${{ secrets.DATABASE_NAME }}" \
             -e RDS_USERNAME="${{ secrets.RDS_USERNAME }}" \
             -e RDS_PASSWORD="${{ secrets.RDS_PASSWORD }}" \
-            -e RDS_SCHEMA="${{ secrets.RDS_SCHEMA }}" \
+            -e RDS_SCHEMA="${{ secrets.RDS_DATABASE_SCHEMA }}" \
             "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}"
