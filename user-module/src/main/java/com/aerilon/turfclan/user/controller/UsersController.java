@@ -40,14 +40,14 @@ public class UsersController {
     @PostMapping("/otp/request")
     @PreAuthorize("hasAuthority('ROLE_TM_USER')")
     @Operation(summary = "Request OTP", description = "Generates and sends an OTP to a given phone number and confirms that the OTP was sent successfully.")
-    public ResponseEntity<OtpResponseDTO> requestOtp(@RequestBody SendOtpRequestDTO request) {
+    public ResponseEntity<OtpResponseDTO> requestOtp(@RequestBody @Valid SendOtpRequestDTO request) {
         return ResponseEntity.ok(otpService.requestOtp(request));
     }
 
     @PostMapping("/otp/verify")
     @PreAuthorize("hasAuthority('ROLE_TM_USER')")
     @Operation(summary = "Verify OTP", description = "Verifies a submitted OTP and returns the user profile, tokens, and whether the user is new or existing.")
-    public ResponseEntity<AuthResponseDTO> verifyOtp(@RequestBody OtpVerifyRequestDTO request) {
+    public ResponseEntity<AuthResponseDTO> verifyOtp(@RequestBody @Valid OtpVerifyRequestDTO request) {
         return ResponseEntity.ok(otpService.verifyOtp(request));
     }
 
