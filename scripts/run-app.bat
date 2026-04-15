@@ -1,6 +1,6 @@
 @echo off
 
-set SPRING_PROFILE_ACTIVE=local
+set SPRING_PROFILES_ACTIVE=local
 set APP_COPYRIGHT=2026 Aerilon Tech LLP Solutions, Inc. All rights reserved.
 set ALLOWED_ORIGIN=*
 set LOG_LEVEL=INFO
@@ -11,4 +11,4 @@ set RDS_USERNAME=aerilon_user_2
 set RDS_PASSWORD=aerilon@123
 
 call .\gradlew.bat clean
-call .\gradlew.bat bootRun --debug-jvm
+call .\gradlew.bat bootRun
