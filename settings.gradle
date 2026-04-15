@@ -1,16 +1,28 @@
+import org.gradle.api.initialization.resolve.RepositoriesMode
+
 pluginManagement {
 	repositories {
-		mavenCentral()
 		gradlePluginPortal()
+		mavenCentral()
 	}
-	plugins {
-		id 'org.springframework.boot' version '3.2.0'
-		id 'io.spring.dependency-management' version '1.1.7'
+}
+
+dependencyResolutionManagement {
+	repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+	repositories {
+		mavenCentral()
 	}
 }
 
 rootProject.name = 'turfclan'
 
 include 'application'
-include 'core'
 include 'common'
+include 'user-module'
+include 'booking-module'
+include 'ground-module'
+include 'community-module'
+include 'chat-module'
+include 'tournament-module'
+include 'notification-module'
+include 'sports-directory-module'
