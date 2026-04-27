@@ -27,6 +27,7 @@ public class SourceAppFilter extends OncePerRequestFilter {
     public static final String SOURCE_APP_HEADER = "source-app";
     public static final String TURF_ADMIN = "turf-admin";
     public static final String TURF_MOBILE = "turf-mobile";
+    public static final String TURF_PARTNER = "turf-partner";
 
     private static final List<String> PUBLIC_PATH_PREFIXES = List.of(
             "/v3/api-docs",
@@ -113,6 +114,7 @@ public class SourceAppFilter extends OncePerRequestFilter {
         return switch (sourceApp) {
             case TURF_ADMIN -> new SimpleGrantedAuthority("ROLE_TA_USER");
             case TURF_MOBILE -> new SimpleGrantedAuthority("ROLE_TM_USER");
+            case TURF_PARTNER -> new SimpleGrantedAuthority("ROLE_TM_PARTNER");
             default -> null;
         };
     }

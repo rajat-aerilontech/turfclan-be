@@ -28,7 +28,7 @@ public class AuthController {
      * Body: { "refreshToken": "<jwt>" }
      */
     @PostMapping("/refresh")
-    @PreAuthorize("hasAuthority('ROLE_TM_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
     @Operation(summary = "Refresh Token", description = "Issues a new access token and rotates the refresh token given a valid refresh JWT.")
     public ResponseEntity<TokenRefreshResponseDTO> refresh(@RequestBody TokenRefreshRequestDTO request) {
         return ResponseEntity.ok(authService.refresh(request));

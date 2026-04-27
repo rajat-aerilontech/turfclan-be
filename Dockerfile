@@ -21,6 +21,13 @@ RUN chmod +x ./gradlew && ./gradlew :application:bootJar --no-daemon
 FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
+# --- Install PostGIS/GDAL dependencies ---
+RUN apt-get update && apt-get install -y \
+    postgis \
+    gdal-bin \
+    libgdal-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /workspace/application/build/libs/*.jar /app/app.jar
 
 ENV SPRING_PROFILES_ACTIVE=local

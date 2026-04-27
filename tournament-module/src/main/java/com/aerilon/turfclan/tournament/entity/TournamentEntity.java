@@ -1,16 +1,9 @@
 package com.aerilon.turfclan.tournament.entity;
 
 import com.aerilon.turfclan.entity.BaseAuditableEntity;
+import com.aerilon.turfclan.enums.RecordStatus;
 import com.aerilon.turfclan.user.entity.UserEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -64,4 +57,8 @@ public class TournamentEntity extends BaseAuditableEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "admin_id", referencedColumnName = "id", nullable = false)
     private UserEntity admin;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 255, nullable = false)
+    private RecordStatus status;
 }

@@ -6,6 +6,6 @@ import com.aerilon.turfclan.user.dto.OtpResponseDTO;
 import com.aerilon.turfclan.user.dto.OtpVerifyRequestDTO;
 
 public interface OtpService {
-    OtpResponseDTO requestOtp(SendOtpRequestDTO request);
-    AuthResponseDTO verifyOtp(OtpVerifyRequestDTO request);
+    OtpResponseDTO requestOtp(SendOtpRequestDTO request, String sourceApp);
+    AuthResponseDTO verifyOtp(OtpVerifyRequestDTO request, String sourceApp);
 }

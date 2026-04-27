@@ -1,13 +1,17 @@
 name: Build and Deploy
 
 on:
-  push:
-    branches:
-      - main
-      - preprod
-      - develop
-  pull_request:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        default: "production"
+        type: choice
+        options:
+          - production
+          - staging
+          - development
 
 permissions:
   contents: read
@@ -79,7 +83,7 @@ jobs:
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/preprod' || github.ref == 'refs/heads/develop')
     runs-on: [self-hosted, aws-ec2-turfclan]
     timeout-minutes: 15
-    environment: development
+    environment: ${{ github.event.inputs.environment }}
 
     steps:
       - name: Login to Docker Hub
@@ -90,6 +94,18 @@ jobs:
 
       - name: Pull image from Docker Hub
         run: docker pull "${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}"
+
+      # --- New: Ensure PostGIS is installed and enabled on the host DB ---
+      - name: Install and Enable PostGIS on Host
+        run: |
+          echo "Checking for PostGIS extension..."
+          # Note: This assumes the runner user has permission to run psql or sudo
+          sudo apt-get update && sudo apt-get install -y postgis postgresql-14-postgis-3 
+
+          # Attempt to enable the extension in the database
+          export PGPASSWORD="${{ secrets.RDS_PASSWORD }}"
+          psql -h 127.0.0.1 -U "${{ secrets.RDS_USERNAME }}" -d "${{ secrets.DATABASE_NAME }}" -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+          psql -h 127.0.0.1 -U "${{ secrets.RDS_USERNAME }}" -d "${{ secrets.DATABASE_NAME }}" -c "SELECT postgis_full_version();"
 
       - name: Verify local PostgreSQL is reachable
         run: |

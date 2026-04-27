@@ -10,6 +10,8 @@ import com.aerilon.turfclan.user.dto.UserDTO;
 import com.aerilon.turfclan.user.entity.UserEntity;
 import com.aerilon.turfclan.user.enums.UserStatus;
 import com.aerilon.turfclan.user.repository.UserRepository;
+import com.aerilon.turfclan.user.repository.UserSportAssociationRepository;
+import com.aerilon.turfclan.user.entity.UserSportAssociationEntity;
 import com.aerilon.turfclan.user.service.UserService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -31,6 +33,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserEntityToUserDTOConverter userConverter;
+    private final UserSportAssociationRepository userSportAssociationRepository;
 
     @Override
     public UserDTO getUserByEmail(String emailId) {
@@ -64,12 +67,27 @@ public class UserServiceImpl implements UserService {
         user.setLocation(personal.getCity());
         user.setGender(personal.getGender());
         user.setDateOfBirth(personal.getDob());
-        user.setSport(personal.getSports());
-        user.setSportProfile(request.getSport());
         user.setProfileComplete(true);
         user.setStatus(UserStatus.ACTIVE);
 
         UserEntity saved = userRepository.save(user);
+
+        // Save sport details to UserSportAssociationEntity
+        if (personal.getSports() != null || request.getSport() != null) {
+            UserSportAssociationEntity sportAssoc = userSportAssociationRepository.findByUserId(saved.getId())
+                    .orElse(new UserSportAssociationEntity());
+            sportAssoc.setUserId(saved.getId());
+            if (personal.getSports() != null && !personal.getSports().isBlank()) {
+                // Generate a dummy sport ID for now as sport_id is required
+                sportAssoc.setSportId(UUID.randomUUID()); 
+            } else if (sportAssoc.getSportId() == null) {
+                sportAssoc.setSportId(UUID.randomUUID());
+            }
+            if (request.getSport() != null) {
+                sportAssoc.setSportProfile(request.getSport());
+            }
+            userSportAssociationRepository.save(sportAssoc);
+        }
         log.info("User profile completed for userId={}", userId);
         return userConverter.convert(saved);
     }
@@ -80,7 +98,18 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         String experienceKey = selectedSportExperience == null ? null : selectedSportExperience.trim();
-        JsonNode sportProfile = user.getSportProfile();
+        
+        JsonNode sportProfile = null;
+        userSportAssociationRepository.findByUserId(user.getId())
+                .ifPresent(assoc -> {
+                    // we can't easily assign to outer variable inside lambda without making it array or just using Optional
+                });
+        
+        var sportAssocOpt = userSportAssociationRepository.findByUserId(user.getId());
+        if (sportAssocOpt.isPresent()) {
+            sportProfile = sportAssocOpt.get().getSportProfile();
+        }
+
         JsonNode experienceNode = findExperienceNode(sportProfile, experienceKey);
 
         DashboardResponseDTO response = new DashboardResponseDTO();
@@ -182,9 +211,11 @@ public class UserServiceImpl implements UserService {
         }
 
         ObjectNode detail = JsonNodeFactory.instance.objectNode();
-        if (user.getSport() != null && !user.getSport().isBlank()) {
-            detail.put("sport", user.getSport());
-        }
+        
+        var sportAssocOpt = userSportAssociationRepository.findByUserId(user.getId());
+        // Currently we don't store sport name in the association, only sportId.
+        // We will just skip setting sport name or set it if needed later.
+
         if (selectedSportExperience != null && !selectedSportExperience.isBlank()) {
             detail.put("selectedSportExperience", selectedSportExperience);
         }

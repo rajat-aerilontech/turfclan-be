@@ -25,8 +25,6 @@ public class UserDTO {
     private Gender gender;
     @JsonProperty("city")
     private String location;
-    private String sport;
-    private JsonNode sportProfile;
     private boolean isVerified;
     @JsonAlias("countryCode")
     private String countryIsoCode;
@@ -48,7 +46,6 @@ public class UserDTO {
                 ", dateOfBirth='" + dateOfBirth + '\'' +
                 ", gender='" + gender + '\'' +
                 ", location='" + location + '\'' +
-                ", sport='" + sport + '\'' +
                 ", isVerified=" + isVerified +
                 ", countryIsoCode='" + countryIsoCode + '\'' +
                 ", isProfileComplete=" + isProfileComplete +

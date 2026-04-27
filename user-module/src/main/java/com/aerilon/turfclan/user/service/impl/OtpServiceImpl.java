@@ -15,6 +15,11 @@ import com.aerilon.turfclan.user.repository.OtpRepository;
 import com.aerilon.turfclan.user.service.OtpService;
 import com.aerilon.turfclan.user.entity.UserEntity;
 import com.aerilon.turfclan.user.enums.UserStatus;
+import com.aerilon.turfclan.user.enums.UserRole;
+import com.aerilon.turfclan.partner.entity.OnboardingApplicationEntity;
+import com.aerilon.turfclan.partner.enums.OnboardApplicationStatus;
+import com.aerilon.turfclan.partner.enums.OnboardStep;
+import com.aerilon.turfclan.partner.repository.OnboardingApplicationRepository;
 import com.aerilon.turfclan.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,10 +45,11 @@ public class OtpServiceImpl implements OtpService {
     private final UserEntityToUserDTOConverter userConverter;
     private final JwtService jwtService;
     private final JwtProperties jwtProperties;
+    private final OnboardingApplicationRepository applicationRepository;
 
     @Override
     @Transactional
-    public OtpResponseDTO requestOtp(SendOtpRequestDTO request) {
+    public OtpResponseDTO requestOtp(SendOtpRequestDTO request, String sourceApp) {
         String phoneNumber = request.getPhoneNumber();
 
         if (phoneNumber == null || phoneNumber.isBlank()) {
@@ -64,6 +70,11 @@ public class OtpServiceImpl implements OtpService {
             newUser.setStatus(UserStatus.PENDING_VERIFICATION);
             newUser.setProfileComplete(false);
             newUser.setCreatedAt(LocalDateTime.now());
+            if ("turf-partner".equalsIgnoreCase(sourceApp)) {
+                newUser.setUserRole(UserRole.PARTNER);
+            } else {
+                newUser.setUserRole(UserRole.USER);
+            }
             userRepository.save(newUser);
         } else {
             log.info("Existing user found for phone number ending in {}.", maskPhone(phoneNumber));
@@ -90,7 +101,7 @@ public class OtpServiceImpl implements OtpService {
 
     @Override
     @Transactional
-    public AuthResponseDTO verifyOtp(OtpVerifyRequestDTO request) {
+    public AuthResponseDTO verifyOtp(OtpVerifyRequestDTO request, String sourceApp) {
         String phoneNumber = request.getPhoneNumber();
         String otpCode = request.getOtpCode();
         if (phoneNumber == null || phoneNumber.isBlank()) {
@@ -124,10 +135,26 @@ public class OtpServiceImpl implements OtpService {
         String userId = user.getId().toString();
         boolean isNewUser = !isProfileComplete;
 
-        Map<String, Object> claims = Map.of(
-                "phoneNumber", user.getPhoneNumber(),
-                "userName", user.getUserName()
-        );
+        if (isNewUser && "partner".equalsIgnoreCase(sourceApp)) {
+            Optional<OnboardingApplicationEntity> existingApp = applicationRepository.findByUserId(user);
+            if (existingApp.isEmpty()) {
+                OnboardingApplicationEntity app = new OnboardingApplicationEntity();
+                app.setUserId(user);
+                app.setOnboardApplicationStatus(OnboardApplicationStatus.DRAFT);
+                app.setCurrentStep(OnboardStep.BUSINESS_DETAILS);
+                app.setIsSubmitted(false);
+                applicationRepository.save(app);
+            }
+        }
+
+        Map<String, Object> claims = new java.util.HashMap<>();
+        claims.put("phoneNumber", user.getPhoneNumber());
+        claims.put("userName", user.getUserName());
+        if (user.getUserRole() != null) {
+            String roleName = user.getUserRole().name();
+            String simpleRole = roleName.substring(0, 1).toUpperCase() + roleName.substring(1).toLowerCase();
+            claims.put("aud", simpleRole);
+        }
 
         String accessToken = jwtService.generateAccessToken(userId, claims);
         String refreshToken = jwtService.generateRefreshToken(userId);

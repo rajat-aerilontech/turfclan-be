@@ -60,12 +60,9 @@ public class UserEntity {
     @Column(name = "location", length = 255)
     private String location;
 
-    @Column(name = "sport", length = 50)
-    private String sport;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "sport_profile", columnDefinition = "jsonb")
-    private JsonNode sportProfile;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_role", length = 50)
+    private com.aerilon.turfclan.user.enums.UserRole userRole;
 
     @Column(name = "is_verified")
     private boolean isVerified;

@@ -38,17 +38,21 @@ public class UsersController {
     }
 
     @PostMapping("/otp/request")
-    @PreAuthorize("hasAuthority('ROLE_TM_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
     @Operation(summary = "Request OTP", description = "Generates and sends an OTP to a given phone number and confirms that the OTP was sent successfully.")
-    public ResponseEntity<OtpResponseDTO> requestOtp(@RequestBody @Valid SendOtpRequestDTO request) {
-        return ResponseEntity.ok(otpService.requestOtp(request));
+    public ResponseEntity<OtpResponseDTO> requestOtp(
+            @RequestHeader(value = "source-app", required = false, defaultValue = "user") String sourceApp,
+            @RequestBody @Valid SendOtpRequestDTO request) {
+        return ResponseEntity.ok(otpService.requestOtp(request, sourceApp));
     }
 
     @PostMapping("/otp/verify")
-    @PreAuthorize("hasAuthority('ROLE_TM_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
     @Operation(summary = "Verify OTP", description = "Verifies a submitted OTP and returns the user profile, tokens, and whether the user is new or existing.")
-    public ResponseEntity<AuthResponseDTO> verifyOtp(@RequestBody @Valid OtpVerifyRequestDTO request) {
-        return ResponseEntity.ok(otpService.verifyOtp(request));
+    public ResponseEntity<AuthResponseDTO> verifyOtp(
+            @RequestHeader(value = "source-app", required = false, defaultValue = "user") String sourceApp,
+            @RequestBody @Valid OtpVerifyRequestDTO request) {
+        return ResponseEntity.ok(otpService.verifyOtp(request, sourceApp));
     }
 
     @PostMapping("/signup")
