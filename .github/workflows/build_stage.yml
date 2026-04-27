@@ -99,8 +99,9 @@ jobs:
       - name: Install and Enable PostGIS on Host
         run: |
           echo "Checking for PostGIS extension..."
-          # Note: This assumes the runner user has permission to run psql or sudo
-          sudo apt-get update && sudo apt-get install -y postgis postgresql-14-postgis-3 
+          # Use -y and DEBIAN_FRONTEND=noninteractive to skip prompts
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y postgis postgresql-14-postgis-3
 
           # Attempt to enable the extension in the database
           export PGPASSWORD="${{ secrets.RDS_PASSWORD }}"
