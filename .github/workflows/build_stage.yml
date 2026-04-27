@@ -98,12 +98,17 @@ jobs:
       # --- New: Ensure PostGIS is installed and enabled on the host DB ---
       - name: Install and Enable PostGIS on Host
         run: |
-          echo "Checking for PostGIS extension..."
-          # Use -y and DEBIAN_FRONTEND=noninteractive to skip prompts
-          sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y postgis postgresql-14-postgis-3
+          # 1. Check if postgis is already installed to save time
+          if ! command -v psql &> /dev/null || ! dpkg -s postgis &> /dev/null; then
+            echo "PostGIS not found. Installing..."
+            sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y postgis postgresql-14-postgis-3
+          else
+            echo "PostGIS is already installed. Skipping installation."
+          fi
 
-          # Attempt to enable the extension in the database
+          # 2. Always ensure the extension is enabled in the specific DB
+          echo "Enabling PostGIS extension in ${{ secrets.DATABASE_NAME }}..."
           export PGPASSWORD="${{ secrets.RDS_PASSWORD }}"
           psql -h 127.0.0.1 -U "${{ secrets.RDS_USERNAME }}" -d "${{ secrets.DATABASE_NAME }}" -c "CREATE EXTENSION IF NOT EXISTS postgis;"
           psql -h 127.0.0.1 -U "${{ secrets.RDS_USERNAME }}" -d "${{ secrets.DATABASE_NAME }}" -c "SELECT postgis_full_version();"
