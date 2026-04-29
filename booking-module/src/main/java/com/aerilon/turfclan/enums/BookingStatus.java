@@ -1,4 +1,4 @@
-package com.aerilon.turfclan.facility;
+package com.aerilon.turfclan.enums;
 
 public enum BookingStatus {
     // Standard Flow

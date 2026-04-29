@@ -1,7 +1,7 @@
-package com.aerilon.turfclan.facility.entity;
+package com.aerilon.turfclan.entity;
 
-import com.aerilon.turfclan.entity.BaseAuditableEntity;
-import com.aerilon.turfclan.facility.BookingStatus;
+import com.aerilon.turfclan.enums.BookingStatus;
+import com.aerilon.turfclan.facility.entity.SportDetailEntity;
 import com.aerilon.turfclan.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -55,4 +55,7 @@ public class BookingEntity extends BaseAuditableEntity {
 
     @Column(name = "payment_id")
     private String paymentId;
+
+    @Column(name = "user_note")
+    private String userNote;
 }
