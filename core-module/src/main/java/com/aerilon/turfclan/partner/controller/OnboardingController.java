@@ -1,5 +1,6 @@
 package com.aerilon.turfclan.partner.controller;
 
+import com.aerilon.turfclan.facility.dto.FacilitiesRequestDto;
 import com.aerilon.turfclan.partner.dto.*;
 import com.aerilon.turfclan.partner.enums.OnboardStep;
 import com.aerilon.turfclan.partner.service.OnboardingService;

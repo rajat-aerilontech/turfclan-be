@@ -1,4 +1,4 @@
-package com.aerilon.turfclan.partner.dto;
+package com.aerilon.turfclan.facility.dto;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;

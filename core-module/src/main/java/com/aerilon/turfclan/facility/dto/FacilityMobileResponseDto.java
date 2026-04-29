@@ -1,6 +1,5 @@
 package com.aerilon.turfclan.facility.dto;
 
-import com.aerilon.turfclan.partner.dto.SportDetailRequestDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

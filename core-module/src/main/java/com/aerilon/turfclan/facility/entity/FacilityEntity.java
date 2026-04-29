@@ -1,4 +1,4 @@
-package com.aerilon.turfclan.partner.entity;
+package com.aerilon.turfclan.facility.entity;
 
 import com.aerilon.turfclan.entity.BaseAuditableEntity;
 import com.aerilon.turfclan.user.entity.UserEntity;

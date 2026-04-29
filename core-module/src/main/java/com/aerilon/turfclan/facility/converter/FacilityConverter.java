@@ -1,7 +1,7 @@
-package com.aerilon.turfclan.partner.converter;
+package com.aerilon.turfclan.facility.converter;
 
-import com.aerilon.turfclan.partner.dto.FacilityRequestDto;
-import com.aerilon.turfclan.partner.entity.FacilityEntity;
+import com.aerilon.turfclan.facility.dto.FacilityRequestDto;
+import com.aerilon.turfclan.facility.entity.FacilityEntity;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;

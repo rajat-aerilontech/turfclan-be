@@ -1,7 +1,7 @@
-package com.aerilon.turfclan.partner.converter;
+package com.aerilon.turfclan.facility.converter;
 
-import com.aerilon.turfclan.partner.dto.SportDetailRequestDto;
-import com.aerilon.turfclan.partner.entity.SportDetailEntity;
+import com.aerilon.turfclan.facility.dto.SportDetailRequestDto;
+import com.aerilon.turfclan.facility.entity.SportDetailEntity;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +23,10 @@ public class SportDetailConverter implements Converter<SportDetailRequestDto, Sp
         entity.setPricePerSession(source.getPricePerSession());
         entity.setOpenTime(source.getOpenTime());
         entity.setCloseTime(source.getCloseTime());
+        entity.setSlotDurationMinutes(source.getSlotDurationMinutes());
+        entity.setBufferDuration(source.getBufferDuration());
+        entity.setPrimeTimeSurgePercentage(source.getPrimeTimeSurgePercentage());
+        entity.setPrimeTimeWindows(source.getPrimeTimeWindows() != null ? new HashSet<>(source.getPrimeTimeWindows()) : new HashSet<>());
         entity.setAvailableDays(source.getAvailableDays() != null ? new HashSet<>(source.getAvailableDays()) : new HashSet<>());
         entity.setLength(source.getLength());
         entity.setWidth(source.getWidth());
@@ -45,6 +49,11 @@ public class SportDetailConverter implements Converter<SportDetailRequestDto, Sp
         dto.setPricePerSession(entity.getPricePerSession());
         dto.setOpenTime(entity.getOpenTime());
         dto.setCloseTime(entity.getCloseTime());
+        dto.setSlotDurationMinutes(entity.getSlotDurationMinutes());
+        dto.setBufferDuration(entity.getBufferDuration());
+        dto.setPrimeTimeSurgePercentage(entity.getPrimeTimeSurgePercentage());
+        dto.setPrimeTimeWindows(entity.getPrimeTimeWindows() != null ?
+                new HashSet<>(entity.getPrimeTimeWindows()) : new HashSet<>());
         dto.setAvailableDays(entity.getAvailableDays() != null ?
                 new HashSet<>(entity.getAvailableDays()) : new HashSet<>());
         dto.setLength(entity.getLength());

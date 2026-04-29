@@ -1,4 +1,4 @@
-package com.aerilon.turfclan.partner.entity;
+package com.aerilon.turfclan.facility.entity;
 
 import com.aerilon.turfclan.entity.BaseAuditableEntity;
 import com.aerilon.turfclan.enums.Sports;
@@ -56,7 +56,19 @@ public class SportDetailEntity extends BaseAuditableEntity {
     @Column(name = "close_time", nullable = false)
     private LocalTime closeTime;
 
-    // Maps directly to a PostgreSQL text[] column
+    @Column(name = "slot_duration_minutes", nullable = false)
+    private Integer slotDurationMinutes;
+
+    @Column(name = "buffer_duration")
+    private Integer bufferDuration;
+
+    @Column(name = "prime_time_surge_percentage")
+    private BigDecimal primeTimeSurgePercentage;
+
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Column(name = "prime_time_windows", columnDefinition = "text[]")
+    private Set<String> primeTimeWindows; // e.g., {"18:00-22:00"}
+
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(name = "available_days", columnDefinition = "text[]", nullable = false)
     private Set<String> availableDays = new HashSet<>();

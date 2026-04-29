@@ -1,4 +1,4 @@
-package com.aerilon.turfclan.partner.dto;
+package com.aerilon.turfclan.facility.dto;
 
 import com.aerilon.turfclan.enums.Sports;
 import jakarta.validation.constraints.*;
@@ -32,6 +32,12 @@ public class SportDetailRequestDto {
     private LocalTime openTime;
     @NotNull(message = "Closing time is required")
     private LocalTime closeTime;
+    @NotNull(message = "Slot Duration is required")
+    private Integer slotDurationMinutes;
+    @NotNull(message = "Buffer Duration is required")
+    private Integer bufferDuration;
+    private BigDecimal primeTimeSurgePercentage;
+    private Set<String> primeTimeWindows;
     @NotEmpty(message = "At least one available day must be selected")
     private Set<String> availableDays;
     @NotNull(message = "Length is required")

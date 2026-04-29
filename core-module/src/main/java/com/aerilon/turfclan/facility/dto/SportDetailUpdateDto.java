@@ -25,6 +25,10 @@ public class SportDetailUpdateDto {
     private BigDecimal pricePerSession;
     private LocalTime openTime;
     private LocalTime closeTime;
+    private Integer slotDurationMinutes;
+    private Integer bufferDuration;
+    private BigDecimal primeTimeSurgePercentage;
+    private Set<String> primeTimeWindows;
     private Set<String> availableDays;
     private Double length;
     private Double width;

@@ -1,5 +1,6 @@
 package com.aerilon.turfclan.partner.dto;
 
+import com.aerilon.turfclan.facility.dto.FacilityRequestDto;
 import com.aerilon.turfclan.partner.enums.OnboardApplicationStatus;
 import com.aerilon.turfclan.partner.enums.OnboardStep;
 import lombok.*;

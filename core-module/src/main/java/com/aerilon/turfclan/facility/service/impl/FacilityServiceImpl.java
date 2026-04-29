@@ -7,13 +7,13 @@ import com.aerilon.turfclan.facility.dto.FacilitiesMobileResponseDto;
 import com.aerilon.turfclan.facility.dto.FacilityMobileResponseDto;
 import com.aerilon.turfclan.facility.dto.FacilityUpdateDto;
 import com.aerilon.turfclan.facility.dto.SportDetailUpdateDto;
-import com.aerilon.turfclan.partner.converter.FacilityConverter;
-import com.aerilon.turfclan.partner.converter.SportDetailConverter;
-import com.aerilon.turfclan.partner.dto.FacilitiesRequestDto;
-import com.aerilon.turfclan.partner.dto.FacilityRequestDto;
-import com.aerilon.turfclan.partner.dto.SportDetailRequestDto;
-import com.aerilon.turfclan.partner.entity.FacilityEntity;
-import com.aerilon.turfclan.partner.entity.SportDetailEntity;
+import com.aerilon.turfclan.facility.converter.FacilityConverter;
+import com.aerilon.turfclan.facility.converter.SportDetailConverter;
+import com.aerilon.turfclan.facility.dto.FacilitiesRequestDto;
+import com.aerilon.turfclan.facility.dto.FacilityRequestDto;
+import com.aerilon.turfclan.facility.dto.SportDetailRequestDto;
+import com.aerilon.turfclan.facility.entity.FacilityEntity;
+import com.aerilon.turfclan.facility.entity.SportDetailEntity;
 import com.aerilon.turfclan.partner.repository.FacilityRepository;
 import com.aerilon.turfclan.partner.repository.SportDetailRepository;
 import com.aerilon.turfclan.user.entity.UserEntity;
@@ -24,6 +24,7 @@ import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -213,8 +214,8 @@ public class FacilityServiceImpl implements FacilityService {
     /**
      * Convert SportDetailEntity to SportDetailRequestDto (for mobile response)
      */
-    private com.aerilon.turfclan.partner.dto.SportDetailRequestDto convertSportDetail(SportDetailEntity sport) {
-        com.aerilon.turfclan.partner.dto.SportDetailRequestDto dto = new com.aerilon.turfclan.partner.dto.SportDetailRequestDto();
+    private SportDetailRequestDto convertSportDetail(SportDetailEntity sport) {
+        SportDetailRequestDto dto = new SportDetailRequestDto();
         dto.setSportType(sport.getSportType());
         dto.setSubType(sport.getSubType());
         dto.setNumberOfUnits(sport.getNumberOfUnits());
@@ -282,7 +283,7 @@ public class FacilityServiceImpl implements FacilityService {
                 new org.locationtech.jts.geom.Coordinate(updateDto.getLongitude(), updateDto.getLatitude()));
             facility.setLocation(point);
         }
-
+        facility.setUpdatedAt(LocalDateTime.now());
         facilityRepository.save(facility);
         log.info("Facility updated successfully: {}", facilityId);
 
@@ -349,7 +350,7 @@ public class FacilityServiceImpl implements FacilityService {
         if (updateDto.getAmenities() != null) {
             sportDetail.setAmenities(updateDto.getAmenities());
         }
-
+        sportDetail.setUpdatedAt(LocalDateTime.now());
         sportDetailRepository.save(sportDetail);
         log.info("Sport detail updated successfully: {}", updateDto.getSportDetailId());
 

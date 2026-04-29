@@ -1,6 +1,6 @@
 package com.aerilon.turfclan.partner.repository;
 
-import com.aerilon.turfclan.partner.entity.SportDetailEntity;
+import com.aerilon.turfclan.facility.entity.SportDetailEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
