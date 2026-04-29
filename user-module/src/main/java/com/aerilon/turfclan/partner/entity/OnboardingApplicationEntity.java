@@ -22,7 +22,7 @@ public class OnboardingApplicationEntity extends BaseAuditableEntity {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private UserEntity userId;
+    private UserEntity user;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "onboard_application_status")

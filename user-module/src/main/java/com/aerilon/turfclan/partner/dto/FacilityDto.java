@@ -19,5 +19,6 @@ public class FacilityDto {
     @NotEmpty(message = "At least one Photo of facility image is required")
     private List<String> facilityPhotos;
     @Valid
-    private List<SportDetailDto> sports;
+    @NotEmpty(message = "At least one sport detail is required")
+    private List<@Valid SportDetailDto> sports;
 }

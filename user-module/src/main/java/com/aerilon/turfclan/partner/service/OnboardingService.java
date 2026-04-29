@@ -12,4 +12,5 @@ public interface OnboardingService {
     void saveBankDetails(String userId, BankDetailDto dto);
     void signContract(String userId, ContractDto dto, HttpServletRequest request);
     void submitApplication(String userId);
+    OnboardingFullDataDto getFullOnboardingData(String userId);
 }

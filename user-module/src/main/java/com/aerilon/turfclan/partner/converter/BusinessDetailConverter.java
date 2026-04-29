@@ -31,4 +31,20 @@ public class BusinessDetailConverter implements Converter<BusinessInfoDto, Busin
         entity.setCreatedAt(LocalDateTime.now());
         return entity;
     }
+
+    public BusinessDetailDto toDto(BusinessDetailEntity entity) {
+        if (entity == null) return null;
+        BusinessDetailDto dto = new BusinessDetailDto();
+        dto.setBusinessName(entity.getBusinessName());
+        dto.setBusinessType(entity.getBusinessType());
+        dto.setGstNumber(entity.getGstNumber());
+        dto.setPanNumber(entity.getPanNumber());
+        dto.setAddressLine1(entity.getAddressLine1());
+        dto.setAddressLine2(entity.getAddressLine2());
+        dto.setLandmark(entity.getLandmark());
+        dto.setPincode(entity.getPincode());
+        dto.setCity(entity.getCity());
+        dto.setState(entity.getState());
+        return dto;
+    }
 }

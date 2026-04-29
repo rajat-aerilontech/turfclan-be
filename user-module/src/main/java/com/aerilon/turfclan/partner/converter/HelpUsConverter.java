@@ -28,4 +28,17 @@ public class HelpUsConverter implements Converter<BusinessInfoDto, HelpUsEntity>
         entity.setCreatedAt(LocalDateTime.now());
         return entity;
     }
+
+    public HelpUsDetailDto toDto(HelpUsEntity entity) {
+        if (entity == null) return null;
+        HelpUsDetailDto dto = new HelpUsDetailDto();
+        dto.setReferralSource(entity.getReferralSource());
+        dto.setProgramUnderstanding(entity.getProgramUnderstanding());
+        dto.setReasonToJoin(entity.getReasonToJoin());
+        dto.setActivelyInvolved(entity.getActivelyInvolved());
+        dto.setTimeCommitment(entity.getTimeCommitment());
+        dto.setIsAssociatedWithEmployee(entity.getIsAssociatedWithEmployee());
+        dto.setTotalPartnersCount(entity.getTotalPartnersCount());
+        return dto;
+    }
 }

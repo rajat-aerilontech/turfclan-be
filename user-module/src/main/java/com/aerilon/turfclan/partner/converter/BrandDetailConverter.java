@@ -11,6 +11,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 
 @Component
@@ -43,5 +44,26 @@ public class BrandDetailConverter implements Converter<BusinessInfoDto, BrandDet
         }
         entity.setCreatedAt(LocalDateTime.now());
         return entity;
+    }
+
+    public BrandDetailsDto toDto(BrandDetailEntity entity) {
+        if (entity == null) return null;
+        BrandDetailsDto dto = new BrandDetailsDto();
+        dto.setBrandName(entity.getBrandName());
+        dto.setTagline(entity.getTagline());
+        dto.setBrandLogoUrl(entity.getBrandLogoUrl());
+        dto.setBannerImageUrls(entity.getBannerImageUrls() != null ?
+                new ArrayList<>(entity.getBannerImageUrls()) : new ArrayList<>());
+        dto.setDescription(entity.getDescription());
+        dto.setLongDescription(entity.getLongDescription());
+        dto.setBrandWebsite(entity.getBrandWebsite());
+        dto.setInstagramPage(entity.getInstagramPage());
+        dto.setYoutubePage(entity.getYoutubePage());
+
+        if (entity.getLocation() != null) {
+            dto.setLongitude(entity.getLocation().getX());
+            dto.setLatitude(entity.getLocation().getY());
+        }
+        return dto;
     }
 }

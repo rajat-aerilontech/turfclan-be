@@ -15,7 +15,7 @@ public class PartnerDetailConverter implements Converter<PartnerDetailDto, Partn
         PartnerDetailEntity entity = new PartnerDetailEntity();
         entity.setFullName(source.getFullName());
         entity.setPhonenumber(source.getPhonenumber());
-        entity.setEmailId(source.getEmailId());
+        entity.setEmailId(source.getEmail());
         entity.setDesignation(source.getDesignation());
         entity.setProfileImageUrl(source.getProfileImageUrl());
         entity.setAadharNumber(source.getAadharNumber());
@@ -24,5 +24,22 @@ public class PartnerDetailConverter implements Converter<PartnerDetailDto, Partn
         entity.setIdDocumentUrl(source.getIdDocumentUrl());
         entity.setCreatedAt(LocalDateTime.now());
         return entity;
+    }
+
+    public PartnerDetailDto toDto(PartnerDetailEntity entity) {
+        if (entity == null) return null;
+
+        PartnerDetailDto dto = new PartnerDetailDto();
+        dto.setFullName(entity.getFullName());
+        dto.setPhonenumber(entity.getPhonenumber());
+        dto.setEmail(entity.getEmailId());
+        dto.setDesignation(entity.getDesignation());
+        dto.setProfileImageUrl(entity.getProfileImageUrl());
+        dto.setAadharNumber(entity.getAadharNumber());
+        dto.setPanNumber(entity.getPanNumber());
+        dto.setIdProofType(entity.getIdProofType());
+        dto.setIdDocumentUrl(entity.getIdDocumentUrl());
+
+        return dto;
     }
 }

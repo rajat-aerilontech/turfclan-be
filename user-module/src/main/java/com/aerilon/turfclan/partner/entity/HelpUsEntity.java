@@ -19,11 +19,7 @@ public class HelpUsEntity extends BaseAuditableEntity {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private UserEntity userId;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "application_id", referencedColumnName = "id")
-    private OnboardingApplicationEntity applicationId;
+    private UserEntity user;
 
     @Column(name = "referral_source")
     private String referralSource; // How did you hear about us?

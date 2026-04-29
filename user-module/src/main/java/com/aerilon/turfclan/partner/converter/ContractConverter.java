@@ -18,4 +18,17 @@ public class ContractConverter implements Converter<ContractDto, OnboardingContr
         entity.setUploadedSignatureUrl(source.getUploadedSignatureUrl());
         return entity;
     }
+
+    public ContractDto toDto(OnboardingContractEntity entity) {
+        if (entity == null) return null;
+
+        ContractDto dto = new ContractDto();
+        dto.setAgreementVersion(entity.getAgreementVersion());
+        dto.setIsAgreed(entity.getIsAgreed());
+        dto.setSignatureType(entity.getSignatureType());
+        dto.setTypedSignatureName(entity.getTypedSignatureName());
+        dto.setUploadedSignatureUrl(entity.getUploadedSignatureUrl());
+
+        return dto;
+    }
 }

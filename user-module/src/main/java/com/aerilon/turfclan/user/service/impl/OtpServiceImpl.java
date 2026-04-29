@@ -136,10 +136,10 @@ public class OtpServiceImpl implements OtpService {
         boolean isNewUser = !isProfileComplete;
 
         if (isNewUser && "partner".equalsIgnoreCase(sourceApp)) {
-            Optional<OnboardingApplicationEntity> existingApp = applicationRepository.findByUserId(user);
+            Optional<OnboardingApplicationEntity> existingApp = applicationRepository.findByUser(user);
             if (existingApp.isEmpty()) {
                 OnboardingApplicationEntity app = new OnboardingApplicationEntity();
-                app.setUserId(user);
+                app.setUser(user);
                 app.setOnboardApplicationStatus(OnboardApplicationStatus.DRAFT);
                 app.setCurrentStep(OnboardStep.BUSINESS_DETAILS);
                 app.setIsSubmitted(false);

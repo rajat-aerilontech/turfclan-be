@@ -20,11 +20,7 @@ public class PartnerDetailEntity extends BaseAuditableEntity {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private UserEntity userId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "application_id", referencedColumnName = "id")
-    private OnboardingApplicationEntity application;
+    private UserEntity user;
 
     @Column(name = "full_name", nullable = false)
     private String fullName;

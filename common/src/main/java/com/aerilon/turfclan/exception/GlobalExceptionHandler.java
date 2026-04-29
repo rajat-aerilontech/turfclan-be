@@ -82,7 +82,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         } else if (normalized.contains("duplicate key") || normalized.contains("unique")) {
             message = "A record with the same value already exists. Please check your input and try again.";
         } else if (normalized.contains("null value") || normalized.contains("not-null")) {
-            message = "Required user data is missing. Please request OTP again and retry.";
+            message = "Required user data is missing. Please ensure all mandatory fields are provided.";
         } else if (normalized.contains("value too long") || normalized.contains("too long")) {
             message = "One or more existing profile values are too long for the current schema.";
         } else {

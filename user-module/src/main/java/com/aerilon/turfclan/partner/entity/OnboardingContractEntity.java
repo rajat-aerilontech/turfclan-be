@@ -19,13 +19,9 @@ public class OnboardingContractEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "application_id", referencedColumnName = "id", nullable = false)
-    private OnboardingApplicationEntity application;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private UserEntity userId;
+    private UserEntity user;
 
     @Column(name = "agreement_version", nullable = false)
     private String agreementVersion;

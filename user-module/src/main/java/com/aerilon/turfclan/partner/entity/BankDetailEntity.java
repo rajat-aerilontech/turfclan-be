@@ -19,11 +19,7 @@ public class BankDetailEntity extends BaseAuditableEntity {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private UserEntity userId;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "application_id", referencedColumnName = "id")
-    private OnboardingApplicationEntity applicationId;
+    private UserEntity user;
 
     @Column(name = "account_holder_name", nullable = false)
     private String accountHolderName;

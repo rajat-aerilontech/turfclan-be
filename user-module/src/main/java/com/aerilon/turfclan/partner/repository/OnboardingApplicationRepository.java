@@ -10,5 +10,5 @@ import java.util.UUID;
 
 @Repository
 public interface OnboardingApplicationRepository extends JpaRepository<OnboardingApplicationEntity, UUID> {
-    Optional<OnboardingApplicationEntity> findByUserId(UserEntity user);
+    Optional<OnboardingApplicationEntity> findByUser(UserEntity user);
 }

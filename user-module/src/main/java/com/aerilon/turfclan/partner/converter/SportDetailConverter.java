@@ -6,6 +6,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 
 @Component
@@ -30,5 +31,28 @@ public class SportDetailConverter implements Converter<SportDetailDto, SportDeta
         entity.setAmenities(source.getAmenities() != null ? new HashSet<>(source.getAmenities()) : new HashSet<>());
         entity.setCreatedAt(LocalDateTime.now());
         return entity;
+    }
+
+    public SportDetailDto toDto(SportDetailEntity entity) {
+        if (entity == null) return null;
+
+        SportDetailDto dto = new SportDetailDto();
+        dto.setSportType(entity.getSportType());
+        dto.setSubType(entity.getSubType());
+        dto.setNumberOfUnits(entity.getNumberOfUnits());
+        dto.setMaxPlayersPerUnit(entity.getMaxPlayersPerUnit());
+        dto.setCurrency(entity.getCurrency());
+        dto.setPricePerHour(entity.getPricePerHour());
+        dto.setPricePerSession(entity.getPricePerSession());
+        dto.setOpenTime(entity.getOpenTime());
+        dto.setCloseTime(entity.getCloseTime());
+        dto.setAvailableDays(entity.getAvailableDays() != null ?
+                new HashSet<>(entity.getAvailableDays()) : new HashSet<>());
+        dto.setLength(entity.getLength());
+        dto.setWidth(entity.getWidth());
+        dto.setSurfaceType(entity.getSurfaceType());
+        dto.setAmenities(entity.getAmenities() != null ?
+                new HashSet<>(entity.getAmenities()) : new HashSet<>());
+        return dto;
     }
 }

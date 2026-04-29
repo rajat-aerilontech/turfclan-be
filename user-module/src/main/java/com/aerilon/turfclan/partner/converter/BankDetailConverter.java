@@ -22,4 +22,19 @@ public class BankDetailConverter implements Converter<BankDetailDto, BankDetailE
         entity.setCreatedAt(LocalDateTime.now());
         return entity;
     }
+
+    public BankDetailDto toDto(BankDetailEntity entity) {
+        if (entity == null) return null;
+
+        BankDetailDto dto = new BankDetailDto();
+        dto.setAccountHolderName(entity.getAccountHolderName());
+        dto.setAccountNumber(entity.getAccountNumber());
+        dto.setConfirmAccountNumber(entity.getAccountNumber());
+        dto.setBankName(entity.getBankName());
+        dto.setIfscCode(entity.getIfscCode());
+        dto.setBranchName(entity.getBranchName());
+        dto.setCancelledChequeUrl(entity.getCancelledChequeUrl());
+
+        return dto;
+    }
 }

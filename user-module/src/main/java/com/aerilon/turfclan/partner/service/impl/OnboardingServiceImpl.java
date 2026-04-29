@@ -1,10 +1,12 @@
 package com.aerilon.turfclan.partner.service.impl;
 
+import com.aerilon.turfclan.exception.InvalidRequestException;
 import com.aerilon.turfclan.partner.dto.*;
 import com.aerilon.turfclan.partner.entity.*;
 import com.aerilon.turfclan.partner.enums.OnboardApplicationStatus;
 import com.aerilon.turfclan.partner.enums.OnboardStep;
 import com.aerilon.turfclan.partner.converter.*;
+import com.aerilon.turfclan.partner.enums.SignatureType;
 import com.aerilon.turfclan.partner.repository.*;
 import com.aerilon.turfclan.partner.service.OnboardingService;
 import com.aerilon.turfclan.user.entity.UserEntity;
@@ -49,9 +51,57 @@ public class OnboardingServiceImpl implements OnboardingService {
     @Override
     public OnboardStep getCurrentOnboardingStep(String userId) {
         UserEntity user = getUser(userId);
-        return applicationRepository.findByUserId(user)
+        return applicationRepository.findByUser(user)
                 .map(OnboardingApplicationEntity::getCurrentStep)
                 .orElse(OnboardStep.BUSINESS_DETAILS);
+    }
+
+    @Override
+    public OnboardingFullDataDto getFullOnboardingData(String userId) {
+        UserEntity user = getUser(userId);
+        OnboardingApplicationEntity app = getOnboardingApplication(user);
+        BusinessInfoDto businessInfo = mapToBusinessInfoDto(user);
+        List<FacilityDto> facilities = facilityRepository.findByUser(user).stream()
+                .map(facilityConverter::toDto)
+                .toList();
+        PartnerDetailDto partnerDetails = partnerDetailRepository.findByUser(user)
+                .map(partnerDetailConverter::toDto)
+                .orElse(null);
+        BankDetailDto bankDetails = bankDetailRepository.findByUser(user)
+                .map(bankDetailConverter::toDto)
+                .orElse(null);
+        ContractDto contractDetails = contractRepository.findByUser(user)
+                .map(contractConverter::toDto)
+                .orElse(null);
+
+        return OnboardingFullDataDto.builder()
+                .status(app.getOnboardApplicationStatus())
+                .currentStep(app.getCurrentStep())
+                .isSubmitted(app.getIsSubmitted())
+                .businessInfo(businessInfo)
+                .facilities(facilities)
+                .partnerDetails(partnerDetails)
+                .bankDetails(bankDetails)
+                .contractDetails(contractDetails)
+                .build();
+    }
+
+    private BusinessInfoDto mapToBusinessInfoDto(UserEntity user) {
+        BusinessDetailEntity businessDetailEntity = businessDetailRepository.findByUser(user).orElse(null);
+        BrandDetailEntity brandEntity = brandDetailRepository.findByUser(user).orElse(null);
+        HelpUsEntity helpEntity = helpUsRepository.findByUser(user).orElse(null);
+        if (businessDetailEntity == null && brandEntity == null && helpEntity == null) return null;
+        BusinessInfoDto businessInfoDto = new BusinessInfoDto();
+        if (businessDetailEntity != null) {
+            businessInfoDto.setBusinessDetail(businessDetailConverter.toDto(businessDetailEntity));
+        }
+        if (brandEntity != null) {
+            businessInfoDto.setBrandDetails(brandDetailConverter.toDto(brandEntity));
+        }
+        if (helpEntity != null) {
+            businessInfoDto.setHelpUsDetail(helpUsConverter.toDto(helpEntity));
+        }
+        return businessInfoDto;
     }
 
     @Override
@@ -63,24 +113,21 @@ public class OnboardingServiceImpl implements OnboardingService {
         // Business Detail
         BusinessDetailEntity businessEntity = businessDetailConverter.convert(dto);
         if (businessEntity != null) {
-            businessEntity.setUserId(user);
-            businessEntity.setApplicationId(app);
+            businessEntity.setUser(user);
             businessDetailRepository.save(businessEntity);
         }
 
         // Brand Detail
         BrandDetailEntity brandEntity = brandDetailConverter.convert(dto);
         if (brandEntity != null) {
-            brandEntity.setUserId(user);
-            brandEntity.setApplicationId(app);
+            brandEntity.setUser(user);
             brandDetailRepository.save(brandEntity);
         }
 
         // Help Us Detail
         HelpUsEntity helpUsEntity = helpUsConverter.convert(dto);
         if (helpUsEntity != null) {
-            helpUsEntity.setUserId(user);
-            helpUsEntity.setApplicationId(app);
+            helpUsEntity.setUser(user);
             helpUsRepository.save(helpUsEntity);
         }
 
@@ -99,9 +146,7 @@ public class OnboardingServiceImpl implements OnboardingService {
             for (FacilityDto facilityDto : dto.getFacilities()) {
                 FacilityEntity facilityEntity = facilityConverter.convert(facilityDto);
                 if (facilityEntity != null) {
-                    facilityEntity.setUserId(user);
-                    facilityEntity.setApplication(app);
-
+                    facilityEntity.setUser(user);
                     // Initialize sports list
                     List<SportDetailEntity> sports = new ArrayList<>();
                     if (facilityDto.getSports() != null) {
@@ -131,8 +176,7 @@ public class OnboardingServiceImpl implements OnboardingService {
 
         PartnerDetailEntity entity = partnerDetailConverter.convert(dto);
         if (entity != null) {
-            entity.setUserId(user);
-            entity.setApplication(app);
+            entity.setUser(user);
             partnerDetailRepository.save(entity);
         }
 
@@ -142,14 +186,16 @@ public class OnboardingServiceImpl implements OnboardingService {
 
     @Override
     @Transactional
-    public void saveBankDetails(String userId, BankDetailDto dto) {
+    public void saveBankDetails(String userId, BankDetailDto bankDetailDto) {
+        if (!bankDetailDto.getAccountNumber().equals(bankDetailDto.getConfirmAccountNumber())) {
+            throw new InvalidRequestException("Account numbers do not match.");
+        }
         UserEntity user = getUser(userId);
         OnboardingApplicationEntity app = getOnboardingApplication(user);
 
-        BankDetailEntity entity = bankDetailConverter.convert(dto);
+        BankDetailEntity entity = bankDetailConverter.convert(bankDetailDto);
         if (entity != null) {
-            entity.setUserId(user);
-            entity.setApplicationId(app);
+            entity.setUser(user);
             bankDetailRepository.save(entity);
         }
 
@@ -159,15 +205,22 @@ public class OnboardingServiceImpl implements OnboardingService {
 
     @Override
     @Transactional
-    public void signContract(String userId, ContractDto dto, HttpServletRequest request) {
+    public void signContract(String userId, ContractDto contractDto, HttpServletRequest request) {
+        if (contractDto.getSignatureType() == SignatureType.TYPED) {
+            if (contractDto.getTypedSignatureName() == null || contractDto.getTypedSignatureName().isBlank()) {
+                throw new InvalidRequestException("Signature name is required for TYPED signature.");
+            }
+        } else if (contractDto.getSignatureType() == SignatureType.UPLOADED) {
+            if (contractDto.getUploadedSignatureUrl() == null || contractDto.getUploadedSignatureUrl().isBlank()) {
+                throw new InvalidRequestException("Signature URL is required for UPLOADED signature.");
+            }
+        }
         UserEntity user = getUser(userId);
         OnboardingApplicationEntity app = getOnboardingApplication(user);
 
-        OnboardingContractEntity entity = contractConverter.convert(dto);
+        OnboardingContractEntity entity = contractConverter.convert(contractDto);
         if (entity != null) {
-            entity.setUserId(user);
-            entity.setApplication(app);
-            
+            entity.setUser(user);
             // Extract IP address from request
             String ipAddress = request.getHeader("X-Forwarded-For");
             if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
@@ -178,7 +231,6 @@ public class OnboardingServiceImpl implements OnboardingService {
             
             contractRepository.save(entity);
         }
-
         app.setCurrentStep(OnboardStep.REVIEW_FORM);
         app.setIsSubmitted(true);
         applicationRepository.save(app);
@@ -188,15 +240,20 @@ public class OnboardingServiceImpl implements OnboardingService {
     public void submitApplication(String userId) {
         UserEntity user = getUser(userId);
         OnboardingApplicationEntity app = getOnboardingApplication(user);
-
-        app.setCurrentStep(OnboardStep.REVIEW_FORM);
+        if(app.getIsSubmitted()) {
+            throw new InvalidRequestException("Application has already been submitted.");
+        }
+        validateApplicationCompleteness(user);
+        app.setCurrentStep(OnboardStep.UNDER_REVIEW);
         app.setIsSubmitted(true);
+        app.setOnboardApplicationStatus(OnboardApplicationStatus.UNDER_REVIEW);
         applicationRepository.save(app);
+        log.info("Application for user {} submitted successfully.", userId);
     }
 
     private OnboardingApplicationEntity createApplication(UserEntity user) {
         OnboardingApplicationEntity app = new OnboardingApplicationEntity();
-        app.setUserId(user);
+        app.setUser(user);
         app.setOnboardApplicationStatus(OnboardApplicationStatus.DRAFT);
         app.setCurrentStep(OnboardStep.BUSINESS_DETAILS);
         app.setIsSubmitted(false);
@@ -210,7 +267,29 @@ public class OnboardingServiceImpl implements OnboardingService {
     }
 
     private OnboardingApplicationEntity getOnboardingApplication(UserEntity user) {
-        return applicationRepository.findByUserId(user)
+        return applicationRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Onboarding Application not found"));
+    }
+
+    private void validateApplicationCompleteness(UserEntity app) {
+        List<String> missingModules = new ArrayList<>();
+        if (!businessDetailRepository.existsByUser(app)) {
+            missingModules.add("Business Details");
+        }
+        if (!facilityRepository.existsByUser(app)) {
+            missingModules.add("Facility and Sports Info");
+        }
+        if (!partnerDetailRepository.existsByUser(app)) {
+            missingModules.add("Partner Personal Details");
+        }
+        if (!bankDetailRepository.existsByUser(app)) {
+            missingModules.add("Bank Details");
+        }
+        if (!contractRepository.existsByUser(app)) {
+            missingModules.add("Contract Signature");
+        }
+        if (!missingModules.isEmpty()) {
+            throw new IllegalStateException("Application incomplete. Missing: " + String.join(", ", missingModules));
+        }
     }
 }

@@ -7,4 +7,6 @@ public enum OnboardStep {
     BANK_DETAILS,
     CONTRACT,
     REVIEW_FORM,
+    UNDER_REVIEW,
+    COMPLETED
 }
