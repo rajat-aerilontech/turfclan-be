@@ -1,6 +1,6 @@
 package com.aerilon.turfclan.partner.converter;
 
-import com.aerilon.turfclan.partner.dto.PartnerDetailDto;
+import com.aerilon.turfclan.partner.dto.PartnerDetailRequestDto;
 import com.aerilon.turfclan.partner.entity.PartnerDetailEntity;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -8,10 +8,10 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 @Component
-public class PartnerDetailConverter implements Converter<PartnerDetailDto, PartnerDetailEntity> {
+public class PartnerDetailConverter implements Converter<PartnerDetailRequestDto, PartnerDetailEntity> {
 
     @Override
-    public PartnerDetailEntity convert(PartnerDetailDto source) {
+    public PartnerDetailEntity convert(PartnerDetailRequestDto source) {
         PartnerDetailEntity entity = new PartnerDetailEntity();
         entity.setFullName(source.getFullName());
         entity.setPhonenumber(source.getPhonenumber());
@@ -26,10 +26,10 @@ public class PartnerDetailConverter implements Converter<PartnerDetailDto, Partn
         return entity;
     }
 
-    public PartnerDetailDto toDto(PartnerDetailEntity entity) {
+    public PartnerDetailRequestDto toDto(PartnerDetailEntity entity) {
         if (entity == null) return null;
 
-        PartnerDetailDto dto = new PartnerDetailDto();
+        PartnerDetailRequestDto dto = new PartnerDetailRequestDto();
         dto.setFullName(entity.getFullName());
         dto.setPhonenumber(entity.getPhonenumber());
         dto.setEmail(entity.getEmailId());

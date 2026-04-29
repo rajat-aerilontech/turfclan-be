@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class HelpUsDetailDto {
+public class HelpUsDetailRequestDto {
     private String referralSource;
     private String programUnderstanding;
     private String reasonToJoin;

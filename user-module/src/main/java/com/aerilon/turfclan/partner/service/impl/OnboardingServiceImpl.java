@@ -61,16 +61,16 @@ public class OnboardingServiceImpl implements OnboardingService {
         UserEntity user = getUser(userId);
         OnboardingApplicationEntity app = getOnboardingApplication(user);
         BusinessInfoDto businessInfo = mapToBusinessInfoDto(user);
-        List<FacilityDto> facilities = facilityRepository.findByUser(user).stream()
+        List<FacilityRequestDto> facilities = facilityRepository.findByUser(user).stream()
                 .map(facilityConverter::toDto)
                 .toList();
-        PartnerDetailDto partnerDetails = partnerDetailRepository.findByUser(user)
+        PartnerDetailRequestDto partnerDetails = partnerDetailRepository.findByUser(user)
                 .map(partnerDetailConverter::toDto)
                 .orElse(null);
-        BankDetailDto bankDetails = bankDetailRepository.findByUser(user)
+        BankDetailRequestDto bankDetails = bankDetailRepository.findByUser(user)
                 .map(bankDetailConverter::toDto)
                 .orElse(null);
-        ContractDto contractDetails = contractRepository.findByUser(user)
+        ContractRequestDto contractDetails = contractRepository.findByUser(user)
                 .map(contractConverter::toDto)
                 .orElse(null);
 
@@ -87,8 +87,8 @@ public class OnboardingServiceImpl implements OnboardingService {
     }
 
     private BusinessInfoDto mapToBusinessInfoDto(UserEntity user) {
-        BusinessDetailEntity businessDetailEntity = businessDetailRepository.findByUser(user).orElse(null);
-        BrandDetailEntity brandEntity = brandDetailRepository.findByUser(user).orElse(null);
+        BusinessDetailEntity businessDetailEntity = businessDetailRepository.findByUser(user);
+        BrandDetailEntity brandEntity = brandDetailRepository.findByUser(user);
         HelpUsEntity helpEntity = helpUsRepository.findByUser(user).orElse(null);
         if (businessDetailEntity == null && brandEntity == null && helpEntity == null) return null;
         BusinessInfoDto businessInfoDto = new BusinessInfoDto();
@@ -137,20 +137,20 @@ public class OnboardingServiceImpl implements OnboardingService {
 
     @Override
     @Transactional
-    public void saveFacilityInfo(String userId, FacilitiesDto dto) {
+    public void saveFacilityInfo(String userId, FacilitiesRequestDto dto) {
         UserEntity user = getUser(userId);
         OnboardingApplicationEntity app = getOnboardingApplication(user);
 
         // Clear existing facilities if needed, or simply append. For now, assuming new addition.
         if (dto.getFacilities() != null) {
-            for (FacilityDto facilityDto : dto.getFacilities()) {
+            for (FacilityRequestDto facilityDto : dto.getFacilities()) {
                 FacilityEntity facilityEntity = facilityConverter.convert(facilityDto);
                 if (facilityEntity != null) {
                     facilityEntity.setUser(user);
                     // Initialize sports list
                     List<SportDetailEntity> sports = new ArrayList<>();
                     if (facilityDto.getSports() != null) {
-                        for (SportDetailDto sportDto : facilityDto.getSports()) {
+                        for (SportDetailRequestDto sportDto : facilityDto.getSports()) {
                             SportDetailEntity sportEntity = sportDetailConverter.convert(sportDto);
                             if (sportEntity != null) {
                                 sportEntity.setFacility(facilityEntity);
@@ -170,7 +170,7 @@ public class OnboardingServiceImpl implements OnboardingService {
 
     @Override
     @Transactional
-    public void savePartnerDetails(String userId, PartnerDetailDto dto) {
+    public void savePartnerDetails(String userId, PartnerDetailRequestDto dto) {
         UserEntity user = getUser(userId);
         OnboardingApplicationEntity app = getOnboardingApplication(user);
 
@@ -186,14 +186,14 @@ public class OnboardingServiceImpl implements OnboardingService {
 
     @Override
     @Transactional
-    public void saveBankDetails(String userId, BankDetailDto bankDetailDto) {
-        if (!bankDetailDto.getAccountNumber().equals(bankDetailDto.getConfirmAccountNumber())) {
+    public void saveBankDetails(String userId, BankDetailRequestDto bankDetailRequestDto) {
+        if (!bankDetailRequestDto.getAccountNumber().equals(bankDetailRequestDto.getConfirmAccountNumber())) {
             throw new InvalidRequestException("Account numbers do not match.");
         }
         UserEntity user = getUser(userId);
         OnboardingApplicationEntity app = getOnboardingApplication(user);
 
-        BankDetailEntity entity = bankDetailConverter.convert(bankDetailDto);
+        BankDetailEntity entity = bankDetailConverter.convert(bankDetailRequestDto);
         if (entity != null) {
             entity.setUser(user);
             bankDetailRepository.save(entity);
@@ -205,7 +205,7 @@ public class OnboardingServiceImpl implements OnboardingService {
 
     @Override
     @Transactional
-    public void signContract(String userId, ContractDto contractDto, HttpServletRequest request) {
+    public void signContract(String userId, ContractRequestDto contractDto, HttpServletRequest request) {
         if (contractDto.getSignatureType() == SignatureType.TYPED) {
             if (contractDto.getTypedSignatureName() == null || contractDto.getTypedSignatureName().isBlank()) {
                 throw new InvalidRequestException("Signature name is required for TYPED signature.");

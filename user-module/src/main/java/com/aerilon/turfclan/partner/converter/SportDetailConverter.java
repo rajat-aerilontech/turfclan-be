@@ -1,19 +1,18 @@
 package com.aerilon.turfclan.partner.converter;
 
-import com.aerilon.turfclan.partner.dto.SportDetailDto;
+import com.aerilon.turfclan.partner.dto.SportDetailRequestDto;
 import com.aerilon.turfclan.partner.entity.SportDetailEntity;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
 
 @Component
-public class SportDetailConverter implements Converter<SportDetailDto, SportDetailEntity> {
+public class SportDetailConverter implements Converter<SportDetailRequestDto, SportDetailEntity> {
 
     @Override
-    public SportDetailEntity convert(SportDetailDto source) {
+    public SportDetailEntity convert(SportDetailRequestDto source) {
         SportDetailEntity entity = new SportDetailEntity();
         entity.setSportType(source.getSportType());
         entity.setSubType(source.getSubType());
@@ -33,10 +32,10 @@ public class SportDetailConverter implements Converter<SportDetailDto, SportDeta
         return entity;
     }
 
-    public SportDetailDto toDto(SportDetailEntity entity) {
+    public SportDetailRequestDto toDto(SportDetailEntity entity) {
         if (entity == null) return null;
 
-        SportDetailDto dto = new SportDetailDto();
+        SportDetailRequestDto dto = new SportDetailRequestDto();
         dto.setSportType(entity.getSportType());
         dto.setSubType(entity.getSubType());
         dto.setNumberOfUnits(entity.getNumberOfUnits());

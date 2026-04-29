@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class BankDetailDto {
+public class BankDetailRequestDto {
 
     @NotBlank(message = "Account Holder Name is required")
     private String accountHolderName;

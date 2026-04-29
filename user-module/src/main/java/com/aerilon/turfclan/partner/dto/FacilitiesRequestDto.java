@@ -8,8 +8,8 @@ import java.util.List;
 
 @Getter
 @Setter
-public class FacilitiesDto {
+public class FacilitiesRequestDto {
 
     @Valid
-    private List<FacilityDto> facilities;
+    private List<FacilityRequestDto> facilities;
 }

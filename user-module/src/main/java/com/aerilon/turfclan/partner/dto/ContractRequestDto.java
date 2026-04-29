@@ -1,7 +1,6 @@
 package com.aerilon.turfclan.partner.dto;
 
 import com.aerilon.turfclan.partner.enums.SignatureType;
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -9,7 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ContractDto {
+public class ContractRequestDto {
     @NotBlank(message = "Agreement Version is required")
     private String agreementVersion;
     @NotNull(message = "You must agree to the terms")

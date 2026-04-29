@@ -1,6 +1,6 @@
 package com.aerilon.turfclan.partner.converter;
 
-import com.aerilon.turfclan.partner.dto.BusinessDetailDto;
+import com.aerilon.turfclan.partner.dto.BusinessDetailRequestDto;
 import com.aerilon.turfclan.partner.dto.BusinessInfoDto;
 import com.aerilon.turfclan.partner.entity.BusinessDetailEntity;
 import org.springframework.core.convert.converter.Converter;
@@ -16,7 +16,7 @@ public class BusinessDetailConverter implements Converter<BusinessInfoDto, Busin
         if (source.getBusinessDetail() == null) {
             return null;
         }
-        BusinessDetailDto detail = source.getBusinessDetail();
+        BusinessDetailRequestDto detail = source.getBusinessDetail();
         BusinessDetailEntity entity = new BusinessDetailEntity();
         entity.setBusinessName(detail.getBusinessName());
         entity.setBusinessType(detail.getBusinessType());
@@ -32,9 +32,9 @@ public class BusinessDetailConverter implements Converter<BusinessInfoDto, Busin
         return entity;
     }
 
-    public BusinessDetailDto toDto(BusinessDetailEntity entity) {
+    public BusinessDetailRequestDto toDto(BusinessDetailEntity entity) {
         if (entity == null) return null;
-        BusinessDetailDto dto = new BusinessDetailDto();
+        BusinessDetailRequestDto dto = new BusinessDetailRequestDto();
         dto.setBusinessName(entity.getBusinessName());
         dto.setBusinessType(entity.getBusinessType());
         dto.setGstNumber(entity.getGstNumber());

@@ -10,7 +10,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class BrandDetailsDto {
+public class BrandDetailsRequestDto {
 
     @NotBlank(message = "Brand Name is required")
     private String brandName;

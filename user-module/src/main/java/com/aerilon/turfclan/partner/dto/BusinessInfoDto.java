@@ -1,7 +1,6 @@
 package com.aerilon.turfclan.partner.dto;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,11 +9,11 @@ import lombok.Setter;
 public class BusinessInfoDto {
 
     @Valid
-    private BusinessDetailDto businessDetail;
+    private BusinessDetailRequestDto businessDetail;
 
     @Valid
-    private BrandDetailsDto brandDetails;
+    private BrandDetailsRequestDto brandDetails;
 
     @Valid
-    private HelpUsDetailDto helpUsDetail;
+    private HelpUsDetailRequestDto helpUsDetail;
 }

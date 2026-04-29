@@ -17,8 +17,8 @@ public class OnboardingFullDataDto {
     private Boolean isSubmitted;
 
     private BusinessInfoDto businessInfo;
-    private List<FacilityDto> facilities;
-    private PartnerDetailDto partnerDetails;
-    private BankDetailDto bankDetails;
-    private ContractDto contractDetails;
+    private List<FacilityRequestDto> facilities;
+    private PartnerDetailRequestDto partnerDetails;
+    private BankDetailRequestDto bankDetails;
+    private ContractRequestDto contractDetails;
 }

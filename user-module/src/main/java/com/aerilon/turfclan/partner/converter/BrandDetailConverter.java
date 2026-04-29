@@ -1,6 +1,6 @@
 package com.aerilon.turfclan.partner.converter;
 
-import com.aerilon.turfclan.partner.dto.BrandDetailsDto;
+import com.aerilon.turfclan.partner.dto.BrandDetailsRequestDto;
 import com.aerilon.turfclan.partner.dto.BusinessInfoDto;
 import com.aerilon.turfclan.partner.entity.BrandDetailEntity;
 import org.locationtech.jts.geom.Coordinate;
@@ -22,7 +22,7 @@ public class BrandDetailConverter implements Converter<BusinessInfoDto, BrandDet
         if (source.getBrandDetails() == null) {
             return null;
         }
-        BrandDetailsDto detail = source.getBrandDetails();
+        BrandDetailsRequestDto detail = source.getBrandDetails();
         BrandDetailEntity entity = new BrandDetailEntity();
         entity.setBrandName(detail.getBrandName());
         entity.setTagline(detail.getTagline());
@@ -46,9 +46,9 @@ public class BrandDetailConverter implements Converter<BusinessInfoDto, BrandDet
         return entity;
     }
 
-    public BrandDetailsDto toDto(BrandDetailEntity entity) {
+    public BrandDetailsRequestDto toDto(BrandDetailEntity entity) {
         if (entity == null) return null;
-        BrandDetailsDto dto = new BrandDetailsDto();
+        BrandDetailsRequestDto dto = new BrandDetailsRequestDto();
         dto.setBrandName(entity.getBrandName());
         dto.setTagline(entity.getTagline());
         dto.setBrandLogoUrl(entity.getBrandLogoUrl());

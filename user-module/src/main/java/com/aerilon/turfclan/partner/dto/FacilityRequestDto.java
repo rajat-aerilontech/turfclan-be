@@ -10,7 +10,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class FacilityDto {
+public class FacilityRequestDto {
 
     @NotBlank(message = "Facility Name is required")
     private String facilityName;
@@ -20,5 +20,5 @@ public class FacilityDto {
     private List<String> facilityPhotos;
     @Valid
     @NotEmpty(message = "At least one sport detail is required")
-    private List<@Valid SportDetailDto> sports;
+    private List<@Valid SportDetailRequestDto> sports;
 }

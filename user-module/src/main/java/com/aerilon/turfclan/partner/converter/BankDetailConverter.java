@@ -1,6 +1,6 @@
 package com.aerilon.turfclan.partner.converter;
 
-import com.aerilon.turfclan.partner.dto.BankDetailDto;
+import com.aerilon.turfclan.partner.dto.BankDetailRequestDto;
 import com.aerilon.turfclan.partner.entity.BankDetailEntity;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -8,10 +8,10 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 @Component
-public class BankDetailConverter implements Converter<BankDetailDto, BankDetailEntity> {
+public class BankDetailConverter implements Converter<BankDetailRequestDto, BankDetailEntity> {
 
     @Override
-    public BankDetailEntity convert(BankDetailDto source) {
+    public BankDetailEntity convert(BankDetailRequestDto source) {
         BankDetailEntity entity = new BankDetailEntity();
         entity.setAccountHolderName(source.getAccountHolderName());
         entity.setAccountNumber(source.getAccountNumber());
@@ -23,10 +23,10 @@ public class BankDetailConverter implements Converter<BankDetailDto, BankDetailE
         return entity;
     }
 
-    public BankDetailDto toDto(BankDetailEntity entity) {
+    public BankDetailRequestDto toDto(BankDetailEntity entity) {
         if (entity == null) return null;
 
-        BankDetailDto dto = new BankDetailDto();
+        BankDetailRequestDto dto = new BankDetailRequestDto();
         dto.setAccountHolderName(entity.getAccountHolderName());
         dto.setAccountNumber(entity.getAccountNumber());
         dto.setConfirmAccountNumber(entity.getAccountNumber());

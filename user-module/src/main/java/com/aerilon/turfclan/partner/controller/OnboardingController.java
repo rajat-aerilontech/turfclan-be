@@ -55,7 +55,7 @@ public class OnboardingController {
     @Operation(summary = "Save Facilities Info", description = "Saves sports and facilities information (Step 2) for the partner.")
     public ResponseEntity<String> saveFacilitiesInfo(
             Authentication authentication,
-            @Valid @RequestBody FacilitiesDto dto) {
+            @Valid @RequestBody FacilitiesRequestDto dto) {
         String userId = authentication.getName();
         onboardingService.saveFacilityInfo(userId, dto);
         return ResponseEntity.ok("Facilites info saved successfully. Proceed to Partner Details.");
@@ -66,7 +66,7 @@ public class OnboardingController {
     @Operation(summary = "Save Partner Details", description = "Saves partner details (Step 3) for the partner.")
     public ResponseEntity<String> savePartnerDetails(
             Authentication authentication,
-            @Valid @RequestBody PartnerDetailDto dto) {
+            @Valid @RequestBody PartnerDetailRequestDto dto) {
         String userId = authentication.getName();
         onboardingService.savePartnerDetails(userId, dto);
         return ResponseEntity.ok("Partner details saved successfully. Proceed to Bank Details.");
@@ -77,7 +77,7 @@ public class OnboardingController {
     @Operation(summary = "Save Bank Details", description = "Saves bank details (Step 4) for the partner.")
     public ResponseEntity<String> saveBankDetails(
             Authentication authentication,
-            @Valid @RequestBody BankDetailDto dto) {
+            @Valid @RequestBody BankDetailRequestDto dto) {
         String userId = authentication.getName();
         onboardingService.saveBankDetails(userId, dto);
         return ResponseEntity.ok("Bank details saved successfully. Proceed to Contract Details.");
@@ -88,7 +88,7 @@ public class OnboardingController {
     @Operation(summary = "Submit Contract", description = "Signs the contract (Step 5) for the partner and captures the user's IP address.")
     public ResponseEntity<String> submitContract(
             Authentication authentication,
-            @Valid @RequestBody ContractDto dto,
+            @Valid @RequestBody ContractRequestDto dto,
             HttpServletRequest request) {
         String userId = authentication.getName();
         onboardingService.signContract(userId, dto, request);

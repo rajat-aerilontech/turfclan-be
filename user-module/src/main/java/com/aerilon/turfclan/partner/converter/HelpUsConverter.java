@@ -1,7 +1,7 @@
 package com.aerilon.turfclan.partner.converter;
 
 import com.aerilon.turfclan.partner.dto.BusinessInfoDto;
-import com.aerilon.turfclan.partner.dto.HelpUsDetailDto;
+import com.aerilon.turfclan.partner.dto.HelpUsDetailRequestDto;
 import com.aerilon.turfclan.partner.entity.HelpUsEntity;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -16,7 +16,7 @@ public class HelpUsConverter implements Converter<BusinessInfoDto, HelpUsEntity>
         if (source.getHelpUsDetail() == null) {
             return null;
         }
-        HelpUsDetailDto detail = source.getHelpUsDetail();
+        HelpUsDetailRequestDto detail = source.getHelpUsDetail();
         HelpUsEntity entity = new HelpUsEntity();
         entity.setReferralSource(detail.getReferralSource());
         entity.setProgramUnderstanding(detail.getProgramUnderstanding());
@@ -29,9 +29,9 @@ public class HelpUsConverter implements Converter<BusinessInfoDto, HelpUsEntity>
         return entity;
     }
 
-    public HelpUsDetailDto toDto(HelpUsEntity entity) {
+    public HelpUsDetailRequestDto toDto(HelpUsEntity entity) {
         if (entity == null) return null;
-        HelpUsDetailDto dto = new HelpUsDetailDto();
+        HelpUsDetailRequestDto dto = new HelpUsDetailRequestDto();
         dto.setReferralSource(entity.getReferralSource());
         dto.setProgramUnderstanding(entity.getProgramUnderstanding());
         dto.setReasonToJoin(entity.getReasonToJoin());

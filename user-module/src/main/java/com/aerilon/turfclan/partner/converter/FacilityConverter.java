@@ -1,6 +1,6 @@
 package com.aerilon.turfclan.partner.converter;
 
-import com.aerilon.turfclan.partner.dto.FacilityDto;
+import com.aerilon.turfclan.partner.dto.FacilityRequestDto;
 import com.aerilon.turfclan.partner.entity.FacilityEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
@@ -11,13 +11,13 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 @Component
-public class FacilityConverter implements Converter<FacilityDto, FacilityEntity> {
+public class FacilityConverter implements Converter<FacilityRequestDto, FacilityEntity> {
 
     @Autowired
     private SportDetailConverter sportDetailConverter;
 
     @Override
-    public FacilityEntity convert(FacilityDto source) {
+    public FacilityEntity convert(FacilityRequestDto source) {
         FacilityEntity entity = new FacilityEntity();
         entity.setFacilityName(source.getFacilityName());
         entity.setDescription(source.getDescription());
@@ -26,10 +26,10 @@ public class FacilityConverter implements Converter<FacilityDto, FacilityEntity>
         return entity;
     }
 
-    public FacilityDto toDto(FacilityEntity entity) {
+    public FacilityRequestDto toDto(FacilityEntity entity) {
         if (entity == null) return null;
 
-        FacilityDto dto = new FacilityDto();
+        FacilityRequestDto dto = new FacilityRequestDto();
         dto.setFacilityName(entity.getFacilityName());
         dto.setDescription(entity.getDescription());
         dto.setFacilityPhotos(entity.getFacilityPhotos());

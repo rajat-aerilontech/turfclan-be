@@ -5,10 +5,9 @@ import com.aerilon.turfclan.user.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface BrandDetailRepository extends JpaRepository<BrandDetailEntity, UUID> {
-    Optional<BrandDetailEntity> findByUser(UserEntity user);
+    BrandDetailEntity findByUser(UserEntity user);
 }
