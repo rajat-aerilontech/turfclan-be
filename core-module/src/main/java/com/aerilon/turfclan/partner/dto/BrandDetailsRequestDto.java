@@ -27,8 +27,4 @@ public class BrandDetailsRequestDto {
     private String brandWebsite;
     private String instagramPage;
     private String youtubePage;
-    @NotNull(message = "Latitude is required")
-    private Double latitude;
-    @NotNull(message = "Latitude is required")
-    private Double longitude;
 }

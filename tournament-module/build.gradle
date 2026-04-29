@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     implementation project(':common')
-    implementation project(':user-module')
+    implementation project(':core-module')
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.data.jpa)

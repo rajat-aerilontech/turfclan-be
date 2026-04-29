@@ -33,15 +33,6 @@ public class BrandDetailConverter implements Converter<BusinessInfoDto, BrandDet
         entity.setBrandWebsite(detail.getBrandWebsite());
         entity.setInstagramPage(detail.getInstagramPage());
         entity.setYoutubePage(detail.getYoutubePage());
-        // Handle Location Conversion
-        Double lat = detail.getLatitude();
-        Double lon = detail.getLongitude();
-        if (lat != null && lon != null) {
-            // Coordinate order is (X, Y) which is (Longitude, Latitude)
-            GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-            Point point = geometryFactory.createPoint(new Coordinate(lon, lat));
-            entity.setLocation(point);
-        }
         entity.setCreatedAt(LocalDateTime.now());
         return entity;
     }
@@ -59,11 +50,6 @@ public class BrandDetailConverter implements Converter<BusinessInfoDto, BrandDet
         dto.setBrandWebsite(entity.getBrandWebsite());
         dto.setInstagramPage(entity.getInstagramPage());
         dto.setYoutubePage(entity.getYoutubePage());
-
-        if (entity.getLocation() != null) {
-            dto.setLongitude(entity.getLocation().getX());
-            dto.setLatitude(entity.getLocation().getY());
-        }
         return dto;
     }
 }

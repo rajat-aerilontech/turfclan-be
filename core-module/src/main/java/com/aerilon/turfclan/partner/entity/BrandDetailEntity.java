@@ -53,11 +53,4 @@ public class BrandDetailEntity extends BaseAuditableEntity {
 
     @Column(name = "youtube_page")
     private String youtubePage;
-
-    /**
-     * SRID 4326 represents the standard WGS84 coordinate system (used by GPS/Google Maps).
-     * This single column replaces both 'latitude' and 'longitude' for spatial operations.
-     */
-    @Column(name = "location", columnDefinition = "geometry(Point, 4326)")
-    private Point location;
 }

@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     implementation project(':common')
-    implementation project(':user-module')
+    implementation project(':core-module')
     implementation project(':booking-module')
     implementation project(':ground-module')
     implementation project(':community-module')
