@@ -3,9 +3,9 @@ package com.aerilon.turfclan.facility.service;
 import com.aerilon.turfclan.facility.dto.FacilitiesRequestDto;
 import com.aerilon.turfclan.facility.dto.FacilitiesMobileResponseDto;
 import com.aerilon.turfclan.facility.dto.FacilityUpdateDto;
-import com.aerilon.turfclan.facility.dto.SportDetailUpdateDto;
+import com.aerilon.turfclan.facility.dto.SubFacilityUpdateDto;
 import com.aerilon.turfclan.facility.dto.FacilityRequestDto;
-import com.aerilon.turfclan.facility.dto.SportDetailRequestDto;
+import com.aerilon.turfclan.facility.dto.SubFacilityRequestDto;
 
 import java.util.UUID;
 
@@ -19,9 +19,9 @@ public interface FacilityService {
 
     FacilityRequestDto updateFacility(String userId, UUID facilityId, FacilityUpdateDto updateDto);
 
-    FacilityRequestDto updateSportDetail(String userId, UUID facilityId, UUID sportId, SportDetailUpdateDto updateDto);
+    FacilityRequestDto updateSubFacility(String userId, UUID facilityId, UUID sportId, SubFacilityUpdateDto updateDto);
 
-    FacilityRequestDto addSportDetailToFacility(String userId, UUID facilityId, SportDetailRequestDto sportDetailRequestDto);
+    FacilityRequestDto addSubFacilityToFacility(String userId, UUID facilityId, SubFacilityRequestDto subFacilityRequestDto);
 
     FacilityRequestDto addFacilityForUser(String userId, FacilityRequestDto facilityRequestDto);
 }

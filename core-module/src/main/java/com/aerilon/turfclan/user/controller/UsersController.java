@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -55,7 +56,7 @@ public class UsersController {
         return ResponseEntity.ok(otpService.verifyOtp(request, sourceApp));
     }
 
-    @PostMapping("/signup")
+    @PostMapping( value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ROLE_TM_USER')")
     @Operation(
             summary = "Complete User Profile (Signup)",
@@ -63,7 +64,7 @@ public class UsersController {
     )
     public ResponseEntity<UserDTO> signup(
             Authentication authentication,
-            @RequestBody @Valid SignupRequestDTO request
+            @ModelAttribute @Valid SignupRequestDTO request
     ) {
         String userId = authentication.getName();
         return ResponseEntity.ok(userService.signup(userId, request));

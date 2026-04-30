@@ -1,12 +1,14 @@
 package com.aerilon.turfclan.user.dto;
 
+import com.aerilon.turfclan.dto.S3ImageResponseDto;
 import com.aerilon.turfclan.user.enums.Gender;
 import com.aerilon.turfclan.user.enums.UserStatus;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -19,7 +21,7 @@ public class UserDTO {
     private String lastName;
     private String phoneCountryCode;
     private String phoneNumber;
-    private String profilePictureUrl;
+    private S3ImageResponseDto profilePictureUrl;
     private String bio;
     private String dateOfBirth;
     private Gender gender;

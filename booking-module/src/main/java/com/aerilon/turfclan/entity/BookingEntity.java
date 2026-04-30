@@ -1,7 +1,7 @@
 package com.aerilon.turfclan.entity;
 
 import com.aerilon.turfclan.enums.BookingStatus;
-import com.aerilon.turfclan.facility.entity.SportDetailEntity;
+import com.aerilon.turfclan.facility.entity.SubFacilityEntity;
 import com.aerilon.turfclan.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -26,7 +26,7 @@ public class BookingEntity extends BaseAuditableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sport_id", nullable = false)
-    private SportDetailEntity sport;
+    private SubFacilityEntity sport;
 
     @Column(name = "booking_date", nullable = false)
     private LocalDate bookingDate;

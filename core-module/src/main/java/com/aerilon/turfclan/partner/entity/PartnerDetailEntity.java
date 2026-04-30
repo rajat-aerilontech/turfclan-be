@@ -1,11 +1,14 @@
 package com.aerilon.turfclan.partner.entity;
 
+import com.aerilon.turfclan.dto.S3ImageModelDto;
 import com.aerilon.turfclan.entity.BaseAuditableEntity;
 import com.aerilon.turfclan.enums.IdProofType;
 import com.aerilon.turfclan.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
 
@@ -34,8 +37,9 @@ public class PartnerDetailEntity extends BaseAuditableEntity {
     @Column(name = "designation")
     private String designation;
 
-    @Column(name = "profile_image_url", length = 1000)
-    private String profileImageUrl;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "profile_image_url", columnDefinition = "jsonb")
+    private S3ImageModelDto profileImageUrl;
 
     @Column(name = "aadhar_number", length = 20)
     private String aadharNumber;

@@ -7,6 +7,7 @@ postgresql = "42.7.7"
 junit-jupiter = "5.10.0"
 junit-platform = "1.10.0"
 hibernate-spatial = "6.4.4.Final"
+springCloudAws = "3.1.1"
 
 [libraries]
 spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter", version.ref = "spring-boot" }
@@ -26,6 +27,7 @@ junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "jun
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-platform" }
 hibernate-spatial = { group = "org.hibernate.orm", name = "hibernate-spatial", version.ref = "hibernate-spatial" }
 jts-core = { group = "org.locationtech.jts", name = "jts-core", version = "1.19.0" }
+spring-cloud-aws-starter-s3 = { group = "io.awspring.cloud", name = "spring-cloud-aws-starter-s3", version.ref = "springCloudAws" }
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }

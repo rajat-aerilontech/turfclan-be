@@ -1,6 +1,7 @@
 package com.aerilon.turfclan.facility.entity;
 
 import com.aerilon.turfclan.entity.BaseAuditableEntity;
+import com.aerilon.turfclan.dto.S3ImageModelDto;
 import com.aerilon.turfclan.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -33,10 +34,9 @@ public class FacilityEntity extends BaseAuditableEntity {
     @Column(name = "description", nullable = false, length = 1000)
     private String description;
 
-    // Maps directly to a PostgreSQL text[] column
-    @JdbcTypeCode(SqlTypes.ARRAY)
-    @Column(name = "photo_urls", columnDefinition = "text[]")
-    private List<String> facilityPhotos = new ArrayList<>();
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "facility_photos", columnDefinition = "jsonb")
+    private List<S3ImageModelDto> facilityPhotos;
 
     @Column(name = "address_line_1")
     private String addressLine1;
@@ -56,6 +56,9 @@ public class FacilityEntity extends BaseAuditableEntity {
     @Column(name = "state")
     private String state;
 
+    @Column(name = "can_be_booked")
+    private Boolean canBeBooked;
+
     /**
      * SRID 4326 represents the standard WGS84 coordinate system (used by GPS/Google Maps).
      * This single column replaces both 'latitude' and 'longitude' for spatial operations.
@@ -64,5 +67,5 @@ public class FacilityEntity extends BaseAuditableEntity {
     private Point location;
 
     @OneToMany(mappedBy = "facility", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SportDetailEntity> sports = new ArrayList<>();
+    private List<SubFacilityEntity> subFacility = new ArrayList<>();
 }

@@ -11,7 +11,7 @@ import java.util.Set;
 
 @Getter
 @Setter
-public class SportDetailRequestDto {
+public class SubFacilityRequestDto {
     @NotNull(message = "Sport type is required")
     private Sports sportType;
     @NotBlank(message = "Sub-type is required")

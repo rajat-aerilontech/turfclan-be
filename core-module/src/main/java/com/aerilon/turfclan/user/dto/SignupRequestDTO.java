@@ -14,5 +14,5 @@ public class SignupRequestDTO {
     @NotNull(message = "Personal details must not be null")
     private SignupPersonalDTO personal;
 
-    private JsonNode sport;
+    private String sport;
 }

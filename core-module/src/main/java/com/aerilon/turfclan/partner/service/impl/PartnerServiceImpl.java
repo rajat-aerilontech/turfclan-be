@@ -1,5 +1,6 @@
 package com.aerilon.turfclan.partner.service.impl;
 
+import com.aerilon.turfclan.dto.S3ImageResponseDto;
 import com.aerilon.turfclan.partner.dto.DashboardDto;
 import com.aerilon.turfclan.partner.entity.BankDetailEntity;
 import com.aerilon.turfclan.partner.entity.BrandDetailEntity;
@@ -10,6 +11,7 @@ import com.aerilon.turfclan.partner.repository.BrandDetailRepository;
 import com.aerilon.turfclan.partner.repository.BusinessDetailRepository;
 import com.aerilon.turfclan.partner.repository.PartnerDetailRepository;
 import com.aerilon.turfclan.partner.service.PartnerService;
+import com.aerilon.turfclan.service.S3Service;
 import com.aerilon.turfclan.user.entity.UserEntity;
 import com.aerilon.turfclan.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class PartnerServiceImpl implements PartnerService {
     private final BrandDetailRepository brandDetailRepository;
     private final PartnerDetailRepository partnerDetailRepository;
     private final BankDetailRepository bankDetailRepository;
+    private final S3Service s3Service;
 
     @Override
     public DashboardDto getFullDashboardData(String userId) {
@@ -52,6 +55,14 @@ public class PartnerServiceImpl implements PartnerService {
                     .designation(partner.getDesignation())
                     .email(partner.getEmailId())
                     .mobile(partner.getPhonenumber());
+            if (partner.getProfileImageUrl() != null) {
+                String key = partner.getProfileImageUrl().getKey();
+                S3ImageResponseDto profileImage = new S3ImageResponseDto(
+                        key,
+                        s3Service.preSignedUrl(key, 10)
+                );
+                builder.profileImageUrl(profileImage);
+            }
         }
         if (bank != null) {
             builder.accountHolderName(bank.getAccountHolderName())

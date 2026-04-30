@@ -1,14 +1,22 @@
 package com.aerilon.turfclan.partner.converter;
 
+import com.aerilon.turfclan.dto.S3ImageModelDto;
+import com.aerilon.turfclan.dto.S3ImageResponseDto;
 import com.aerilon.turfclan.partner.dto.PartnerDetailRequestDto;
 import com.aerilon.turfclan.partner.entity.PartnerDetailEntity;
+import com.aerilon.turfclan.service.S3Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 public class PartnerDetailConverter implements Converter<PartnerDetailRequestDto, PartnerDetailEntity> {
+
+    @Autowired
+    private S3Service s3Service;
 
     @Override
     public PartnerDetailEntity convert(PartnerDetailRequestDto source) {
@@ -17,7 +25,11 @@ public class PartnerDetailConverter implements Converter<PartnerDetailRequestDto
         entity.setPhonenumber(source.getPhonenumber());
         entity.setEmailId(source.getEmail());
         entity.setDesignation(source.getDesignation());
-        entity.setProfileImageUrl(source.getProfileImageUrl());
+        if (source.getProfileImageUrl() != null) {
+            S3ImageModelDto imgModel = new S3ImageModelDto();
+            imgModel.setKey(source.getProfileImageUrl().getKey());
+            entity.setProfileImageUrl(imgModel);
+        }
         entity.setAadharNumber(source.getAadharNumber());
         entity.setPanNumber(source.getPanNumber());
         entity.setIdProofType(source.getIdProofType());
@@ -34,7 +46,14 @@ public class PartnerDetailConverter implements Converter<PartnerDetailRequestDto
         dto.setPhonenumber(entity.getPhonenumber());
         dto.setEmail(entity.getEmailId());
         dto.setDesignation(entity.getDesignation());
-        dto.setProfileImageUrl(entity.getProfileImageUrl());
+        if (entity.getProfileImageUrl() != null) {
+            String key = entity.getProfileImageUrl().getKey();
+            S3ImageResponseDto imageResponse = new S3ImageResponseDto(
+                    key,
+                    s3Service.preSignedUrl(key, 10)
+            );
+            dto.setProfileImageUrl(imageResponse);
+        }
         dto.setAadharNumber(entity.getAadharNumber());
         dto.setPanNumber(entity.getPanNumber());
         dto.setIdProofType(entity.getIdProofType());

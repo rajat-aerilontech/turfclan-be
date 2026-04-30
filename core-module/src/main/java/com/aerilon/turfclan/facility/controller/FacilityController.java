@@ -3,10 +3,10 @@ package com.aerilon.turfclan.facility.controller;
 import com.aerilon.turfclan.facility.service.FacilityService;
 import com.aerilon.turfclan.facility.dto.FacilitiesMobileResponseDto;
 import com.aerilon.turfclan.facility.dto.FacilityUpdateDto;
-import com.aerilon.turfclan.facility.dto.SportDetailUpdateDto;
+import com.aerilon.turfclan.facility.dto.SubFacilityUpdateDto;
 import com.aerilon.turfclan.facility.dto.FacilitiesRequestDto;
 import com.aerilon.turfclan.facility.dto.FacilityRequestDto;
-import com.aerilon.turfclan.facility.dto.SportDetailRequestDto;
+import com.aerilon.turfclan.facility.dto.SubFacilityRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -79,7 +79,7 @@ public class FacilityController {
     @Operation(summary = "Update Facility Details", description = "Update facility details by the partner who owns the facility.")
     public ResponseEntity<FacilityRequestDto> updateFacility(
             @PathVariable UUID facilityId,
-            @RequestBody FacilityUpdateDto updateDto,
+            @ModelAttribute FacilityUpdateDto updateDto,
             Authentication authentication) {
         String userId = authentication.getName();
         FacilityRequestDto response = facilityService.updateFacility(userId, facilityId, updateDto);
@@ -89,25 +89,25 @@ public class FacilityController {
     @PutMapping("/{facilityId}/sport/{sportId}")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Update Sport Detail", description = "Update sport detail by the partner who owns the facility.")
-    public ResponseEntity<FacilityRequestDto> updateSportDetail(
+    public ResponseEntity<FacilityRequestDto> updateSubFacility(
             @PathVariable UUID facilityId,
             @PathVariable UUID sportId,
-            @RequestBody SportDetailUpdateDto updateDto,
+            @RequestBody SubFacilityUpdateDto updateDto,
             Authentication authentication) {
         String userId = authentication.getName();
-        FacilityRequestDto response = facilityService.updateSportDetail(userId, facilityId, sportId, updateDto);
+        FacilityRequestDto response = facilityService.updateSubFacility(userId, facilityId, sportId, updateDto);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{facilityId}/sport")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Update Sport Detail", description = "Update sport detail by the partner who owns the facility.")
-    public ResponseEntity<FacilityRequestDto> createSportDetailForFacility(
+    public ResponseEntity<FacilityRequestDto> createSubFacilityForFacility(
             @PathVariable UUID facilityId,
-            @Valid @RequestBody SportDetailRequestDto sportDetailRequestDto,
+            @Valid @RequestBody SubFacilityRequestDto subFacilityRequestDto,
             Authentication authentication) {
         String userId = authentication.getName();
-        FacilityRequestDto response = facilityService.addSportDetailToFacility(userId, facilityId, sportDetailRequestDto);
+        FacilityRequestDto response = facilityService.addSubFacilityToFacility(userId, facilityId, subFacilityRequestDto);
         return ResponseEntity.ok(response);
     }
 

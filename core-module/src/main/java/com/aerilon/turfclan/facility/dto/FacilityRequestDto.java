@@ -1,5 +1,6 @@
 package com.aerilon.turfclan.facility.dto;
 
+import com.aerilon.turfclan.dto.S3ImageResponseDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -19,7 +20,7 @@ public class FacilityRequestDto {
     @NotBlank(message = "Description is required")
     private String description;
     @NotEmpty(message = "At least one Photo of facility image is required")
-    private List<String> facilityPhotos;
+    private List<S3ImageResponseDto> facilityPhotos;
     @NotBlank(message = "Address Line is required")
     private String addressLine1;
 
@@ -44,7 +45,9 @@ public class FacilityRequestDto {
     private Double latitude;
     @NotNull(message = "Latitude is required")
     private Double longitude;
+    @NotNull(message = "Can book ?")
+    private Boolean canBeBooked;
     @Valid
     @NotEmpty(message = "At least one sport detail is required")
-    private List<@Valid SportDetailRequestDto> sports;
+    private List<@Valid SubFacilityRequestDto> sports;
 }

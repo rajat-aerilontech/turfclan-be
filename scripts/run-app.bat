@@ -9,6 +9,8 @@ set AWS_RDS_URL=jdbc:postgresql://localhost:5432/turfclan?serverTimezone=Asia/Ko
 set RDS_SCHEMA=turfclan_schema
 set RDS_USERNAME=postgres
 set RDS_PASSWORD=Admin@123
+set AWS_ACCESS_KEY=AKIA52TWGAQGYHZUKI47
+set AWS_SECRET_KEY=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
 
 call .\gradlew.bat clean
 call .\gradlew.bat bootRun --debug-jvm

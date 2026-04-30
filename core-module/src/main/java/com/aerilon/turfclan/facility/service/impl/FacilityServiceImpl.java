@@ -2,27 +2,26 @@ package com.aerilon.turfclan.facility.service.impl;
 
 import com.aerilon.turfclan.exception.ResourceNotFoundException;
 import com.aerilon.turfclan.exception.UnauthorizedAccessException;
+import com.aerilon.turfclan.facility.dto.*;
 import com.aerilon.turfclan.facility.service.FacilityService;
-import com.aerilon.turfclan.facility.dto.FacilitiesMobileResponseDto;
-import com.aerilon.turfclan.facility.dto.FacilityMobileResponseDto;
-import com.aerilon.turfclan.facility.dto.FacilityUpdateDto;
-import com.aerilon.turfclan.facility.dto.SportDetailUpdateDto;
 import com.aerilon.turfclan.facility.converter.FacilityConverter;
-import com.aerilon.turfclan.facility.converter.SportDetailConverter;
-import com.aerilon.turfclan.facility.dto.FacilitiesRequestDto;
-import com.aerilon.turfclan.facility.dto.FacilityRequestDto;
-import com.aerilon.turfclan.facility.dto.SportDetailRequestDto;
+import com.aerilon.turfclan.facility.converter.SubFacilityConverter;
 import com.aerilon.turfclan.facility.entity.FacilityEntity;
-import com.aerilon.turfclan.facility.entity.SportDetailEntity;
+import com.aerilon.turfclan.facility.entity.SubFacilityEntity;
+import com.aerilon.turfclan.dto.S3ImageModelDto;
 import com.aerilon.turfclan.partner.repository.FacilityRepository;
 import com.aerilon.turfclan.partner.repository.SportDetailRepository;
+import com.aerilon.turfclan.service.S3Service;
 import com.aerilon.turfclan.user.entity.UserEntity;
 import com.aerilon.turfclan.user.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -33,11 +32,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FacilityServiceImpl implements FacilityService {
 
+    private static final String SUB_FACILITY_FOLDER_NAME = "sub_facility";
+
     private final FacilityRepository facilityRepository;
     private final UserRepository userRepository;
     private final FacilityConverter facilityConverter;
     private final SportDetailRepository sportDetailRepository;
-    private final SportDetailConverter sportDetailConverter;
+    private final SubFacilityConverter subFacilityConverter;
+    private final S3Service s3Service;
+    private final ObjectMapper objectMapper;
 
     @Override
     public FacilitiesRequestDto getFacilityForUser(String userId) {
@@ -110,30 +113,36 @@ public class FacilityServiceImpl implements FacilityService {
     /**
      * Convert FacilityEntity to FacilityMobileResponseDto with distance and lowest price
      */
-    private FacilityMobileResponseDto convertToMobileResponseDto(FacilityEntity facility,
-                                                                   Double userLatitude, Double userLongitude) {
-        // Calculate distance
+    private FacilityMobileResponseDto convertToMobileResponseDto(
+            FacilityEntity facility,
+            Double userLatitude, Double userLongitude
+    ){
         Double distanceKm = calculateDistance(facility.getLocation(), userLatitude, userLongitude);
-
-        // Get lowest price among all sports
         BigDecimal lowestPrice = BigDecimal.valueOf(Double.MAX_VALUE);
-        String lowestPriceCurrency = "INR"; // Default currency
-
-        if (facility.getSports() != null && !facility.getSports().isEmpty()) {
-            SportDetailEntity firstSport = facility.getSports().get(0);
+        String lowestPriceCurrency = "INR";
+        if (facility.getSubFacility() != null && !facility.getSubFacility().isEmpty()) {
+            SubFacilityEntity firstSport = facility.getSubFacility().get(0);
             lowestPriceCurrency = firstSport.getCurrency();
 
-            lowestPrice = facility.getSports().stream()
-                    .map(SportDetailEntity::getPricePerHour)
+            lowestPrice = facility.getSubFacility().stream()
+                    .map(SubFacilityEntity::getPricePerHour)
                     .min(BigDecimal::compareTo)
                     .orElse(BigDecimal.ZERO);
         }
-
+        List<com.aerilon.turfclan.dto.S3ImageResponseDto> images = new ArrayList<>();
+        if (facility.getFacilityPhotos() != null) {
+            images = facility.getFacilityPhotos().stream()
+                    .map(img -> new com.aerilon.turfclan.dto.S3ImageResponseDto(
+                            img.getKey(),
+                            s3Service.preSignedUrl(img.getKey(), 10)
+                    ))
+                    .toList();
+        }
         return FacilityMobileResponseDto.builder()
                 .id(facility.getId())
                 .facilityName(facility.getFacilityName())
                 .description(facility.getDescription())
-                .facilityPhotos(facility.getFacilityPhotos())
+                .facilityPhotos(images)
                 .addressLine1(facility.getAddressLine1())
                 .addressLine2(facility.getAddressLine2())
                 .landmark(facility.getLandmark())
@@ -145,7 +154,8 @@ public class FacilityServiceImpl implements FacilityService {
                 .distanceKm(distanceKm)
                 .lowestPrice(lowestPrice)
                 .lowestPriceCurrency(lowestPriceCurrency)
-                .sports(facility.getSports().stream()
+                .canBeBooked(facility.getCanBeBooked())
+                .sports(facility.getSubFacility().stream()
                         .map(this::convertSportDetail)
                         .collect(Collectors.toList()))
                 .build();
@@ -214,8 +224,8 @@ public class FacilityServiceImpl implements FacilityService {
     /**
      * Convert SportDetailEntity to SportDetailRequestDto (for mobile response)
      */
-    private SportDetailRequestDto convertSportDetail(SportDetailEntity sport) {
-        SportDetailRequestDto dto = new SportDetailRequestDto();
+    private SubFacilityRequestDto convertSportDetail(SubFacilityEntity sport) {
+        SubFacilityRequestDto dto = new SubFacilityRequestDto();
         dto.setSportType(sport.getSportType());
         dto.setSubType(sport.getSubType());
         dto.setNumberOfUnits(sport.getNumberOfUnits());
@@ -253,8 +263,23 @@ public class FacilityServiceImpl implements FacilityService {
         if (updateDto.getDescription() != null && !updateDto.getDescription().isBlank()) {
             facility.setDescription(updateDto.getDescription());
         }
-        if (updateDto.getFacilityPhotos() != null) {
-            facility.setFacilityPhotos(updateDto.getFacilityPhotos());
+        if (updateDto.getFacilityPhotos() != null && !updateDto.getFacilityPhotos().isEmpty()) {
+            List<S3ImageModelDto> uploadedImages = new ArrayList<>();
+            for (MultipartFile file : updateDto.getFacilityPhotos()) {
+                try {
+                    String key = s3Service.uploadFile(
+                            file,
+                            "facility",
+                            SUB_FACILITY_FOLDER_NAME + "/" + facilityId + "/images",
+                            false
+                    );
+                    uploadedImages.add(new S3ImageModelDto(key));
+                } catch (IOException e) {
+                    log.error("Failed to upload file: {}", file.getOriginalFilename(), e);
+                    throw new RuntimeException("Image upload failed");
+                }
+            }
+            facility.setFacilityPhotos(uploadedImages);
         }
         if (updateDto.getAddressLine1() != null && !updateDto.getAddressLine1().isBlank()) {
             facility.setAddressLine1(updateDto.getAddressLine1());
@@ -291,7 +316,7 @@ public class FacilityServiceImpl implements FacilityService {
     }
 
     @Override
-    public FacilityRequestDto updateSportDetail(String userId, UUID facilityId, UUID sportId, SportDetailUpdateDto updateDto) {
+    public FacilityRequestDto updateSubFacility(String userId, UUID facilityId, UUID sportId, SubFacilityUpdateDto updateDto) {
         log.info("Updating sport detail for facility: {} by user: {}", facilityId, userId);
 
         UserEntity user = userRepository.findById(UUID.fromString(userId))
@@ -304,7 +329,7 @@ public class FacilityServiceImpl implements FacilityService {
             throw new UnauthorizedAccessException("Unauthorized: Facility does not belong to this user");
         }
 
-        SportDetailEntity sportDetail = sportDetailRepository.findById(sportId)
+        SubFacilityEntity sportDetail = sportDetailRepository.findById(sportId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sport detail not found"));
 
         if (!sportDetail.getFacility().getId().equals(facilityId)) {
@@ -358,18 +383,18 @@ public class FacilityServiceImpl implements FacilityService {
     }
 
     @Override
-    public FacilityRequestDto addSportDetailToFacility(String userId, UUID facilityId, SportDetailRequestDto sportDetailRequestDto) {
+    public FacilityRequestDto addSubFacilityToFacility(String userId, UUID facilityId, SubFacilityRequestDto subFacilityRequestDto) {
         log.info("Creating sport detail for facility: {} by user: {}", facilityId, userId);
         UserEntity user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         FacilityEntity facility = facilityRepository.findById(facilityId)
                 .orElseThrow(() -> new ResourceNotFoundException("Facility not found"));
-        SportDetailEntity sportDetailEntity = sportDetailConverter.convert(sportDetailRequestDto);
+        SubFacilityEntity subFacilityEntity = subFacilityConverter.convert(subFacilityRequestDto);
 
-        if (sportDetailEntity != null) {
-            sportDetailEntity.setFacility(facility);
-            facility.getSports().add(sportDetailEntity);
-            sportDetailRepository.save(sportDetailEntity);
+        if (subFacilityEntity != null) {
+            subFacilityEntity.setFacility(facility);
+            facility.getSubFacility().add(subFacilityEntity);
+            sportDetailRepository.save(subFacilityEntity);
         }
         return facilityConverter.toDto(facility);
     }
@@ -382,17 +407,17 @@ public class FacilityServiceImpl implements FacilityService {
         FacilityEntity facilityEntity = facilityConverter.convert(facilityRequestDto);
         if (facilityEntity != null) {
             facilityEntity.setUser(user);
-            List<SportDetailEntity> sports = new ArrayList<>();
+            List<SubFacilityEntity> sports = new ArrayList<>();
             if (facilityRequestDto.getSports() != null) {
-                for (SportDetailRequestDto sportDto : facilityRequestDto.getSports()) {
-                    SportDetailEntity sportEntity = sportDetailConverter.convert(sportDto);
+                for (SubFacilityRequestDto sportDto : facilityRequestDto.getSports()) {
+                    SubFacilityEntity sportEntity = subFacilityConverter.convert(sportDto);
                     if (sportEntity != null) {
                         sportEntity.setFacility(facilityEntity);
                         sports.add(sportEntity);
                     }
                 }
             }
-            facilityEntity.setSports(sports);
+            facilityEntity.setSubFacility(sports);
             FacilityEntity savedFacility = facilityRepository.save(facilityEntity);
             return facilityConverter.toDto(savedFacility);
         }

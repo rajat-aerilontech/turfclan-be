@@ -15,10 +15,10 @@ import java.util.UUID;
 import java.util.HashSet;
 
 @Entity
-@Table(name = "t_sport_detail", schema = "turfclan_schema")
+@Table(name = "t_sub_facility", schema = "turfclan_schema")
 @Getter
 @Setter
-public class SportDetailEntity extends BaseAuditableEntity {
+public class SubFacilityEntity extends BaseAuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

@@ -1,7 +1,10 @@
 package com.aerilon.turfclan.user.service.impl;
 
+import com.aerilon.turfclan.dto.S3ImageModelDto;
+import com.aerilon.turfclan.exception.AwsRuntimeException;
 import com.aerilon.turfclan.exception.InvalidRequestException;
 import com.aerilon.turfclan.exception.ResourceNotFoundException;
+import com.aerilon.turfclan.service.S3Service;
 import com.aerilon.turfclan.user.converter.UserEntityToUserDTOConverter;
 import com.aerilon.turfclan.user.dto.DashboardResponseDTO;
 import com.aerilon.turfclan.user.dto.SignupPersonalDTO;
@@ -14,6 +17,7 @@ import com.aerilon.turfclan.user.repository.UserSportAssociationRepository;
 import com.aerilon.turfclan.user.entity.UserSportAssociationEntity;
 import com.aerilon.turfclan.user.service.UserService;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -22,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.UUID;
@@ -34,6 +39,9 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserEntityToUserDTOConverter userConverter;
     private final UserSportAssociationRepository userSportAssociationRepository;
+    private final S3Service s3Service;
+    private final ObjectMapper objectMapper;
+    private static final String USER_FOLDER_NAME = "users";
 
     @Override
     public UserDTO getUserByEmail(String emailId) {
@@ -47,12 +55,9 @@ public class UserServiceImpl implements UserService {
     public UserDTO signup(String userId, SignupRequestDTO request) {
         UserEntity user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-
         SignupPersonalDTO personal = request.getPersonal();
-
         user.setFirstName(personal.getFirstName());
         user.setLastName(personal.getLastName());
-
         // Validate email uniqueness before saving
         String email = personal.getEmail();
         if (email != null && !email.isBlank()) {
@@ -63,28 +68,43 @@ public class UserServiceImpl implements UserService {
                     });
             user.setUserEmail(email);
         }
-
         user.setLocation(personal.getCity());
         user.setGender(personal.getGender());
         user.setDateOfBirth(personal.getDob());
         user.setProfileComplete(true);
         user.setStatus(UserStatus.ACTIVE);
-
+        if (personal.getProfileImage() != null && !personal.getProfileImage().isEmpty()) {
+            try {
+                String key = s3Service.uploadFile(
+                        personal.getProfileImage(),
+                        "profile",
+                        USER_FOLDER_NAME + "/" + user.getId(),
+                        true
+                );
+                user.setUserProfileImage(new S3ImageModelDto(key));
+            } catch (IOException e) {
+                log.error("Failed to upload profile image", e);
+                throw new AwsRuntimeException("Profile image upload failed", e);
+            }
+        }
         UserEntity saved = userRepository.save(user);
-
-        // Save sport details to UserSportAssociationEntity
         if (personal.getSports() != null || request.getSport() != null) {
             UserSportAssociationEntity sportAssoc = userSportAssociationRepository.findByUserId(saved.getId())
                     .orElse(new UserSportAssociationEntity());
             sportAssoc.setUserId(saved.getId());
             if (personal.getSports() != null && !personal.getSports().isBlank()) {
-                // Generate a dummy sport ID for now as sport_id is required
-                sportAssoc.setSportId(UUID.randomUUID()); 
+                sportAssoc.setSportId(UUID.randomUUID());
             } else if (sportAssoc.getSportId() == null) {
                 sportAssoc.setSportId(UUID.randomUUID());
             }
-            if (request.getSport() != null) {
-                sportAssoc.setSportProfile(request.getSport());
+            if (request.getSport() != null && !request.getSport().isBlank()) {
+                try {
+                    JsonNode sportNode = objectMapper.readTree(request.getSport());
+                    sportAssoc.setSportProfile(sportNode);
+                } catch (Exception e) {
+                    log.error("Invalid sport JSON", e);
+                    throw new InvalidRequestException("Invalid sport JSON format");
+                }
             }
             userSportAssociationRepository.save(sportAssoc);
         }

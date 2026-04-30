@@ -2,12 +2,12 @@ package com.aerilon.turfclan.partner.service.impl;
 
 import com.aerilon.turfclan.exception.InvalidRequestException;
 import com.aerilon.turfclan.facility.converter.FacilityConverter;
-import com.aerilon.turfclan.facility.converter.SportDetailConverter;
+import com.aerilon.turfclan.facility.converter.SubFacilityConverter;
 import com.aerilon.turfclan.facility.dto.FacilitiesRequestDto;
 import com.aerilon.turfclan.facility.dto.FacilityRequestDto;
-import com.aerilon.turfclan.facility.dto.SportDetailRequestDto;
+import com.aerilon.turfclan.facility.dto.SubFacilityRequestDto;
 import com.aerilon.turfclan.facility.entity.FacilityEntity;
-import com.aerilon.turfclan.facility.entity.SportDetailEntity;
+import com.aerilon.turfclan.facility.entity.SubFacilityEntity;
 import com.aerilon.turfclan.partner.dto.*;
 import com.aerilon.turfclan.partner.entity.*;
 import com.aerilon.turfclan.partner.enums.OnboardApplicationStatus;
@@ -44,13 +44,13 @@ public class OnboardingServiceImpl implements OnboardingService {
     private final PartnerDetailRepository partnerDetailRepository;
     private final BankDetailRepository bankDetailRepository;
     private final OnboardingContractRepository contractRepository;
-    
+
     // Converters
     private final BusinessDetailConverter businessDetailConverter;
     private final BrandDetailConverter brandDetailConverter;
     private final HelpUsConverter helpUsConverter;
     private final FacilityConverter facilityConverter;
-    private final SportDetailConverter sportDetailConverter;
+    private final SubFacilityConverter subFacilityConverter;
     private final PartnerDetailConverter partnerDetailConverter;
     private final BankDetailConverter bankDetailConverter;
     private final ContractConverter contractConverter;
@@ -155,17 +155,17 @@ public class OnboardingServiceImpl implements OnboardingService {
                 if (facilityEntity != null) {
                     facilityEntity.setUser(user);
                     // Initialize sports list
-                    List<SportDetailEntity> sports = new ArrayList<>();
+                    List<SubFacilityEntity> sports = new ArrayList<>();
                     if (facilityDto.getSports() != null) {
-                        for (SportDetailRequestDto sportDto : facilityDto.getSports()) {
-                            SportDetailEntity sportEntity = sportDetailConverter.convert(sportDto);
+                        for (SubFacilityRequestDto sportDto : facilityDto.getSports()) {
+                            SubFacilityEntity sportEntity = subFacilityConverter.convert(sportDto);
                             if (sportEntity != null) {
                                 sportEntity.setFacility(facilityEntity);
                                 sports.add(sportEntity);
                             }
                         }
                     }
-                    facilityEntity.setSports(sports);
+                    facilityEntity.setSubFacility(sports);
                     facilityRepository.save(facilityEntity);
                 }
             }

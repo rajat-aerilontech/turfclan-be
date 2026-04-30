@@ -9,7 +9,7 @@ import com.aerilon.turfclan.enums.BookingStatus;
 import com.aerilon.turfclan.exception.BookingConflictException;
 import com.aerilon.turfclan.exception.InvalidRequestException;
 import com.aerilon.turfclan.exception.ResourceNotFoundException;
-import com.aerilon.turfclan.facility.entity.SportDetailEntity;
+import com.aerilon.turfclan.facility.entity.SubFacilityEntity;
 import com.aerilon.turfclan.partner.repository.SportDetailRepository;
 import com.aerilon.turfclan.repository.BookingRepository;
 import com.aerilon.turfclan.service.BookingService;
@@ -45,7 +45,7 @@ public class BookingServiceImpl implements BookingService {
      */
     @Transactional(readOnly = true)
     public List<SlotResponseDTO> getAvailableSlots(UUID sportId, LocalDate date) {
-        SportDetailEntity sport = sportDetailRepository.findById(sportId)
+        SubFacilityEntity sport = sportDetailRepository.findById(sportId)
                 .orElseThrow(() -> new RuntimeException("Sport configuration not found"));
         List<SlotResponseDTO> grid = new ArrayList<>();
         LocalTime current = sport.getOpenTime();
@@ -67,7 +67,7 @@ public class BookingServiceImpl implements BookingService {
      */
     @Transactional
     public BookingResponseDTO createBooking(BookingRequestDTO request, String userId) {
-        SportDetailEntity sport = sportDetailRepository.findById(request.getSportId())
+        SubFacilityEntity sport = sportDetailRepository.findById(request.getSportId())
                 .orElseThrow(() -> new ResourceNotFoundException("Sport details not found"));
         UserEntity user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -114,7 +114,7 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    private BigDecimal calculateDynamicPrice(SportDetailEntity sport, LocalTime time) {
+    private BigDecimal calculateDynamicPrice(SubFacilityEntity sport, LocalTime time) {
         BigDecimal price = sport.getPricePerHour();
         if (time.isAfter(LocalTime.of(17, 59))) {
             return price.multiply(BigDecimal.valueOf(1.2));
@@ -138,7 +138,7 @@ public class BookingServiceImpl implements BookingService {
     /**
      * Validates that the requested time is within operating hours and matches the required slot duration.
      */
-    private void validateBookingTime(SportDetailEntity sport, LocalTime start, LocalTime end) {
+    private void validateBookingTime(SubFacilityEntity sport, LocalTime start, LocalTime end) {
         // Check Operating Hours
         if (start.isBefore(sport.getOpenTime()) || end.isAfter(sport.getCloseTime())) {
             throw new InvalidRequestException(String.format(

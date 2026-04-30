@@ -1,5 +1,6 @@
 package com.aerilon.turfclan.partner.dto;
 
+import com.aerilon.turfclan.dto.S3ImageResponseDto;
 import lombok.*;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 public class DashboardDto {
     private String partnerName;
     private boolean partnerStatus;
+    private S3ImageResponseDto profileImageUrl;
     // Business Detail
     private String businessName;
     private String designation;

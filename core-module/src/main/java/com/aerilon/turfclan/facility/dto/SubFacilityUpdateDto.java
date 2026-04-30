@@ -14,7 +14,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SportDetailUpdateDto {
+public class SubFacilityUpdateDto {
 
     private UUID sportDetailId;
     private String subType;

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import com.aerilon.turfclan.dto.S3ImageResponseDto;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -21,7 +22,7 @@ public class FacilityMobileResponseDto {
     private UUID id;
     private String facilityName;
     private String description;
-    private List<String> facilityPhotos;
+    private List<S3ImageResponseDto> facilityPhotos;
     private String addressLine1;
     private String addressLine2;
     private String landmark;
@@ -30,6 +31,7 @@ public class FacilityMobileResponseDto {
     private String state;
     private Double latitude;
     private Double longitude;
+    private Boolean canBeBooked;
 
     // Mobile-specific fields
     private Double distanceKm;  // Distance from user's current location in KM
@@ -37,6 +39,6 @@ public class FacilityMobileResponseDto {
     private String lowestPriceCurrency;
 
     // Sports details
-    private List<SportDetailRequestDto> sports;
+    private List<SubFacilityRequestDto> sports;
 }
 

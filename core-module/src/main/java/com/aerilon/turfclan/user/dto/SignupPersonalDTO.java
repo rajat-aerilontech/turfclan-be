@@ -1,11 +1,17 @@
 package com.aerilon.turfclan.user.dto;
 
+import com.aerilon.turfclan.dto.S3ImageModelDto;
+import com.aerilon.turfclan.dto.S3ImageResponseDto;
 import com.aerilon.turfclan.user.enums.Gender;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -34,4 +40,6 @@ public class SignupPersonalDTO {
     @JsonProperty("city")
     @NotBlank(message = "Please tell us your city")
     private String city;
+
+    private MultipartFile profileImage;
 }

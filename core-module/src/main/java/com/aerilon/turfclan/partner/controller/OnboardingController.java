@@ -56,7 +56,7 @@ public class OnboardingController {
     @Operation(summary = "Save Facilities Info", description = "Saves sports and facilities information (Step 2) for the partner.")
     public ResponseEntity<String> saveFacilitiesInfo(
             Authentication authentication,
-            @Valid @RequestBody FacilitiesRequestDto dto) {
+            @Valid @ModelAttribute FacilitiesRequestDto dto) {
         String userId = authentication.getName();
         onboardingService.saveFacilityInfo(userId, dto);
         return ResponseEntity.ok("Facilites info saved successfully. Proceed to Partner Details.");

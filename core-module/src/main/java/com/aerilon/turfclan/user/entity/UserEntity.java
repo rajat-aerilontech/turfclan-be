@@ -1,8 +1,8 @@
 package com.aerilon.turfclan.user.entity;
 
+import com.aerilon.turfclan.dto.S3ImageModelDto;
 import com.aerilon.turfclan.user.enums.Gender;
 import com.aerilon.turfclan.user.enums.UserStatus;
-import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -44,8 +44,9 @@ public class UserEntity {
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;
 
-    @Column(name = "profile_picture_url", length = 255)
-    private String profilePictureUrl;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "user_profile_image", columnDefinition = "jsonb")
+    private S3ImageModelDto userProfileImage;
 
     @Column(name = "bio", length = 500)
     private String bio;

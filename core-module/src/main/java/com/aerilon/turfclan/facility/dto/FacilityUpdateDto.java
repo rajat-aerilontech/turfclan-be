@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class FacilityUpdateDto {
 
     private String facilityName;
     private String description;
-    private List<String> facilityPhotos;
+    private List<MultipartFile> facilityPhotos;
     private String addressLine1;
     private String addressLine2;
     private String landmark;

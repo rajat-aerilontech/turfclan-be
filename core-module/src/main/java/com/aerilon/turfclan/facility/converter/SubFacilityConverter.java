@@ -1,7 +1,7 @@
 package com.aerilon.turfclan.facility.converter;
 
-import com.aerilon.turfclan.facility.dto.SportDetailRequestDto;
-import com.aerilon.turfclan.facility.entity.SportDetailEntity;
+import com.aerilon.turfclan.facility.dto.SubFacilityRequestDto;
+import com.aerilon.turfclan.facility.entity.SubFacilityEntity;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -9,11 +9,11 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 
 @Component
-public class SportDetailConverter implements Converter<SportDetailRequestDto, SportDetailEntity> {
+public class SubFacilityConverter implements Converter<SubFacilityRequestDto, SubFacilityEntity> {
 
     @Override
-    public SportDetailEntity convert(SportDetailRequestDto source) {
-        SportDetailEntity entity = new SportDetailEntity();
+    public SubFacilityEntity convert(SubFacilityRequestDto source) {
+        SubFacilityEntity entity = new SubFacilityEntity();
         entity.setSportType(source.getSportType());
         entity.setSubType(source.getSubType());
         entity.setNumberOfUnits(source.getNumberOfUnits());
@@ -36,10 +36,10 @@ public class SportDetailConverter implements Converter<SportDetailRequestDto, Sp
         return entity;
     }
 
-    public SportDetailRequestDto toDto(SportDetailEntity entity) {
+    public SubFacilityRequestDto toDto(SubFacilityEntity entity) {
         if (entity == null) return null;
 
-        SportDetailRequestDto dto = new SportDetailRequestDto();
+        SubFacilityRequestDto dto = new SubFacilityRequestDto();
         dto.setSportType(entity.getSportType());
         dto.setSubType(entity.getSubType());
         dto.setNumberOfUnits(entity.getNumberOfUnits());
