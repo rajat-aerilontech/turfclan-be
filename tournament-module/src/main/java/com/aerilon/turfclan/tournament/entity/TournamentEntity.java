@@ -2,10 +2,14 @@ package com.aerilon.turfclan.tournament.entity;
 
 import com.aerilon.turfclan.entity.BaseAuditableEntity;
 import com.aerilon.turfclan.enums.RecordStatus;
+import com.aerilon.turfclan.facility.entity.FacilityEntity;
+import com.aerilon.turfclan.tournament.enums.TournamentStatus;
 import com.aerilon.turfclan.user.entity.UserEntity;
 import jakarta.persistence.*;
+import org.locationtech.jts.geom.Point;
 import lombok.Getter;
 import lombok.Setter;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,17 +25,27 @@ public class TournamentEntity extends BaseAuditableEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "facility_id", referencedColumnName = "id")
+    private FacilityEntity facility;
+
     @Column(name = "sport_category", nullable = false, length = 100)
     private String sportCategory;
 
-    @Column(name = "name", nullable = false, length = 255)
-    private String name;
+    @Column(name = "is_public_property")
+    private boolean isPublicProperty;
 
-    @Column(name = "location_name", nullable = false, length = 255)
+    @Column(name = "tournament_name", nullable = false, length = 255)
+    private String tournamentName;
+
+    @Column(name = "location_name")
     private String locationName;
 
-    @Column(name = "geolocation", nullable = false, length = 500)
-    private String geolocation;
+    @Column(name = "custom_location_address")
+    private String customLocationAddress;
+
+    @Column(name = "geo_location", columnDefinition = "geometry(Point, 4326)", nullable = false)
+    private Point geoLocation;
 
     @Column(name = "entry_fee", precision = 12, scale = 2)
     private BigDecimal entryFee;
@@ -45,20 +59,17 @@ public class TournamentEntity extends BaseAuditableEntity {
     @Column(name = "format", nullable = false, columnDefinition = "text")
     private String format;
 
-    @Column(name = "register_by", nullable = false)
-    private LocalDate registerBy;
-
-    @Column(name = "why_join", nullable = false, columnDefinition = "text")
-    private String whyJoin;
-
-    @Column(name = "rules", nullable = false, columnDefinition = "text")
+    @Column(name = "rules", columnDefinition = "text")
     private String rules;
+
+    @Column(name = "why_join", columnDefinition = "text")
+    private String whyJoin;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "admin_id", referencedColumnName = "id", nullable = false)
     private UserEntity admin;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", length = 255, nullable = false)
-    private RecordStatus status;
+    @Column(name = "tournament_status", nullable = false)
+    private TournamentStatus tournamentStatus;
 }

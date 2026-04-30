@@ -107,6 +107,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
         if (status == BookingStatus.CONFIRMED || status == BookingStatus.REJECTED) {
             booking.setBookingStatus(status);
+            booking.setUpdatedAt(LocalDateTime.now());
             bookingRepository.save(booking);
         } else {
             throw new IllegalArgumentException("Invalid status update for partner.");
