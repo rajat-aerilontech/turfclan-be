@@ -28,6 +28,8 @@ junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher
 hibernate-spatial = { group = "org.hibernate.orm", name = "hibernate-spatial", version.ref = "hibernate-spatial" }
 jts-core = { group = "org.locationtech.jts", name = "jts-core", version = "1.19.0" }
 spring-cloud-aws-starter-s3 = { group = "io.awspring.cloud", name = "spring-cloud-aws-starter-s3", version.ref = "springCloudAws" }
+spring-boot-starter-thymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf", version.ref = "spring-boot" }
+spring-cloud-aws-starter-ses = { group = "io.awspring.cloud", name = "spring-cloud-aws-starter-ses", version.ref = "springCloudAws" }
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }

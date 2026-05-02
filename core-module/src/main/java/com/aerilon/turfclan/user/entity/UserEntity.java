@@ -2,6 +2,7 @@ package com.aerilon.turfclan.user.entity;
 
 import com.aerilon.turfclan.dto.S3ImageModelDto;
 import com.aerilon.turfclan.user.enums.Gender;
+import com.aerilon.turfclan.user.enums.UserRole;
 import com.aerilon.turfclan.user.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -63,7 +64,7 @@ public class UserEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_role", length = 50)
-    private com.aerilon.turfclan.user.enums.UserRole userRole;
+    private UserRole userRole;
 
     @Column(name = "is_verified")
     private boolean isVerified;

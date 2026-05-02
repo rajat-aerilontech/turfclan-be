@@ -28,6 +28,7 @@ public class SourceAppFilter extends OncePerRequestFilter {
     public static final String TURF_ADMIN = "turf-admin";
     public static final String TURF_MOBILE = "turf-mobile";
     public static final String TURF_PARTNER = "turf-partner";
+    public static final String TURF_WEB = "turf-web";
 
     private static final List<String> PUBLIC_PATH_PREFIXES = List.of(
             "/v3/api-docs",
@@ -41,8 +42,12 @@ public class SourceAppFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
-
+                                    FilterChain filterChain) throws ServletException, IOException
+    {
+        if (HttpMethod.OPTIONS.matches(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         if (isSourceAppOnlyPath(request)) {
             authenticateSourceAppOnlyRequest(request, response, filterChain);
             return;
@@ -115,6 +120,7 @@ public class SourceAppFilter extends OncePerRequestFilter {
             case TURF_ADMIN -> new SimpleGrantedAuthority("ROLE_TA_USER");
             case TURF_MOBILE -> new SimpleGrantedAuthority("ROLE_TM_USER");
             case TURF_PARTNER -> new SimpleGrantedAuthority("ROLE_TM_PARTNER");
+            case TURF_WEB -> new SimpleGrantedAuthority("ROLE_TM_WEB");
             default -> null;
         };
     }
@@ -131,7 +137,8 @@ public class SourceAppFilter extends OncePerRequestFilter {
     private boolean isSourceAppOnlyPath(HttpServletRequest request) {
         String servletPath = request.getServletPath();
         return servletPath.startsWith("/api/v1/users/otp/")
-                || servletPath.equals("/api/v1/auth/refresh");
+                || servletPath.equals("/api/v1/auth/refresh")
+                || servletPath.startsWith("/api/v1/web/");
     }
 
     private boolean isPreflight(HttpServletRequest request) {

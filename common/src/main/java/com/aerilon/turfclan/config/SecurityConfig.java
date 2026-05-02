@@ -27,8 +27,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-        private static final String OTP_PATH_PREFIX = "/api/v1/users/otp/";
-        private static final String REFRESH_PATH = "/api/v1/auth/refresh";
+    private static final String OTP_PATH_PREFIX = "/api/v1/users/otp/";
+    private static final String REFRESH_PATH = "/api/v1/auth/refresh";
+    private static final String WEB_PATH_PREFIX = "/api/v1/web/";
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final SourceAppFilter sourceAppFilter;
@@ -46,6 +47,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/users/otp/**",
                                 "/api/v1/auth/**",
+                                "/api/v1/web/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
@@ -63,6 +65,8 @@ public class SecurityConfig {
                                     ? "Missing or invalid source-app for OTP flow"
                                     : isRefreshPath(request)
                                     ? "Missing or invalid source-app for refresh flow"
+                                    : isWebPath(request)
+                                    ? "Missing or invalid source-app for web flow"
                                     : "Missing, invalid, or expired access token";
                             UnauthorizedAccessException unauthorizedAccessException =
                                     new UnauthorizedAccessException(message);
@@ -79,6 +83,8 @@ public class SecurityConfig {
                                     ? "Unauthorized source-app for OTP flow"
                                     : isRefreshPath(request)
                                     ? "Unauthorized source-app for refresh flow"
+                                    : isWebPath(request)
+                                    ? "Unauthorized source-app for web flow"
                                     : "Unauthorized access for this source-app and role";
                             UnauthorizedAccessException unauthorizedAccessException =
                                     new UnauthorizedAccessException(message);
@@ -98,11 +104,15 @@ public class SecurityConfig {
         return http.build();
     }
 
-        private boolean isOtpPath(jakarta.servlet.http.HttpServletRequest request) {
-                return request.getServletPath().startsWith(OTP_PATH_PREFIX);
-        }
+    private boolean isOtpPath(jakarta.servlet.http.HttpServletRequest request) {
+            return request.getServletPath().startsWith(OTP_PATH_PREFIX);
+    }
 
-        private boolean isRefreshPath(jakarta.servlet.http.HttpServletRequest request) {
-                return REFRESH_PATH.equals(request.getServletPath());
-        }
+    private boolean isRefreshPath(jakarta.servlet.http.HttpServletRequest request) {
+            return REFRESH_PATH.equals(request.getServletPath());
+    }
+
+    private boolean isWebPath(jakarta.servlet.http.HttpServletRequest request) {
+        return request.getServletPath().startsWith(WEB_PATH_PREFIX);
+    }
 }

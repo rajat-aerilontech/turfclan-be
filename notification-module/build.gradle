@@ -2,6 +2,17 @@ plugins {
     id 'java-library'
 }
 
-// Keep dependencies explicit per domain as the module grows.
 dependencies {
+    implementation project(':common')
+    implementation project(':core-module')
+
+    implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.spring.boot.starter.validation)
+    implementation(libs.spring.boot.starter.security)
+    implementation(libs.springdoc.openapi.starter.webmvc.ui)
+    implementation(libs.spring.boot.starter.thymeleaf)
+    implementation(libs.spring.cloud.aws.starter.ses)
+
+    testImplementation(libs.spring.boot.starter.test)
 }
