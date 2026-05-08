@@ -24,6 +24,12 @@ public class OnboardingController {
     @Autowired
     private final OnboardingService onboardingService;
 
+    /**
+     * Returns all onboarding data for the authenticated partner.
+     *
+     * @param authentication authenticated principal containing the user id
+     * @return full onboarding data
+     */
     @GetMapping("/all-data")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Get All Onboarding Data", description = "Returns all saved data for all steps to populate the UI.")
@@ -32,6 +38,12 @@ public class OnboardingController {
         return ResponseEntity.ok(onboardingService.getFullOnboardingData(userId));
     }
 
+    /**
+     * Returns the current onboarding step for the authenticated partner.
+     *
+     * @param authentication authenticated principal containing the user id
+     * @return current onboarding step
+     */
     @GetMapping("/current-step")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Get Current Onboarding Step", description = "Returns the current onboarding step for the authenticated partner.")
@@ -40,6 +52,13 @@ public class OnboardingController {
         return ResponseEntity.ok(onboardingService.getCurrentOnboardingStep(userId));
     }
 
+    /**
+     * Saves business info (step 1) for the authenticated partner.
+     *
+     * @param authentication authenticated principal containing the user id
+     * @param dto business info payload
+     * @return status message
+     */
     @PostMapping("/step/business-info")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Save Business Info", description = "Saves business information (Step 1) for the partner.")
@@ -51,6 +70,13 @@ public class OnboardingController {
         return ResponseEntity.ok("Business info saved successfully. Proceed to Sports Details.");
     }
 
+    /**
+     * Saves facilities info (step 2) for the authenticated partner.
+     *
+     * @param authentication authenticated principal containing the user id
+     * @param dto facilities payload
+     * @return status message
+     */
     @PostMapping("/step/sports-info")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Save Facilities Info", description = "Saves sports and facilities information (Step 2) for the partner.")
@@ -62,6 +88,13 @@ public class OnboardingController {
         return ResponseEntity.ok("Facilites info saved successfully. Proceed to Partner Details.");
     }
 
+    /**
+     * Saves partner details (step 3) for the authenticated partner.
+     *
+     * @param authentication authenticated principal containing the user id
+     * @param dto partner detail payload
+     * @return status message
+     */
     @PostMapping("/step/partner-details")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Save Partner Details", description = "Saves partner details (Step 3) for the partner.")
@@ -73,6 +106,13 @@ public class OnboardingController {
         return ResponseEntity.ok("Partner details saved successfully. Proceed to Bank Details.");
     }
 
+    /**
+     * Saves bank details (step 4) for the authenticated partner.
+     *
+     * @param authentication authenticated principal containing the user id
+     * @param dto bank detail payload
+     * @return status message
+     */
     @PostMapping("/step/bank-details")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Save Bank Details", description = "Saves bank details (Step 4) for the partner.")
@@ -84,6 +124,14 @@ public class OnboardingController {
         return ResponseEntity.ok("Bank details saved successfully. Proceed to Contract Details.");
     }
 
+    /**
+     * Signs the contract (step 5) for the authenticated partner and captures IP address.
+     *
+     * @param authentication authenticated principal containing the user id
+     * @param dto contract payload
+     * @param request HTTP request used to capture client IP
+     * @return status message
+     */
     @PostMapping("/step/contract")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Submit Contract", description = "Signs the contract (Step 5) for the partner and captures the user's IP address.")
@@ -96,6 +144,12 @@ public class OnboardingController {
         return ResponseEntity.ok("Contract Signed successfully. Proceed to submit the application!");
     }
 
+    /**
+     * Finalizes and submits the onboarding application.
+     *
+     * @param authentication authenticated principal containing the user id
+     * @return status message
+     */
     @PostMapping("/submit-application")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Submit Application", description = "Finalizes and submits the onboarding application.")

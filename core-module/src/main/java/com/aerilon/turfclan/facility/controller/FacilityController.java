@@ -30,6 +30,12 @@ public class FacilityController {
     @Autowired
     private FacilityService facilityService;
 
+    /**
+     * Returns facility data for the authenticated partner.
+     *
+     * @param authentication authenticated principal containing the user id
+     * @return facility data for the partner
+     */
     @GetMapping("/user")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Get Facility For User", description = "Returns all facility data associated with the authenticated user (partner).")
@@ -38,6 +44,12 @@ public class FacilityController {
         return ResponseEntity.ok(facilityService.getFacilityForUser(userId));
     }
 
+    /**
+     * Returns all facilities accessible to the authenticated user or partner.
+     *
+     * @param authentication authenticated principal
+     * @return facility data list for the authenticated user
+     */
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_TM_PARTNER', 'ROLE_TM_USER')")
     @Operation(summary = "Get All Facility", description = "Returns all facility data for the authenticated user, including any associated details.")
@@ -45,6 +57,15 @@ public class FacilityController {
         return ResponseEntity.ok(facilityService.getAllFacility());
     }
 
+    /**
+     * Returns nearby facilities for mobile users, optionally sorted and limited by distance.
+     *
+     * @param latitude user's latitude
+     * @param longitude user's longitude
+     * @param sortBy sorting strategy: distance, price, or distance_price
+     * @param maxDistanceKm maximum search radius in kilometers
+     * @return nearby facilities with distance and pricing info
+     */
     @GetMapping("/mobile/nearby")
     @PreAuthorize("hasAuthority('ROLE_TM_USER')")
     @Operation(summary = "Get Nearby Facilities for Mobile Users",
@@ -74,6 +95,14 @@ public class FacilityController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Updates facility details for the authenticated partner.
+     *
+     * @param facilityId facility identifier
+     * @param updateDto update payload
+     * @param authentication authenticated principal containing the user id
+     * @return updated facility data
+     */
     @PutMapping("/{facilityId}")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Update Facility Details", description = "Update facility details by the partner who owns the facility.")
@@ -86,6 +115,15 @@ public class FacilityController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Updates sport details within a facility for the authenticated partner.
+     *
+     * @param facilityId facility identifier
+     * @param sportId sport identifier
+     * @param updateDto update payload
+     * @param authentication authenticated principal containing the user id
+     * @return updated facility data
+     */
     @PutMapping("/{facilityId}/sport/{sportId}")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Update Sport Detail", description = "Update sport detail by the partner who owns the facility.")
@@ -99,6 +137,14 @@ public class FacilityController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Adds a sport to a facility for the authenticated partner.
+     *
+     * @param facilityId facility identifier
+     * @param subFacilityRequestDto sport payload
+     * @param authentication authenticated principal containing the user id
+     * @return updated facility data
+     */
     @PostMapping("/{facilityId}/sport")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Update Sport Detail", description = "Update sport detail by the partner who owns the facility.")
@@ -111,6 +157,13 @@ public class FacilityController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Creates a facility for the authenticated partner.
+     *
+     * @param facilityRequestDto facility payload
+     * @param authentication authenticated principal containing the user id
+     * @return created facility data
+     */
     @PostMapping("/user")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Update Facility Details", description = "Update facility details by the partner who owns the facility.")
