@@ -1,7 +1,7 @@
 package com.aerilon.turfclan.web.service.impl;
 
-
 import com.aerilon.turfclan.exception.ResourceAlreadyExistsException;
+import com.aerilon.turfclan.notification.service.SendEventToNotificationService;
 import com.aerilon.turfclan.web.dto.ContactInquiryDto;
 import com.aerilon.turfclan.web.dto.JoinWaitlistDto;
 import com.aerilon.turfclan.web.dto.PartnerWithUsDto;
@@ -25,6 +25,7 @@ public class WebsiteFormServiceImpl implements WebsiteFormService {
     private final JoinWaitlistRepository joinWaitlistRepository;
     private final PartnerWithUsQueryRepository partnerWithUsQueryRepository;
     private final ContactInquiryRepository contactInquiryRepository;
+    private final SendEventToNotificationService sendEventToNotificationService;
 
     @Override
     public WebResponseDto createJoinWaitlist(JoinWaitlistDto request) {
@@ -44,12 +45,18 @@ public class WebsiteFormServiceImpl implements WebsiteFormService {
             log.warn("Waitlist duplicate attempt");
             throw new ResourceAlreadyExistsException("You have already joined our waitlist!");
         }
-        joinWaitlistRepository.save(entity);
-        log.info("Successfully added to waitlist");
-        return WebResponseDto.builder()
-                .status("success")
-                .message("Join waitlist request received successfully.")
-                .build();
+        try {
+            joinWaitlistRepository.save(entity);
+            log.info("Join waitlist saved successfully sending event to publish");
+            sendEventToNotificationService.sendEventToNotificationServiceForJoinWaitlist(request, input);
+            return WebResponseDto.builder()
+                    .status("success")
+                    .message("Join waitlist request received successfully.")
+                    .build();
+        } catch (Exception e) {
+            log.error("Failed to process waitlist request: {}", e.getMessage());
+            throw new RuntimeException("An error occurred while processing your request. Please try again later.");
+        }
     }
 
     @Override
@@ -72,7 +79,7 @@ public class WebsiteFormServiceImpl implements WebsiteFormService {
         if (alreadyExists) {
             throw new ResourceAlreadyExistsException("This email or phone number is already registered.");
         }
-        partnerWithUsQueryRepository.save(entity);
+//        partnerWithUsQueryRepository.save(entity);
         log.info("Partner query created successfully");
         return WebResponseDto.builder()
                 .status("success")

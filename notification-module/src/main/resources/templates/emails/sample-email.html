@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Email Template</title>
+</head>
+
+<body>
+    <h2 th:text="'Hello ' + ${name} + '!'">Hello User!</h2>
+    <p th:text="${message}">Welcome to Turfclan!</p>
+</body>
+
+</html>
