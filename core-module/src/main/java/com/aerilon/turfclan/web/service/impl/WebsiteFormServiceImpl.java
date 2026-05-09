@@ -79,8 +79,9 @@ public class WebsiteFormServiceImpl implements WebsiteFormService {
         if (alreadyExists) {
             throw new ResourceAlreadyExistsException("This email or phone number is already registered.");
         }
-//        partnerWithUsQueryRepository.save(entity);
+        partnerWithUsQueryRepository.save(entity);
         log.info("Partner query created successfully");
+        sendEventToNotificationService.sendEventToNotificationServiceForPartnerWithUsQuery(request, input);
         return WebResponseDto.builder()
                 .status("success")
                 .message("Partner inquiry submitted successfully.")
@@ -99,6 +100,8 @@ public class WebsiteFormServiceImpl implements WebsiteFormService {
         entity.setDescription(request.getDescription());
         contactInquiryRepository.save(entity);
         log.info("Contact inquiry created successfully for {}", request.getName());
+        String input = request.getEmail() != null && !request.getEmail().isEmpty() ? request.getEmail() : request.getPhoneNumber();
+        sendEventToNotificationService.sendEventToNotificationServiceForContactInquiry(request, input);
         return WebResponseDto.builder()
                 .status("success")
                 .message("Your inquiry has been sent successfully.")

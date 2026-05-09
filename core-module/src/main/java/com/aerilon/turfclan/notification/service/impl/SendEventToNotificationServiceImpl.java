@@ -28,7 +28,8 @@ public class SendEventToNotificationServiceImpl implements SendEventToNotificati
 
     @Override
     public void sendEventToNotificationServiceForJoinWaitlist(JoinWaitlistDto joinWaitlistDto, String emailId) {
-            EventIngestionDto eventIngestionDto = createEventIngestionDtoJoinWaitlist(joinWaitlistDto, emailId);
+            String initiatorId = emailId != null && emailId.contains("@") ? emailId : null;
+            EventIngestionDto eventIngestionDto = createEventIngestionDtoJoinWaitlist(joinWaitlistDto, initiatorId);
             eventIngestionPublisher.publish(eventIngestionDto);
             log.info("Successfully send event to notification service for JoinWaitlistDto");
     }
@@ -57,5 +58,45 @@ public class SendEventToNotificationServiceImpl implements SendEventToNotificati
         eventIngestionDto.setInitiatorId(emailId);
         eventIngestionDto.setInitiatorType(initiatorType);
         eventIngestionDto.setData(data);
+    }
+
+    @Override
+    public void sendEventToNotificationServiceForPartnerWithUsQuery(com.aerilon.turfclan.web.dto.PartnerWithUsDto partnerWithUsDto, String input) {
+        try {
+            EventIngestionDto eventIngestionDto = new EventIngestionDto();
+            Map<String, String> data = new HashMap<>();
+            data.put("userName", partnerWithUsDto.getName());
+            data.put("brandName", partnerWithUsDto.getBrandName());
+            data.put("emailOrPhone", partnerWithUsDto.getEmail_phone());
+            data.put("description", partnerWithUsDto.getDescription());
+            String initiatorId = input != null && input.contains("@") ? input : null;
+            createCommonEventIngestionDtoValues(eventIngestionDto, initiatorId, WEB_CUSTOMER, EventType.PARTNER_QUERY, data);
+            eventIngestionPublisher.publish(eventIngestionDto);
+            log.info("Successfully send event to notification service for PartnerWithUsDto");
+        } catch (Exception e) {
+            log.error("Failed to send event to notification service for PartnerWithUsDto", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public void sendEventToNotificationServiceForContactInquiry(com.aerilon.turfclan.web.dto.ContactInquiryDto contactInquiryDto, String input) {
+        try {
+            EventIngestionDto eventIngestionDto = new EventIngestionDto();
+            Map<String, String> data = new HashMap<>();
+            data.put("userName", contactInquiryDto.getName());
+            data.put("contactBy", contactInquiryDto.getContactBy());
+            data.put("email", contactInquiryDto.getEmail());
+            data.put("phoneNumber", contactInquiryDto.getPhoneNumber());
+            data.put("subject", contactInquiryDto.getSubject());
+            data.put("description", contactInquiryDto.getDescription());
+            String initiatorId = input != null && input.contains("@") ? input : null;
+            createCommonEventIngestionDtoValues(eventIngestionDto, initiatorId, WEB_CUSTOMER, EventType.CONTACT_US_QUERY, data);
+            eventIngestionPublisher.publish(eventIngestionDto);
+            log.info("Successfully send event to notification service for ContactInquiryDto");
+        } catch (Exception e) {
+            log.error("Failed to send event to notification service for ContactInquiryDto", e);
+            throw e;
+        }
     }
 }

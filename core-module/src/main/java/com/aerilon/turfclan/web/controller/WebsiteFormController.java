@@ -40,9 +40,9 @@ public class WebsiteFormController {
     @Operation(summary = "Partner With Us Query", description = "Allows potential partners to submit their queries by providing their name, brand name, contact information (email or phone), and a description of their query. Validates the input and ensures that duplicate entries are not allowed.")
     public ResponseEntity<WebResponseDto> handlePartnerWithUsQuery(
             @RequestBody @Valid PartnerWithUsDto request) {
-//        if (!recaptchaService.isVerify(request.getRecaptchaToken())) {
-//            throw new InvalidCaptchaException("Captcha verification failed");
-//        }
+        if (!recaptchaService.isVerify(request.getRecaptchaToken())) {
+            throw new InvalidCaptchaException("Captcha verification failed");
+        }
         return ResponseEntity.ok(websiteFormService.createPartnerWithUsQuery(request));
     }
 
@@ -51,9 +51,9 @@ public class WebsiteFormController {
     @Operation(summary = "Contact Us Query", description = "Generates and sends an OTP to a given phone number and confirms that the OTP was sent successfully.")
     public ResponseEntity<WebResponseDto> handleContactUsQuery(
             @RequestBody @Valid ContactInquiryDto request) {
-//        if (!recaptchaService.isVerify(request.getRecaptchaToken())) {
-//            throw new InvalidCaptchaException("Captcha verification failed");
-//        }
+        if (!recaptchaService.isVerify(request.getRecaptchaToken())) {
+            throw new InvalidCaptchaException("Captcha verification failed");
+        }
         return ResponseEntity.ok(websiteFormService.createContactInquiry(request));
     }
 }

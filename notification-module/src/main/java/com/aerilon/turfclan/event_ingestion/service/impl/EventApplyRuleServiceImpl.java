@@ -147,6 +147,8 @@ public class EventApplyRuleServiceImpl implements EventApplyRuleService {
                 return Mono.just(entity);
             } else if (EventType.JOIN_WAITLIST.equals(eventType)) {
                 return Mono.just(entity);
+            } else if (EventType.PARTNER_QUERY.equals(eventType)) {
+                return Mono.just(entity);
             } else {
                 entity.setBody(ruleSets.getNotification().getBody());
                 entity.setActionUrl(ruleSets.getNotification().getActionUrl());

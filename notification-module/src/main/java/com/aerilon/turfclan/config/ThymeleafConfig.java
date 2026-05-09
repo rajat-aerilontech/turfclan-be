@@ -58,7 +58,14 @@ public class ThymeleafConfig {
     @Bean("emailMessageSource")
     public ResourceBundleMessageSource emailMessageSource() {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.addBasenames("templates/emailProperties/joinWaitlist", "templates/emailProperties/joinWaitlistAdmin");
+        messageSource.addBasenames(
+                "templates/emailProperties/joinWaitlist",
+                "templates/emailProperties/joinWaitlistAdmin",
+                "templates/emailProperties/contactUsQuery",
+                "templates/emailProperties/contactUsQueryAdmin",
+                "templates/emailProperties/partnerQuery",
+                "templates/emailProperties/partnerQueryAdmin"
+        );
         messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
         messageSource.setCacheSeconds(thymeleafCache);
         return messageSource;

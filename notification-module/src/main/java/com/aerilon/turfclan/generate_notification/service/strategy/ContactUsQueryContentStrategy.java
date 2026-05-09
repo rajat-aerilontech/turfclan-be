@@ -13,14 +13,14 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 @Component
-public class JoinWaitlistContentStrategy implements EmailContentStrategy {
+public class ContactUsQueryContentStrategy implements EmailContentStrategy {
 
-    private static final String BASE_EMAIL_PROPERTY_NAME = "templates/emailProperties/joinWaitlist";
-    private static final String SUBJECT_KEY = "email.joinWaitlist.subject";
-    private static final String TEMPLATE_NAME = "joinWaitlistEmail";
-    private static final String ADMIN_BASE_EMAIL_PROPERTY_NAME = "templates/emailProperties/joinWaitlistAdmin";
-    private static final String ADMIN_SUBJECT_KEY = "email.joinWaitlist.admin.subject";
-    private static final String ADMIN_TEMPLATE_NAME = "admin/joinWaitlistAdminEmail";
+    private static final String BASE_EMAIL_PROPERTY_NAME = "templates/emailProperties/contactUsQuery";
+    private static final String SUBJECT_KEY = "email.contactUsQuery.subject";
+    private static final String TEMPLATE_NAME = "contactUsQueryEmail";
+    private static final String ADMIN_BASE_EMAIL_PROPERTY_NAME = "templates/emailProperties/contactUsQueryAdmin";
+    private static final String ADMIN_SUBJECT_KEY = "email.contactUsQuery.admin.subject";
+    private static final String ADMIN_TEMPLATE_NAME = "admin/contactUsQueryAdminEmail";
     private static final String ADMIN_PLACEHOLDER = "ADMIN";
 
     @Override
@@ -32,7 +32,7 @@ public class JoinWaitlistContentStrategy implements EmailContentStrategy {
     }
 
     @Override
-    public EventType getEventType() { return EventType.JOIN_WAITLIST; }
+    public EventType getEventType() { return EventType.CONTACT_US_QUERY; }
 
     @Override
     public Context buildContext(EventNotificationEntity event, NotificationRecipientInfoDto recipientInfo, String langCountryCode) {
