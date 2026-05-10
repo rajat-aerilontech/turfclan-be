@@ -170,4 +170,5 @@ jobs:
               -e EMAIL_SERVICE_PORT="${{ secrets.EMAIL_SERVICE_PORT }}" \
               -e EMAIL_SERVICE_USERNAME="${{ secrets.EMAIL_SERVICE_USERNAME }}" \
               -e EMAIL_SERVICE_PASSWORD="${{ secrets.EMAIL_SERVICE_PASSWORD }}" \
+              -e EMAIL_FROM_ADDRESS="${{ secrets.EMAIL_FROM_ADDRESS }}" \
               ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:$IMAGE_TAG
