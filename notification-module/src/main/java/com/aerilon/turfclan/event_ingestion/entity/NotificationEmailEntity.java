@@ -22,6 +22,7 @@ public class NotificationEmailEntity extends BaseAuditableEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "notification_type")
     private EventType notificationType;
 
@@ -37,12 +38,14 @@ public class NotificationEmailEntity extends BaseAuditableEntity {
     @Column(name = "user_email")
     private String userEmail;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "category")
     private NotificationCategory category;
 
     @Column(name = "read")
     private boolean read;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "display_type")
     private NotificationDisplayType displayType;
 
@@ -53,6 +56,7 @@ public class NotificationEmailEntity extends BaseAuditableEntity {
     @ColumnTransformer(write = "?::jsonb")
     private String eventData;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "severity")
     private Severity severity;
 
