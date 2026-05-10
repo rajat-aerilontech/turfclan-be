@@ -143,6 +143,7 @@ jobs:
               --restart unless-stopped \
               --network host \
               -e SPRING_PROFILES_ACTIVE=$SPRING_PROFILES_ACTIVE \
+              -e SPRING_REACTOR_DEBUG_AGENT_ENABLED="false" \
               -e SERVER_PORT=8434 \
               -e ALLOWED_ORIGIN="*" \
               -e SPRINGFRAMEWORK_WEB_LOG_LEVEL="${{ vars.SPRINGFRAMEWORK_WEB_LOG_LEVEL }}" \
