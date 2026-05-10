@@ -26,6 +26,7 @@ public class SelectedSportExperienceFilter extends OncePerRequestFilter {
 
     private static final List<String> PUBLIC_PATH_PREFIXES = List.of(
             "/api/v1/users/otp/",
+            "/api/v1/users/signup",
             "/api/v1/auth/",
             "/v3/api-docs",
             "/swagger-ui",
@@ -50,18 +51,10 @@ public class SelectedSportExperienceFilter extends OncePerRequestFilter {
         }
 
         String selectedSportExperience = request.getHeader(SELECTED_SPORT_EXPERIENCE_HEADER);
-        if (selectedSportExperience == null || selectedSportExperience.isBlank()) {
-            response.setStatus(HttpStatus.BAD_REQUEST.value());
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            objectMapper.writeValue(response.getWriter(), new ErrorResponse(
-                    HttpStatus.BAD_REQUEST.value(),
-                    "Missing required header: selected-sport-experience",
-                    System.currentTimeMillis()
-            ));
-            return;
+        if (selectedSportExperience != null && !selectedSportExperience.isBlank()) {
+            request.setAttribute(SELECTED_SPORT_EXPERIENCE_HEADER, selectedSportExperience.trim());
         }
 
-        request.setAttribute(SELECTED_SPORT_EXPERIENCE_HEADER, selectedSportExperience.trim());
         filterChain.doFilter(request, response);
     }
 
