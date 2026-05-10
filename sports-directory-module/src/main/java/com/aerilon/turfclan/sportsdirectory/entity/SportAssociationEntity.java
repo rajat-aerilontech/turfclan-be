@@ -1,6 +1,7 @@
 package com.aerilon.turfclan.sportsdirectory.entity;
 
 import com.aerilon.turfclan.entity.BaseAuditableEntity;
+import com.aerilon.turfclan.enums.RecordStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -63,4 +64,8 @@ public class SportAssociationEntity extends BaseAuditableEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "contact_details", columnDefinition = "jsonb")
     private JsonNode contactDetails;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 255, nullable = false)
+    private RecordStatus status;
 }

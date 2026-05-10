@@ -5,7 +5,12 @@ import com.aerilon.turfclan.tournament.dto.TournamentAdminDTO;
 import com.aerilon.turfclan.tournament.dto.TournamentCreateRequestDTO;
 import com.aerilon.turfclan.tournament.dto.TournamentSummaryDTO;
 import com.aerilon.turfclan.tournament.entity.TournamentEntity;
+import com.aerilon.turfclan.tournament.enums.TournamentStatus;
 import lombok.RequiredArgsConstructor;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -24,14 +29,20 @@ public class TournamentConverter {
         TournamentSummaryDTO summary = new TournamentSummaryDTO();
         summary.setId(entity.getId() != null ? entity.getId().toString() : null);
         summary.setSportCategory(entity.getSportCategory());
-        summary.setName(entity.getName());
+        summary.setName(entity.getTournamentName());
         summary.setLocationName(entity.getLocationName());
-        summary.setGeolocation(entity.getGeolocation());
+//        Double lat = entity.get();
+//        Double lon = entity.getLongitude();
+//        if (lat != null && lon != null) {
+//            // Coordinate order is (X, Y) which is (Longitude, Latitude)
+//            GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+//            Point point = geometryFactory.createPoint(new Coordinate(lon, lat));
+//            entity.setGeoLocation(point);
+//        }
         summary.setEntryFee(entity.getEntryFee());
         summary.setPrizePool(entity.getPrizePool());
         summary.setAbout(entity.getAbout());
         summary.setFormat(entity.getFormat());
-        summary.setRegisterBy(entity.getRegisterBy() != null ? entity.getRegisterBy().toString() : null);
         summary.setWhyJoin(entity.getWhyJoin());
         summary.setRules(entity.getRules());
         return summary;
@@ -47,7 +58,7 @@ public class TournamentConverter {
         admin.setUserName(entity.getAdmin().getUserName());
         admin.setFirstName(entity.getAdmin().getFirstName());
         admin.setLastName(entity.getAdmin().getLastName());
-        admin.setProfilePictureUrl(entity.getAdmin().getProfilePictureUrl());
+//        admin.setProfilePictureUrl(entity.getAdmin().getProfilePictureUrl());
         return admin;
     }
 
@@ -55,17 +66,16 @@ public class TournamentConverter {
                                    TournamentCreateRequestDTO request,
                                    String sportCategory) {
         entity.setSportCategory(sportCategory);
-        entity.setName(request.getName() != null ? request.getName().trim() : null);
+        entity.setTournamentName(request.getName() != null ? request.getName().trim() : null);
         entity.setLocationName(request.getLocationName() != null ? request.getLocationName().trim() : null);
-        entity.setGeolocation(request.getGeolocation() != null ? request.getGeolocation().trim() : null);
+//        entity.setGeolocation(request.getGeolocation() != null ? request.getGeolocation().trim() : null);
         entity.setEntryFee(request.getEntryFee());
         entity.setPrizePool(request.getPrizePool());
         entity.setAbout(request.getAbout() != null ? request.getAbout().trim() : null);
         entity.setFormat(request.getFormat() != null ? request.getFormat().trim() : null);
-        entity.setRegisterBy(request.getRegisterBy());
         entity.setWhyJoin(request.getWhyJoin() != null ? request.getWhyJoin().trim() : null);
         entity.setRules(request.getRules() != null ? request.getRules().trim() : null);
-        entity.setStatus(RecordStatus.ACTIVE);
+        entity.setTournamentStatus(TournamentStatus.REGISTRATION);
         entity.setCreatedAt(LocalDateTime.now());
     }
 }

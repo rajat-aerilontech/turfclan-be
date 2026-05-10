@@ -16,10 +16,6 @@ import java.time.LocalDateTime;
 @EntityListeners({AuditingEntityListener.class})
 public abstract class BaseAuditableEntity {
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", length = 255, nullable = false)
-    private RecordStatus status;
-
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

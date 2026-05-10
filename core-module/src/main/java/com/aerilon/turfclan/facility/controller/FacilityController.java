@@ -1,0 +1,124 @@
+package com.aerilon.turfclan.facility.controller;
+
+import com.aerilon.turfclan.facility.service.FacilityService;
+import com.aerilon.turfclan.facility.dto.FacilitiesMobileResponseDto;
+import com.aerilon.turfclan.facility.dto.FacilityUpdateDto;
+import com.aerilon.turfclan.facility.dto.SubFacilityUpdateDto;
+import com.aerilon.turfclan.facility.dto.FacilitiesRequestDto;
+import com.aerilon.turfclan.facility.dto.FacilityRequestDto;
+import com.aerilon.turfclan.facility.dto.SubFacilityRequestDto;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/v1/facility")
+@RequiredArgsConstructor
+@Tag(name = "Facility", description = "Facility APIs")
+public class FacilityController {
+
+    @Autowired
+    private FacilityService facilityService;
+
+    @GetMapping("/user")
+    @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
+    @Operation(summary = "Get Facility For User", description = "Returns all facility data associated with the authenticated user (partner).")
+    public ResponseEntity<FacilitiesRequestDto> getFacilityByUser(Authentication authentication) {
+        String userId = authentication.getName();
+        return ResponseEntity.ok(facilityService.getFacilityForUser(userId));
+    }
+
+    @GetMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_TM_PARTNER', 'ROLE_TM_USER')")
+    @Operation(summary = "Get All Facility", description = "Returns all facility data for the authenticated user, including any associated details.")
+    public ResponseEntity<FacilitiesRequestDto> getAllFacility(Authentication authentication) {
+        return ResponseEntity.ok(facilityService.getAllFacility());
+    }
+
+    @GetMapping("/mobile/nearby")
+    @PreAuthorize("hasAuthority('ROLE_TM_USER')")
+    @Operation(summary = "Get Nearby Facilities for Mobile Users",
+            description = "Returns all nearby facilities sorted by proximity and price. Mobile users can view facilities with their distances and lowest available prices.")
+    public ResponseEntity<FacilitiesMobileResponseDto> getNearbyFacilitiesForMobile(
+            @Parameter(name = "latitude", description = "User's current latitude", required = true, in = ParameterIn.QUERY)
+            @RequestParam Double latitude,
+
+            @Parameter(name = "longitude", description = "User's current longitude", required = true, in = ParameterIn.QUERY)
+            @RequestParam Double longitude,
+
+            @Parameter(name = "sortBy", description = "Sorting strategy: 'distance' (nearest first), 'price' (lowest price first), or 'distance_price' (distance first then price - default)",
+                    in = ParameterIn.QUERY)
+            @RequestParam(required = false, defaultValue = "distance_price") String sortBy,
+
+            @Parameter(name = "maxDistanceKm", description = "Maximum search radius in kilometers (default: 50 km)",
+                    in = ParameterIn.QUERY)
+            @RequestParam(required = false, defaultValue = "50") Double maxDistanceKm) {
+
+        if (latitude == null || longitude == null) {
+            throw new IllegalArgumentException("Latitude and longitude are required parameters");
+        }
+
+        FacilitiesMobileResponseDto response = facilityService.getAllFacilitiesForMobile(
+                latitude, longitude, sortBy, maxDistanceKm);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{facilityId}")
+    @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
+    @Operation(summary = "Update Facility Details", description = "Update facility details by the partner who owns the facility.")
+    public ResponseEntity<FacilityRequestDto> updateFacility(
+            @PathVariable UUID facilityId,
+            @ModelAttribute FacilityUpdateDto updateDto,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        FacilityRequestDto response = facilityService.updateFacility(userId, facilityId, updateDto);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{facilityId}/sport/{sportId}")
+    @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
+    @Operation(summary = "Update Sport Detail", description = "Update sport detail by the partner who owns the facility.")
+    public ResponseEntity<FacilityRequestDto> updateSubFacility(
+            @PathVariable UUID facilityId,
+            @PathVariable UUID sportId,
+            @RequestBody SubFacilityUpdateDto updateDto,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        FacilityRequestDto response = facilityService.updateSubFacility(userId, facilityId, sportId, updateDto);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{facilityId}/sport")
+    @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
+    @Operation(summary = "Update Sport Detail", description = "Update sport detail by the partner who owns the facility.")
+    public ResponseEntity<FacilityRequestDto> createSubFacilityForFacility(
+            @PathVariable UUID facilityId,
+            @Valid @RequestBody SubFacilityRequestDto subFacilityRequestDto,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        FacilityRequestDto response = facilityService.addSubFacilityToFacility(userId, facilityId, subFacilityRequestDto);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/user")
+    @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
+    @Operation(summary = "Update Facility Details", description = "Update facility details by the partner who owns the facility.")
+    public ResponseEntity<FacilityRequestDto> createFacilityForUser(
+            @Valid @RequestBody FacilityRequestDto facilityRequestDto,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        FacilityRequestDto response = facilityService.addFacilityForUser(userId, facilityRequestDto);
+        return ResponseEntity.ok(response);
+    }
+}
