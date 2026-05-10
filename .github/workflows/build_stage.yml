@@ -127,6 +127,13 @@ jobs:
             export PGPASSWORD="${{ secrets.RDS_PASSWORD }}"
             psql -h 127.0.0.1 -U "${{ secrets.RDS_USERNAME }}" -d "${{ secrets.DATABASE_NAME }}" -c "CREATE EXTENSION IF NOT EXISTS postgis;"
             
+            # Enable PostGIS extension AND create your custom schema
+            echo "Ensuring PostGIS and schemas exist in ${{ secrets.DATABASE_NAME }}..."
+            export PGPASSWORD="${{ secrets.RDS_PASSWORD }}"
+            psql -h 127.0.0.1 -U "${{ secrets.RDS_USERNAME }}" -d "${{ secrets.DATABASE_NAME }}" -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+            psql -h 127.0.0.1 -U "${{ secrets.RDS_USERNAME }}" -d "${{ secrets.DATABASE_NAME }}" -c "CREATE SCHEMA IF NOT EXISTS turfclan_schema;"
+            psql -h 127.0.0.1 -U "${{ secrets.RDS_USERNAME }}" -d "${{ secrets.DATABASE_NAME }}" -c "CREATE SCHEMA IF NOT EXISTS turfclan_notification_schema;"
+            
             # Login to Docker Hub
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
             
@@ -144,6 +151,7 @@ jobs:
               --network host \
               -e SPRING_PROFILES_ACTIVE=$SPRING_PROFILES_ACTIVE \
               -e SPRING_REACTOR_DEBUG_AGENT_ENABLED="false" \
+              -e SPRING_JPA_HIBERNATE_DDL_AUTO="update" \
               -e SERVER_PORT=8434 \
               -e ALLOWED_ORIGIN="*" \
               -e SPRINGFRAMEWORK_WEB_LOG_LEVEL="${{ vars.SPRINGFRAMEWORK_WEB_LOG_LEVEL }}" \
