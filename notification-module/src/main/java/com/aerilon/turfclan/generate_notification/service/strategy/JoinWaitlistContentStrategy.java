@@ -53,13 +53,14 @@ public class JoinWaitlistContentStrategy implements EmailContentStrategy {
 
     @Override
     public String buildSubject(EventNotificationEntity event, Context context) {
+        Locale locale = context.getLocale();
         String userRole = (String) context.getVariable("userRole");
         if (ADMIN_PLACEHOLDER.equalsIgnoreCase(userRole)) {
-            ResourceBundle adminBundle = ResourceBundle.getBundle(ADMIN_BASE_EMAIL_PROPERTY_NAME);
+            ResourceBundle adminBundle = ResourceBundle.getBundle(ADMIN_BASE_EMAIL_PROPERTY_NAME, locale);
             String subject = adminBundle.getString(ADMIN_SUBJECT_KEY);
             return java.text.MessageFormat.format(subject, context.getVariable("userName"));
         }
-        ResourceBundle resourceBundle = ResourceBundle.getBundle(BASE_EMAIL_PROPERTY_NAME);
+        ResourceBundle resourceBundle = ResourceBundle.getBundle(BASE_EMAIL_PROPERTY_NAME, locale);
         return String.format("%s", resourceBundle.getString(SUBJECT_KEY));
     }
 }
