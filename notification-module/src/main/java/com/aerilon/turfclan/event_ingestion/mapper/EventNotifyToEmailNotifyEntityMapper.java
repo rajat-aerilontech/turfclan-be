@@ -29,6 +29,8 @@ public abstract class EventNotifyToEmailNotifyEntityMapper {
     @Mapping(target = "displayed", constant = "false")
     @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "eventCreatedBy", constant = SYSTEM)
+    @Mapping(target = "userEmail", ignore = true)
+    @Mapping(target = "countryCode", ignore = true)
     public abstract NotificationEmailEntity toEntity(EventNotificationEntity event);
 
     @Named("mergeNotificationAction")

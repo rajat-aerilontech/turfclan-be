@@ -18,6 +18,9 @@ public interface RuleMapper {
     RuleDto toDto(RuleEntity ruleEntity);
 
     @Mapping(source="ruleSets", target = "ruleSets", qualifiedByName = "serializeRuleSets")
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "id", ignore = true)
     RuleEntity toEntity(RuleDto ruleDto);
 
     @Named("deserializeRuleSets")
