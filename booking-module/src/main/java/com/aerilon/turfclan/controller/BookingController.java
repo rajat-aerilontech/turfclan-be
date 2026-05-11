@@ -29,7 +29,6 @@ public class BookingController {
     @Autowired
     private BookingService bookingService;
 
-    // 1. MOBILE USER: Get the availability grid for a specific sport/date
     /**
      * Returns available booking slots for a sport on a given date.
      *
@@ -49,7 +48,6 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getAvailableSlots(sportId, date));
     }
 
-    // 2. MOBILE USER: Create the booking (Cash or Online)
     /**
      * Creates a booking for the authenticated user.
      *
@@ -70,7 +68,6 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.createBooking(request, userId));
     }
 
-    // 3. PARTNER: Show all "Pay in Cash" bookings that need approval
     /**
      * Returns pending pay-in-cash booking requests for a facility.
      *
@@ -87,7 +84,6 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getPendingPartnerRequests(facilityId));
     }
 
-    // 4. PARTNER: Accept or Reject a specific booking
     /**
      * Updates the status for a booking.
      *

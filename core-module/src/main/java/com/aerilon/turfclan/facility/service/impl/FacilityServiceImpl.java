@@ -110,6 +110,25 @@ public class FacilityServiceImpl implements FacilityService {
                 .build();
     }
 
+    @Override
+    public FacilityRequestDto getFacilityForMobile(String userId, UUID facilityId, boolean restrictToOwner) {
+        log.info("Fetching facility details for mobile: facilityId={}, userId={}, restrictToOwner={}",
+                facilityId, userId, restrictToOwner);
+
+        FacilityEntity facility = facilityRepository.findById(facilityId)
+                .orElseThrow(() -> new ResourceNotFoundException("Facility not found"));
+
+        if (restrictToOwner) {
+            UserEntity user = userRepository.findById(UUID.fromString(userId))
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+            if (facility.getUser() == null || !facility.getUser().getId().equals(user.getId())) {
+                throw new UnauthorizedAccessException("Unauthorized: Facility does not belong to this user");
+            }
+        }
+
+        return facilityConverter.toDto(facility);
+    }
+
     /**
      * Convert FacilityEntity to FacilityMobileResponseDto with distance and lowest price
      */

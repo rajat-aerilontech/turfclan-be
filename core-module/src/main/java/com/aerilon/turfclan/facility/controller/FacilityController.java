@@ -96,6 +96,32 @@ public class FacilityController {
     }
 
     /**
+     * Returns facility details (including sub-facilities) for mobile clients.
+     * Partners are restricted to their own facilities; users can access any facility.
+     *
+     * @param facilityId facility identifier
+     * @param authentication authenticated principal containing the user id
+     * @return facility details with sub-facilities
+     */
+    @GetMapping("/mobile/facility/{facilityId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
+    @Operation(
+        summary = "Get Facility Details for Mobile",
+        description = "Returns facility details with sub-facilities for the requested facility."
+    )
+    public ResponseEntity<FacilityRequestDto> getFacilityForMobile(
+        @PathVariable UUID facilityId,
+        Authentication authentication
+    ){
+        String userId = authentication.getName();
+        boolean restrictToOwner = authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_TM_PARTNER".equals(authority.getAuthority()));
+        FacilityRequestDto response = facilityService.getFacilityForMobile(userId, facilityId, restrictToOwner);
+        return ResponseEntity.ok(response);
+    }
+
+
+    /**
      * Updates facility details for the authenticated partner.
      *
      * @param facilityId facility identifier

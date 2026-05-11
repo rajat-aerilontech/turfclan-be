@@ -1,6 +1,8 @@
 package com.aerilon.turfclan.facility.dto;
 
 import com.aerilon.turfclan.dto.S3ImageResponseDto;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -49,5 +51,7 @@ public class FacilityRequestDto {
     private Boolean canBeBooked;
     @Valid
     @NotEmpty(message = "At least one sport detail is required")
+    @JsonProperty("sub_facility")
+    @JsonAlias({"subfacility", "sports"})
     private List<@Valid SubFacilityRequestDto> sports;
 }
