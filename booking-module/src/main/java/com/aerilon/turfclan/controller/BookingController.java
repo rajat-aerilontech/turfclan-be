@@ -5,6 +5,7 @@ import com.aerilon.turfclan.dto.BookingResponseDTO;
 import com.aerilon.turfclan.dto.SlotResponseDTO;
 import com.aerilon.turfclan.enums.BookingStatus;
 import com.aerilon.turfclan.service.BookingService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
