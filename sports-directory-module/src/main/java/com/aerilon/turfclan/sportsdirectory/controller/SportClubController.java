@@ -30,7 +30,12 @@ public class SportClubController {
 
     private final SportClubService sportClubService;
 
-    @GetMapping("/clubs")
+        /**
+         * Returns the list of sports clubs.
+         *
+         * @return list of sports clubs
+         */
+        @GetMapping("/clubs")
     @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TA_USER')")
     @Operation(
             summary = "Get Sports Clubs",
@@ -40,7 +45,13 @@ public class SportClubController {
         return ResponseEntity.ok(sportClubService.getClubs());
     }
 
-    @GetMapping("/clubs/{clubId}")
+        /**
+         * Returns full details for a sports club.
+         *
+         * @param clubId club identifier
+         * @return sports club detail
+         */
+        @GetMapping("/clubs/{clubId}")
     @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TA_USER')")
     @Operation(
             summary = "Get Sports Club Detail",
@@ -52,7 +63,13 @@ public class SportClubController {
                 return ResponseEntity.ok(sportClubService.getClubDetail(clubId));
     }
 
-    @PostMapping("/clubs")
+        /**
+         * Creates a sports club.
+         *
+         * @param request create payload
+         * @return created sports club
+         */
+        @PostMapping("/clubs")
     @PreAuthorize("hasAuthority('ROLE_TA_USER')")
     @Operation(
             summary = "Create Sports Club",
@@ -65,7 +82,14 @@ public class SportClubController {
                 .body(sportClubService.createClub(request));
     }
 
-    @PutMapping("/clubs/{clubId}")
+        /**
+         * Updates a sports club.
+         *
+         * @param clubId club identifier
+         * @param request update payload
+         * @return updated sports club
+         */
+        @PutMapping("/clubs/{clubId}")
     @PreAuthorize("hasAuthority('ROLE_TA_USER')")
     @Operation(
             summary = "Update Sports Club",
@@ -80,7 +104,13 @@ public class SportClubController {
         );
     }
 
-    @DeleteMapping("/clubs/{clubId}")
+        /**
+         * Deletes a sports club.
+         *
+         * @param clubId club identifier
+         * @return empty response on success
+         */
+        @DeleteMapping("/clubs/{clubId}")
     @PreAuthorize("hasAuthority('ROLE_TA_USER')")
     @Operation(
             summary = "Delete Sports Club",

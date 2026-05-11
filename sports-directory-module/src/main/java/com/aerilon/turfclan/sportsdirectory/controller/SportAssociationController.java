@@ -30,7 +30,12 @@ public class SportAssociationController {
 
     private final SportAssociationService sportAssociationService;
 
-    @GetMapping("/associations")
+        /**
+         * Returns the list of sports associations.
+         *
+         * @return list of sports associations
+         */
+        @GetMapping("/associations")
     @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TA_USER')")
     @Operation(
             summary = "Get Sports Associations",
@@ -40,7 +45,13 @@ public class SportAssociationController {
                 return ResponseEntity.ok(sportAssociationService.getAssociations());
     }
 
-    @GetMapping("/associations/{associationId}")
+        /**
+         * Returns full details for a sports association.
+         *
+         * @param associationId association identifier
+         * @return sports association detail
+         */
+        @GetMapping("/associations/{associationId}")
     @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TA_USER')")
     @Operation(
             summary = "Get Sports Association Detail",
@@ -52,7 +63,13 @@ public class SportAssociationController {
                 return ResponseEntity.ok(sportAssociationService.getAssociationDetail(associationId));
     }
 
-    @PostMapping("/associations")
+        /**
+         * Creates a sports association.
+         *
+         * @param request create payload
+         * @return created sports association
+         */
+        @PostMapping("/associations")
     @PreAuthorize("hasAuthority('ROLE_TA_USER')")
     @Operation(
             summary = "Create Sports Association",
@@ -65,7 +82,14 @@ public class SportAssociationController {
                 .body(sportAssociationService.createAssociation(request));
     }
 
-    @PutMapping("/associations/{associationId}")
+        /**
+         * Updates a sports association.
+         *
+         * @param associationId association identifier
+         * @param request update payload
+         * @return updated sports association
+         */
+        @PutMapping("/associations/{associationId}")
     @PreAuthorize("hasAuthority('ROLE_TA_USER')")
     @Operation(
             summary = "Update Sports Association",
@@ -80,7 +104,13 @@ public class SportAssociationController {
         );
     }
 
-    @DeleteMapping("/associations/{associationId}")
+        /**
+         * Deletes a sports association.
+         *
+         * @param associationId association identifier
+         * @return empty response on success
+         */
+        @DeleteMapping("/associations/{associationId}")
     @PreAuthorize("hasAuthority('ROLE_TA_USER')")
     @Operation(
             summary = "Delete Sports Association",
