@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     implementation project(':common')
+    implementation project(':notification-module')
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.data.jpa)

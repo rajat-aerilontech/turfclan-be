@@ -75,6 +75,9 @@ public class UserEntity {
     @Column(name = "country_iso_code", length = 10)
     private String countryIsoCode;
 
+    @Column(name = "language_iso_code", length = 10)
+    private String languageIsoCode;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 255, nullable = false)
     private UserStatus status;

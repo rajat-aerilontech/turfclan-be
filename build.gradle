@@ -5,9 +5,11 @@ plugins {
 	id 'base'
 }
 
+def releaseVersion = project.findProperty('version') ?: '0.0.1-SNAPSHOT'
+
 allprojects {
 	group = 'com.aerilontech'
-	version = '0.0.1-SNAPSHOT'
+	version = releaseVersion
 }
 
 subprojects {
@@ -15,7 +17,7 @@ subprojects {
 
 	java {
 		toolchain {
-			languageVersion = JavaLanguageVersion.of(17)
+			languageVersion = JavaLanguageVersion.of(22)
 		}
 	}
 
@@ -38,6 +40,12 @@ subprojects {
 
 	tasks.withType(Test).configureEach {
 		useJUnitPlatform()
+	}
+}
+
+tasks.register('printVersion') {
+	doLast {
+		println(project.version)
 	}
 }
 

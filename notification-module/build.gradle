@@ -4,15 +4,24 @@ plugins {
 
 dependencies {
     implementation project(':common')
-    implementation project(':core-module')
 
-    implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter)
+    implementation(libs.reactor.core)
+    implementation(libs.reactor.tools)
     implementation(libs.spring.boot.starter.data.jpa)
-    implementation(libs.spring.boot.starter.validation)
-    implementation(libs.spring.boot.starter.security)
-    implementation(libs.springdoc.openapi.starter.webmvc.ui)
+    implementation(libs.spring.boot.mail)
     implementation(libs.spring.boot.starter.thymeleaf)
-    implementation(libs.spring.cloud.aws.starter.ses)
+    implementation(libs.mapstruct)
+    implementation(libs.jackson.databind)
+    implementation(libs.spring.boot.starter.validation)
+
+    runtimeOnly(libs.postgresql)
+
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+
+    annotationProcessor(libs.mapstruct.processor)
+    annotationProcessor(libs.lombok.mapstruct.binding)
 
     testImplementation(libs.spring.boot.starter.test)
 }
