@@ -27,6 +27,9 @@ public class EmailService {
     @Value("${from.email.address}")
     private String fromEmail;
 
+    @Value("${from.email.name}")
+    private String fromName;
+
     public Mono<Void> sendEmail(String to, EventNotificationEntity event, NotificationRecipientInfoDto recipientInfoDto, String langCountryCode) {
         return Mono.fromCallable(() -> {
             log.info("Preparing to send email for event type {}", event.getEventType());
@@ -39,7 +42,7 @@ public class EmailService {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
-            helper.setFrom(fromEmail);
+            helper.setFrom(fromEmail, fromName);
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(htmlContent, true);
