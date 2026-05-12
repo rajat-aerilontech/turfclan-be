@@ -6,6 +6,7 @@ import com.aerilon.turfclan.generate_notification.service.EmailNotificationProce
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -16,20 +17,37 @@ public class GenerateNotificationListener {
 
     private final EmailNotificationProcessorService emailNotificationProcessorService;
 
+    @Async("notificationTaskExecutor")
     @EventListener
     public void onEventNotificationReceived(EventNotificationEntity event) {
         log.info("Processing event notification for eventId: {} with channel: {}", event.getEventId(), event.getNotificationChannel());
         Mono<Void> processMono;
-        String channel = event.getNotificationChannel();
-        if (Channel.EMAIL.equals(Channel.valueOf(channel))) {
+        Channel channel = toChannel(event);
+        if (channel == null) {
+            return;
+        }
+        if (Channel.EMAIL.equals(channel)) {
             processMono = emailNotificationProcessorService.generateNotification(event);
-        } else if (Channel.SMS.equals(Channel.valueOf(channel))) {
+        } else if (Channel.SMS.equals(channel)) {
             processMono = Mono.empty();
         } else {
             log.warn("Unsupported notification channel: {} for eventId: {}", channel, event.getEventId());
             processMono = Mono.empty();
         }
-        processMono.doOnError(e -> log.error("Error processing notification for eventId: {} with channel: {}", event.getEventId(), channel, e))
-                .subscribe();
+        processMono.subscribe(
+                ignored -> {
+                },
+                e -> log.error("Error processing notification for eventId: {} with channel: {}", event.getEventId(), channel, e),
+                () -> log.info("Completed notification processing for eventId: {} with channel: {}", event.getEventId(), channel)
+        );
+    }
+
+    private Channel toChannel(EventNotificationEntity event) {
+        try {
+            return Channel.valueOf(event.getNotificationChannel());
+        } catch (IllegalArgumentException | NullPointerException e) {
+            log.warn("Unsupported notification channel: {} for eventId: {}", event.getNotificationChannel(), event.getEventId());
+            return null;
+        }
     }
 }
