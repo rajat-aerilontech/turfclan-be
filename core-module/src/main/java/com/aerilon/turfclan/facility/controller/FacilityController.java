@@ -105,15 +105,14 @@ public class FacilityController {
     @GetMapping("/mobile/facility/{facilityId}")
     @PreAuthorize("hasAnyAuthority('ROLE_TM_USER')")
     @Operation(
-        summary = "Get Facility Details for Mobile",
+        summary = "Get Facility Details for Users",
         description = "Returns facility details with sub-facilities for the requested facility."
     )
     public ResponseEntity<FacilityRequestDto> getFacilityDetail(
         @PathVariable UUID facilityId,
         Authentication authentication
     ){
-        String userId = authentication.getName();
-        FacilityRequestDto response = facilityService.getFacilityDetail(userId, facilityId);
+        FacilityRequestDto response = facilityService.getFacilityDetail(facilityId);
         return ResponseEntity.ok(response);
     }
 

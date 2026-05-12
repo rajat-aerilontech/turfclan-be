@@ -154,18 +154,18 @@ public class OnboardingServiceImpl implements OnboardingService {
                 FacilityEntity facilityEntity = facilityConverter.convert(facilityDto);
                 if (facilityEntity != null) {
                     facilityEntity.setUser(user);
-                    // Initialize sports list
-                    List<SubFacilityEntity> sports = new ArrayList<>();
-                    if (facilityDto.getSports() != null) {
-                        for (SubFacilityRequestDto sportDto : facilityDto.getSports()) {
-                            SubFacilityEntity sportEntity = subFacilityConverter.convert(sportDto);
-                            if (sportEntity != null) {
-                                sportEntity.setFacility(facilityEntity);
-                                sports.add(sportEntity);
+                    // Initialize sub-facility list
+                    List<SubFacilityEntity> subFacilities = new ArrayList<>();
+                    if (facilityDto.getSubFacilities() != null) {
+                        for (SubFacilityRequestDto subFacilityDto : facilityDto.getSubFacilities()) {
+                            SubFacilityEntity subFacilityEntity = subFacilityConverter.convert(subFacilityDto);
+                            if (subFacilityEntity != null) {
+                                subFacilityEntity.setFacility(facilityEntity);
+                                subFacilities.add(subFacilityEntity);
                             }
                         }
                     }
-                    facilityEntity.setSubFacility(sports);
+                    facilityEntity.setSubFacility(subFacilities);
                     facilityRepository.save(facilityEntity);
                 }
             }

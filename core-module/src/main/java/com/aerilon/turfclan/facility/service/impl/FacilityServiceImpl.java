@@ -111,9 +111,9 @@ public class FacilityServiceImpl implements FacilityService {
     }
 
     @Override
-    public FacilityRequestDto getFacilityDetail(String userId, UUID facilityId) {
-        log.info("Fetching facility details for mobile: facilityId={}, userId={}",
-                facilityId, userId);
+    public FacilityRequestDto getFacilityDetail(UUID facilityId) {
+        log.info("Fetching facility details for mobile: facilityId={}",
+                facilityId);
 
         FacilityEntity facility = facilityRepository.findById(facilityId)
                 .orElseThrow(() -> new ResourceNotFoundException("Facility not found"));
@@ -418,17 +418,17 @@ public class FacilityServiceImpl implements FacilityService {
         FacilityEntity facilityEntity = facilityConverter.convert(facilityRequestDto);
         if (facilityEntity != null) {
             facilityEntity.setUser(user);
-            List<SubFacilityEntity> sports = new ArrayList<>();
-            if (facilityRequestDto.getSports() != null) {
-                for (SubFacilityRequestDto sportDto : facilityRequestDto.getSports()) {
-                    SubFacilityEntity sportEntity = subFacilityConverter.convert(sportDto);
-                    if (sportEntity != null) {
-                        sportEntity.setFacility(facilityEntity);
-                        sports.add(sportEntity);
+            List<SubFacilityEntity> subFacilities = new ArrayList<>();
+            if (facilityRequestDto.getSubFacilities() != null) {
+                for (SubFacilityRequestDto subFacilityDto : facilityRequestDto.getSubFacilities()) {
+                    SubFacilityEntity subFacilityEntity = subFacilityConverter.convert(subFacilityDto);
+                    if (subFacilityEntity != null) {
+                        subFacilityEntity.setFacility(facilityEntity);
+                        subFacilities.add(subFacilityEntity);
                     }
                 }
             }
-            facilityEntity.setSubFacility(sports);
+            facilityEntity.setSubFacility(subFacilities);
             FacilityEntity savedFacility = facilityRepository.save(facilityEntity);
             return facilityConverter.toDto(savedFacility);
         }

@@ -52,6 +52,6 @@ public class FacilityRequestDto {
     @Valid
     @NotEmpty(message = "At least one sport detail is required")
     @JsonProperty("sub_facility")
-    @JsonAlias({"subfacility", "sports"})
-    private List<@Valid SubFacilityRequestDto> sports;
+    @JsonAlias({"subfacility"})
+    private List<@Valid SubFacilityRequestDto> subFacilities;
 }
