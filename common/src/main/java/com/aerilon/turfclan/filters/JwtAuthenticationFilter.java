@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.data.redis.core.RedisTemplate;
+
 @Component
 @Slf4j
 @RequiredArgsConstructor
@@ -35,6 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final ObjectMapper objectMapper;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -52,6 +55,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             io.jsonwebtoken.Claims claims = jwtService.validateToken(token);
             String userId = claims.getSubject();
+            
+            // Check Redis for revoked access token
+            String redisKey = "revoked_access:" + token;
+            if (Boolean.TRUE.equals(redisTemplate.hasKey(redisKey))) {
+                throw new JwtException("Token has been revoked");
+            }
             
             Object audObj = claims.get("aud");
             String role = null;

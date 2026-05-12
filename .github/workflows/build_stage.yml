@@ -143,6 +143,10 @@ jobs:
             # Stop and remove existing app container (do not touch the DB container)
             docker stop ${{ env.APP_NAME }} || true
             docker rm ${{ env.APP_NAME }} || true
+
+            # Start Redis container
+            echo "Ensuring Redis is running..."
+            docker start turfclan-redis || docker run -d --name turfclan-redis -p 6379:6379 --restart unless-stopped redis:7-alpine redis-server --save 60 1 --loglevel warning
             
             # Run the new app container
             docker run -d \
@@ -159,6 +163,8 @@ jobs:
               -e RDS_USERNAME="${{ secrets.RDS_USERNAME }}" \
               -e RDS_PASSWORD="${{ secrets.RDS_PASSWORD }}" \
               -e RDS_SCHEMA="${{ secrets.RDS_SCHEMA }}" \
+              -e REDIS_HOST="127.0.0.1" \
+              -e REDIS_PORT="6379" \
               -e APP_COPYRIGHT="${{ secrets.APP_COPYRIGHT }}" \
               -e AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
               -e AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}" \
