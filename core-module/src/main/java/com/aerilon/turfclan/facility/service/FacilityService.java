@@ -17,7 +17,7 @@ public interface FacilityService {
 
     FacilitiesMobileResponseDto getAllFacilitiesForMobile(Double userLatitude, Double userLongitude, String sortBy, Double maxDistanceKm);
 
-    FacilityRequestDto getFacilityForMobile(String userId, UUID facilityId, boolean restrictToOwner);
+    FacilityRequestDto getFacilityDetail(String userId, UUID facilityId);
 
     FacilityRequestDto updateFacility(String userId, UUID facilityId, FacilityUpdateDto updateDto);
 
