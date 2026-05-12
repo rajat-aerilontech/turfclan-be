@@ -17,6 +17,8 @@ public interface FacilityService {
 
     FacilitiesMobileResponseDto getAllFacilitiesForMobile(Double userLatitude, Double userLongitude, String sortBy, Double maxDistanceKm);
 
+    FacilityRequestDto getFacilityDetail(UUID facilityId);
+
     FacilityRequestDto updateFacility(String userId, UUID facilityId, FacilityUpdateDto updateDto);
 
     FacilityRequestDto updateSubFacility(String userId, UUID facilityId, UUID sportId, SubFacilityUpdateDto updateDto);

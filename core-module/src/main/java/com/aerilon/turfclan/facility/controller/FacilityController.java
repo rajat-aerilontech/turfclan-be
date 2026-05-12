@@ -96,6 +96,28 @@ public class FacilityController {
     }
 
     /**
+     * Returns facility details (including sub-facilities) for mobile users.
+     *
+     * @param facilityId facility identifier
+     * @param authentication authenticated principal containing the user id
+     * @return facility details with sub-facilities
+     */
+    @GetMapping("/mobile/facility/{facilityId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER')")
+    @Operation(
+        summary = "Get Facility Details for Users",
+        description = "Returns facility details with sub-facilities for the requested facility."
+    )
+    public ResponseEntity<FacilityRequestDto> getFacilityDetail(
+        @PathVariable UUID facilityId,
+        Authentication authentication
+    ){
+        FacilityRequestDto response = facilityService.getFacilityDetail(facilityId);
+        return ResponseEntity.ok(response);
+    }
+
+
+    /**
      * Updates facility details for the authenticated partner.
      *
      * @param facilityId facility identifier

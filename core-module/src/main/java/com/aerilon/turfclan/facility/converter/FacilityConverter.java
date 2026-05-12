@@ -86,7 +86,7 @@ public class FacilityConverter implements Converter<FacilityRequestDto, Facility
             dto.setLatitude(entity.getLocation().getY());
         }
         if (entity.getSubFacility() != null) {
-            dto.setSports(entity.getSubFacility().stream()
+            dto.setSubFacilities(entity.getSubFacility().stream()
                     .map(subFacilityConverter::toDto)
                     .collect(Collectors.toList()));
         }
