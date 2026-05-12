@@ -30,7 +30,15 @@ public class TournamentController {
 
     private final TournamentService tournamentService;
 
-    @GetMapping
+        /**
+         * Returns tournaments for the selected sport experience with cursor pagination.
+         *
+         * @param selectedSportExperience selected sport experience header
+         * @param cursor pagination cursor
+         * @param limit max results per page
+         * @return cursor page of tournaments
+         */
+        @GetMapping
     @PreAuthorize("hasAuthority('ROLE_TM_USER')")
     @Operation(
             summary = "Get Tournaments",
@@ -44,7 +52,14 @@ public class TournamentController {
         return ResponseEntity.ok(tournamentService.getTournaments(selectedSportExperience, cursor, limit));
     }
 
-    @GetMapping("/my")
+        /**
+         * Returns tournaments created by the authenticated user.
+         *
+         * @param authentication authenticated principal containing the user id
+         * @param selectedSportExperience selected sport experience header
+         * @return list of tournaments
+         */
+        @GetMapping("/my")
     @PreAuthorize("hasAuthority('ROLE_TM_USER')")
     @Operation(
             summary = "Get My Tournaments",
@@ -59,7 +74,14 @@ public class TournamentController {
         );
     }
 
-    @GetMapping("/{tournamentId}")
+        /**
+         * Returns tournament details for the selected sport experience.
+         *
+         * @param selectedSportExperience selected sport experience header
+         * @param tournamentId tournament identifier
+         * @return tournament detail
+         */
+        @GetMapping("/{tournamentId}")
     @PreAuthorize("hasAuthority('ROLE_TM_USER')")
     @Operation(
             summary = "Get Tournament Detail",
@@ -72,7 +94,15 @@ public class TournamentController {
         return ResponseEntity.ok(tournamentService.getTournamentDetail(selectedSportExperience, tournamentId));
     }
 
-    @PostMapping
+        /**
+         * Creates a tournament for the authenticated user.
+         *
+         * @param authentication authenticated principal containing the user id
+         * @param selectedSportExperience selected sport experience header
+         * @param request create payload
+         * @return created tournament
+         */
+        @PostMapping
     @PreAuthorize("hasAuthority('ROLE_TM_USER')")
     @Operation(
             summary = "Create Tournament",

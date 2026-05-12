@@ -31,6 +31,12 @@ public class UsersController {
     @Autowired
     private final OtpService otpService;
 
+    /**
+     * Fetches a user profile by email address.
+     *
+     * @param emailId user email address
+     * @return user profile
+     */
     @GetMapping("/{emailId}")
     @PreAuthorize("hasAuthority('ROLE_TM_USER')")
     @Operation(summary = "Get User by Email", description = "Fetches a user profile by their email address.")
@@ -38,6 +44,13 @@ public class UsersController {
         return ResponseEntity.ok(userService.getUserByEmail(emailId));
     }
 
+    /**
+     * Generates and sends an OTP to a phone number.
+     *
+     * @param sourceApp source application header
+     * @param request OTP request payload
+     * @return OTP request result
+     */
     @PostMapping("/otp/request")
     @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
     @Operation(summary = "Request OTP", description = "Generates and sends an OTP to a given phone number and confirms that the OTP was sent successfully.")
@@ -47,6 +60,13 @@ public class UsersController {
         return ResponseEntity.ok(otpService.requestOtp(request, sourceApp));
     }
 
+    /**
+     * Verifies the submitted OTP and returns auth data.
+     *
+     * @param sourceApp source application header
+     * @param request OTP verification payload
+     * @return auth response and user profile
+     */
     @PostMapping("/otp/verify")
     @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
     @Operation(summary = "Verify OTP", description = "Verifies a submitted OTP and returns the user profile, tokens, and whether the user is new or existing.")
@@ -56,6 +76,13 @@ public class UsersController {
         return ResponseEntity.ok(otpService.verifyOtp(request, sourceApp));
     }
 
+    /**
+     * Completes the user profile after OTP verification.
+     *
+     * @param authentication authenticated principal containing the user id
+     * @param request signup payload
+     * @return updated user profile
+     */
     @PostMapping( value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ROLE_TM_USER')")
     @Operation(
@@ -70,6 +97,13 @@ public class UsersController {
         return ResponseEntity.ok(userService.signup(userId, request));
     }
 
+    /**
+     * Returns dashboard details for the authenticated user.
+     *
+     * @param authentication authenticated principal containing the user id
+     * @param selectedSportExperience selected sport experience header
+     * @return dashboard details
+     */
     @GetMapping("/dashboard")
     @PreAuthorize("hasAuthority('ROLE_TM_USER')")
     @Operation(

@@ -23,6 +23,12 @@ public class PartnerController {
     @Autowired
     private final PartnerService partnerService;
 
+    /**
+     * Returns dashboard data for the authenticated partner.
+     *
+     * @param authentication authenticated principal containing the user id
+     * @return dashboard data
+     */
     @GetMapping("/dashboard")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Get Dashboard Data", description = "Returns all necessary data for the partner dashboard, including any relevant metrics.")
