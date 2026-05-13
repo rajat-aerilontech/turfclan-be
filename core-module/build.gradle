@@ -13,6 +13,8 @@ dependencies {
     implementation(libs.springdoc.openapi.starter.webmvc.ui)
     implementation(libs.hibernate.spatial)
     implementation(libs.jts.core)
+    implementation(libs.spring.boot.starter.data.redis)
+    implementation(libs.commons.codec)
 
     testImplementation(libs.spring.boot.starter.test)
 }

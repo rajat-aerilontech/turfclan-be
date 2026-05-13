@@ -1,36 +1,87 @@
 package com.aerilon.turfclan.user.controller;
 
+import com.aerilon.turfclan.user.dto.DeviceSessionDTO;
 import com.aerilon.turfclan.user.dto.TokenRefreshRequestDTO;
 import com.aerilon.turfclan.user.dto.TokenRefreshResponseDTO;
 import com.aerilon.turfclan.user.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+import com.aerilon.turfclan.user.dto.UserDTO;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-@Tag(name = "Authentication", description = "Token lifecycle APIs")
+@Tag(name = "Authentication", description = "Token and device session lifecycle APIs")
 public class AuthController {
 
     private final AuthService authService;
 
-    /**
-     * Issues a new access token (and rotates the refresh token) given a valid refresh JWT.
-     *
-     * POST /api/v1/auth/refresh
-     * Body: { "refreshToken": "<jwt>" }
-     */
     @PostMapping("/refresh")
     @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
-    @Operation(summary = "Refresh Token", description = "Issues a new access token and rotates the refresh token given a valid refresh JWT.")
-    public ResponseEntity<TokenRefreshResponseDTO> refresh(@RequestBody TokenRefreshRequestDTO request) {
-        return ResponseEntity.ok(authService.refresh(request));
+    @Operation(summary = "Refresh Token", description = "Issues a new access token and rotates the refresh token. Can read from request body or HttpOnly cookie.")
+    public ResponseEntity<TokenRefreshResponseDTO> refresh(
+            @RequestBody(required = false) TokenRefreshRequestDTO request,
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse) {
+        return ResponseEntity.ok(authService.refresh(request, httpRequest, httpResponse));
+    }
+
+    @PostMapping("/logout")
+    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
+    @Operation(summary = "Logout Current Device", description = "Revokes the current session and clears the refresh token cookie if present.")
+    public ResponseEntity<Void> logout(
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse,
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
+        authService.logout(httpRequest, httpResponse, authHeader);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/logout-all")
+    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
+    @Operation(summary = "Logout All Devices", description = "Revokes all active sessions for the authenticated user.")
+    public ResponseEntity<Void> logoutAll(Authentication authentication) {
+        String userId = authentication.getName();
+        authService.logoutAll(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/sessions")
+    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
+    @Operation(summary = "Get Active Sessions", description = "Returns a list of all active device sessions for the authenticated user.")
+    public ResponseEntity<List<DeviceSessionDTO>> getSessions(Authentication authentication) {
+        String userId = authentication.getName();
+        return ResponseEntity.ok(authService.getSessions(userId));
+    }
+
+    @DeleteMapping("/sessions/{sessionId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
+    @Operation(summary = "Revoke Specific Session", description = "Revokes a specific device session by its ID.")
+    public ResponseEntity<Void> revokeSession(@PathVariable UUID sessionId, Authentication authentication) {
+        String userId = authentication.getName();
+        authService.revokeSession(sessionId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/me")
+    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
+    @Operation(summary = "Get Current User", description = "Restores authenticated session, validates against Redis, and returns the current user profile.")
+    public ResponseEntity<UserDTO> getMe(
+            Authentication authentication,
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
+        String userId = authentication.getName();
+        return ResponseEntity.ok(authService.getMe(userId, authHeader));
     }
 }

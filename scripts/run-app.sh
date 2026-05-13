@@ -30,6 +30,10 @@ export EMAIL_SERVICE_PORT=
 export EMAIL_SERVICE_USERNAME=""
 export EMAIL_SERVICE_PASSWORD=""
 
+# Start Redis container
+echo "Starting Redis container..."
+docker start turfclan-redis >/dev/null 2>&1 || docker run --name turfclan-redis -p 6379:6379 -d redis:latest
+
 # Run Gradle
 ./gradlew clean
 ./gradlew bootRun

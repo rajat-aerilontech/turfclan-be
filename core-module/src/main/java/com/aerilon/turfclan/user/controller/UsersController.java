@@ -14,6 +14,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -72,8 +74,10 @@ public class UsersController {
     @Operation(summary = "Verify OTP", description = "Verifies a submitted OTP and returns the user profile, tokens, and whether the user is new or existing.")
     public ResponseEntity<AuthResponseDTO> verifyOtp(
             @RequestHeader(value = "source-app", required = false, defaultValue = "user") String sourceApp,
-            @RequestBody @Valid OtpVerifyRequestDTO request) {
-        return ResponseEntity.ok(otpService.verifyOtp(request, sourceApp));
+            @RequestBody @Valid OtpVerifyRequestDTO request,
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse) {
+        return ResponseEntity.ok(otpService.verifyOtp(request, sourceApp, httpRequest, httpResponse));
     }
 
     /**

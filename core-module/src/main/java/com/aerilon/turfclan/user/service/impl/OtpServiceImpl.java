@@ -25,9 +25,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.data.redis.core.RedisTemplate;
+import com.aerilon.turfclan.user.entity.DeviceSessionEntity;
+import com.aerilon.turfclan.user.repository.DeviceSessionRepository;
+import com.aerilon.turfclan.util.CookieUtil;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.codec.digest.DigestUtils;
+import java.time.Duration;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,6 +54,8 @@ public class OtpServiceImpl implements OtpService {
     private final JwtService jwtService;
     private final JwtProperties jwtProperties;
     private final OnboardingApplicationRepository applicationRepository;
+    private final DeviceSessionRepository deviceSessionRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
     @Transactional
@@ -101,7 +111,7 @@ public class OtpServiceImpl implements OtpService {
 
     @Override
     @Transactional
-    public AuthResponseDTO verifyOtp(OtpVerifyRequestDTO request, String sourceApp) {
+    public AuthResponseDTO verifyOtp(OtpVerifyRequestDTO request, String sourceApp, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
         String phoneNumber = request.getPhoneNumber();
         String otpCode = request.getOtpCode();
         if (phoneNumber == null || phoneNumber.isBlank()) {
@@ -156,9 +166,42 @@ public class OtpServiceImpl implements OtpService {
             claims.put("aud", simpleRole);
         }
 
-        String accessToken = jwtService.generateAccessToken(userId, claims);
         String refreshToken = jwtService.generateRefreshToken(userId);
         long expiresIn = jwtProperties.getAccessTokenExpiryMs() / 1000;
+
+        // Hash the refresh token
+        String tokenHash = DigestUtils.sha256Hex(refreshToken);
+        
+        // Build Device Session
+        String userAgent = httpRequest.getHeader("User-Agent");
+        String ipAddress = httpRequest.getRemoteAddr();
+        
+        // Determine platform based on UserRole
+        String platform = (user.getUserRole() != null && (user.getUserRole() == UserRole.PARTNER || user.getUserRole() == UserRole.ADMIN)) ? "WEB" : "MOBILE";
+        
+        DeviceSessionEntity sessionEntity = DeviceSessionEntity.builder()
+                .userId(user.getId())
+                .refreshTokenHash(tokenHash)
+                .platform(platform)
+                .ipAddress(ipAddress)
+                .userAgent(userAgent != null && userAgent.length() > 500 ? userAgent.substring(0, 500) : userAgent)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plus(jwtProperties.getRefreshTokenExpiryMs(), ChronoUnit.MILLIS))
+                .revoked(false)
+                .build();
+        deviceSessionRepository.save(sessionEntity);
+        
+        claims.put("sessionId", sessionEntity.getSessionId().toString());
+        String accessToken = jwtService.generateAccessToken(userId, claims);
+
+        // Save to Redis
+        String redisKey = "session:" + sessionEntity.getSessionId();
+        redisTemplate.opsForValue().set(redisKey, user.getId().toString(), Duration.ofMillis(jwtProperties.getRefreshTokenExpiryMs()));
+        
+        // Append HTTP-Only cookie for Web clients
+        if ("WEB".equals(platform)) {
+            CookieUtil.createHttpOnlyCookie(httpResponse, CookieUtil.REFRESH_TOKEN_COOKIE_NAME, refreshToken, (int) (jwtProperties.getRefreshTokenExpiryMs() / 1000));
+        }
 
         UserDTO userDTO = userConverter.convert(user);
 
