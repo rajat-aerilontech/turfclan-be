@@ -176,10 +176,13 @@ public class OtpServiceImpl implements OtpService {
         String userAgent = httpRequest.getHeader("User-Agent");
         String ipAddress = httpRequest.getRemoteAddr();
         
+        // Determine platform based on UserRole
+        String platform = (user.getUserRole() != null && (user.getUserRole() == UserRole.PARTNER || user.getUserRole() == UserRole.ADMIN)) ? "WEB" : "MOBILE";
+        
         DeviceSessionEntity sessionEntity = DeviceSessionEntity.builder()
                 .userId(user.getId())
                 .refreshTokenHash(tokenHash)
-                .platform(httpRequest.getServletPath().startsWith("/api/v1/web/") ? "WEB" : "MOBILE")
+                .platform(platform)
                 .ipAddress(ipAddress)
                 .userAgent(userAgent != null && userAgent.length() > 500 ? userAgent.substring(0, 500) : userAgent)
                 .createdAt(LocalDateTime.now())
@@ -196,7 +199,7 @@ public class OtpServiceImpl implements OtpService {
         redisTemplate.opsForValue().set(redisKey, user.getId().toString(), Duration.ofMillis(jwtProperties.getRefreshTokenExpiryMs()));
         
         // Append HTTP-Only cookie for Web clients
-        if (httpRequest.getServletPath().startsWith("/api/v1/web/")) {
+        if ("WEB".equals(platform)) {
             CookieUtil.createHttpOnlyCookie(httpResponse, CookieUtil.REFRESH_TOKEN_COOKIE_NAME, refreshToken, (int) (jwtProperties.getRefreshTokenExpiryMs() / 1000));
         }
 

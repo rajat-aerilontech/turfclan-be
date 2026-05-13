@@ -67,14 +67,27 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String tokenHash = DigestUtils.sha256Hex(refreshToken);
+        String graceKey = "grace_refresh:" + tokenHash;
+        
+        Object cachedObj = redisTemplate.opsForValue().get(graceKey);
+        if (cachedObj != null) {
+            return parseGracePeriodResponse(cachedObj, httpRequest, httpResponse);
+        }
         
         DeviceSessionEntity session = deviceSessionRepository.findByRefreshTokenHash(tokenHash)
-                .orElseThrow(() -> {
-                    // Reuse attack detected, revoke all sessions
-                    log.warn("Reuse attack detected for user: {}", userId);
-                    logoutAll(userId);
-                    return new UnauthorizedAccessException("Invalid refresh token. All sessions revoked for security.");
-                });
+                .orElse(null);
+
+        if (session == null) {
+            // Check cache one more time in case a concurrent request just finished
+            cachedObj = redisTemplate.opsForValue().get(graceKey);
+            if (cachedObj != null) {
+                return parseGracePeriodResponse(cachedObj, httpRequest, httpResponse);
+            }
+            // Reuse attack detected, revoke all sessions
+            log.warn("Reuse attack detected for user: {}", userId);
+            logoutAll(userId);
+            throw new UnauthorizedAccessException("Invalid refresh token. All sessions revoked for security.");
+        }
 
         if (session.isRevoked() || session.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new UnauthorizedAccessException("Refresh token is revoked or expired");
@@ -106,17 +119,22 @@ public class AuthServiceImpl implements AuthService {
         String redisKey = "session:" + session.getSessionId();
         redisTemplate.opsForValue().set(redisKey, user.getId().toString(), Duration.ofMillis(jwtProperties.getRefreshTokenExpiryMs()));
 
-        if (httpRequest.getServletPath().startsWith("/api/v1/web/")) {
+        if ("WEB".equals(session.getPlatform())) {
             CookieUtil.createHttpOnlyCookie(httpResponse, CookieUtil.REFRESH_TOKEN_COOKIE_NAME, newRefreshToken, (int) (jwtProperties.getRefreshTokenExpiryMs() / 1000));
         }
 
         log.info("Tokens refreshed for user id: {}", userId);
 
-        return TokenRefreshResponseDTO.builder()
+        TokenRefreshResponseDTO responseDTO = TokenRefreshResponseDTO.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
                 .expiresIn(expiresIn)
                 .build();
+                
+        String cacheValue = newAccessToken + "::" + newRefreshToken + "::" + expiresIn + "::" + session.getPlatform();
+        redisTemplate.opsForValue().set(graceKey, cacheValue, Duration.ofSeconds(45));
+
+        return responseDTO;
     }
 
     @Override
@@ -209,5 +227,26 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
                 
         return userConverter.convert(user);
+    }
+
+    private TokenRefreshResponseDTO parseGracePeriodResponse(Object cachedObj, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+        log.info("Concurrent refresh detected. Returning grace period tokens.");
+        String[] parts = cachedObj.toString().split("::");
+        if (parts.length >= 3) {
+            String cachedAccess = parts[0];
+            String cachedRefresh = parts[1];
+            long cachedExpiresIn = Long.parseLong(parts[2]);
+            String platform = parts.length > 3 ? parts[3] : "WEB";
+            
+            if ("WEB".equals(platform)) {
+                CookieUtil.createHttpOnlyCookie(httpResponse, CookieUtil.REFRESH_TOKEN_COOKIE_NAME, cachedRefresh, (int) (jwtProperties.getRefreshTokenExpiryMs() / 1000));
+            }
+            return TokenRefreshResponseDTO.builder()
+                    .accessToken(cachedAccess)
+                    .refreshToken(cachedRefresh)
+                    .expiresIn(cachedExpiresIn)
+                    .build();
+        }
+        throw new UnauthorizedAccessException("Invalid grace period cache");
     }
 }
