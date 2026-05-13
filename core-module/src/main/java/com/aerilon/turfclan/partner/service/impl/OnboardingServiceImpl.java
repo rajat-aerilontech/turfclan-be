@@ -44,6 +44,7 @@ public class OnboardingServiceImpl implements OnboardingService {
     private final PartnerDetailRepository partnerDetailRepository;
     private final BankDetailRepository bankDetailRepository;
     private final OnboardingContractRepository contractRepository;
+    private final SocialLinkRepository socialLinkRepository;
 
     // Converters
     private final BusinessDetailConverter businessDetailConverter;
@@ -81,11 +82,23 @@ public class OnboardingServiceImpl implements OnboardingService {
                 .map(contractConverter::toDto)
                 .orElse(null);
 
+        // Fetch social links for this user
+        List<SocialLinkDto> socialLinks = socialLinkRepository.findByUser(user).stream()
+                .map(e -> SocialLinkDto.builder()
+                        .id(e.getId())
+                        .name(e.getName())
+                        .link(e.getLink())
+                        .followers(e.getFollowers())
+                        .visible(e.getVisible())
+                        .build())
+                .toList();
+
         return OnboardingFullDataDto.builder()
                 .status(app.getOnboardApplicationStatus())
                 .currentStep(app.getCurrentStep())
                 .isSubmitted(app.getIsSubmitted())
                 .businessInfo(businessInfo)
+                .socialLinks(socialLinks)
                 .facilities(facilities)
                 .partnerDetails(partnerDetails)
                 .bankDetails(bankDetails)
@@ -115,7 +128,7 @@ public class OnboardingServiceImpl implements OnboardingService {
     @Transactional
     public void saveBusinessInfo(String userId, BusinessInfoDto dto) {
         UserEntity user = getUser(userId);
-        OnboardingApplicationEntity app = createApplication(user);
+        OnboardingApplicationEntity app = getOrCreateApplication(user);
 
         // Business Detail
         BusinessDetailEntity businessEntity = businessDetailConverter.convert(dto);
@@ -136,6 +149,24 @@ public class OnboardingServiceImpl implements OnboardingService {
         if (helpUsEntity != null) {
             helpUsEntity.setUser(user);
             helpUsRepository.save(helpUsEntity);
+        }
+
+        // Social Links (clear existing and save new)
+        if (dto.getSocialLinks() != null) {
+            List<SocialLinkEntity> existingLinks = socialLinkRepository.findByUser(user);
+            if (!existingLinks.isEmpty()) {
+                socialLinkRepository.deleteAll(existingLinks);
+            }
+            for (SocialLinkRequestDto slDto : dto.getSocialLinks()) {
+                SocialLinkEntity entity = new SocialLinkEntity();
+                entity.setName(slDto.getName());
+                entity.setLink(slDto.getLink());
+                entity.setFollowers(slDto.getFollowers());
+                entity.setVisible(slDto.getVisible());
+                entity.setUser(user);
+                entity.setCreatedAt(LocalDateTime.now());
+                socialLinkRepository.save(entity);
+            }
         }
 
         app.setCurrentStep(OnboardStep.SPORT_DETAILS);
@@ -256,6 +287,11 @@ public class OnboardingServiceImpl implements OnboardingService {
         app.setOnboardApplicationStatus(OnboardApplicationStatus.UNDER_REVIEW);
         applicationRepository.save(app);
         log.info("Application for user {} submitted successfully.", userId);
+    }
+
+    private OnboardingApplicationEntity getOrCreateApplication(UserEntity user) {
+        return applicationRepository.findByUser(user)
+                .orElseGet(() -> createApplication(user));
     }
 
     private OnboardingApplicationEntity createApplication(UserEntity user) {
