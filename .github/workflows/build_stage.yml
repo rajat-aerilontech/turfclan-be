@@ -84,7 +84,7 @@ jobs:
         with:
           name: turfclan-application-jar
           path: application/build/libs/*.jar
-          if-no-files-found: error
+          retention-days: 1
 
   deploy:
     name: Deploy to EC2
