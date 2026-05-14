@@ -4,12 +4,15 @@ import com.aerilon.turfclan.facility.dto.FacilitiesRequestDto;
 import com.aerilon.turfclan.partner.dto.*;
 import com.aerilon.turfclan.partner.enums.OnboardStep;
 import com.aerilon.turfclan.partner.service.OnboardingService;
+import com.aerilon.turfclan.security.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -23,39 +26,26 @@ public class OnboardingController {
 
     @Autowired
     private final OnboardingService onboardingService;
+    
+    @Autowired
+    private final SecurityUtils securityUtils;
 
     /**
      * Returns all onboarding data for the authenticated partner.
      *
-     * @param authentication authenticated principal containing the user id
      * @return full onboarding data
      */
     @GetMapping("/all-data")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Get All Onboarding Data", description = "Returns all saved data for all steps to populate the UI.")
-    public ResponseEntity<OnboardingFullDataDto> getAllOnboardingData(Authentication authentication) {
-        String userId = authentication.getName();
+    public ResponseEntity<OnboardingFullDataDto> getAllOnboardingData() {
+        String userId = securityUtils.getCurrentUserId();
         return ResponseEntity.ok(onboardingService.getFullOnboardingData(userId));
-    }
-
-    /**
-     * Returns the current onboarding step for the authenticated partner.
-     *
-     * @param authentication authenticated principal containing the user id
-     * @return current onboarding step
-     */
-    @GetMapping("/current-step")
-    @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
-    @Operation(summary = "Get Current Onboarding Step", description = "Returns the current onboarding step for the authenticated partner.")
-    public ResponseEntity<OnboardStep> getCurrentStep(Authentication authentication) {
-        String userId = authentication.getName();
-        return ResponseEntity.ok(onboardingService.getCurrentOnboardingStep(userId));
     }
 
     /**
      * Saves business info (step 1) for the authenticated partner.
      *
-     * @param authentication authenticated principal containing the user id
      * @param dto business info payload
      * @return status message
      */
@@ -63,9 +53,8 @@ public class OnboardingController {
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Save Business Info", description = "Saves business information (Step 1) for the partner.")
     public ResponseEntity<String> saveBusinessInfo(
-            Authentication authentication,
             @Valid @RequestBody BusinessInfoDto dto) {
-        String userId = authentication.getName();
+        String userId = securityUtils.getCurrentUserId();
         onboardingService.saveBusinessInfo(userId, dto);
         return ResponseEntity.ok("Business info saved successfully. Proceed to Sports Details.");
     }
@@ -73,7 +62,6 @@ public class OnboardingController {
     /**
      * Saves facilities info (step 2) for the authenticated partner.
      *
-     * @param authentication authenticated principal containing the user id
      * @param dto facilities payload
      * @return status message
      */
@@ -81,9 +69,8 @@ public class OnboardingController {
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Save Facilities Info", description = "Saves sports and facilities information (Step 2) for the partner.")
     public ResponseEntity<String> saveFacilitiesInfo(
-            Authentication authentication,
             @Valid @ModelAttribute FacilitiesRequestDto dto) {
-        String userId = authentication.getName();
+        String userId = securityUtils.getCurrentUserId();
         onboardingService.saveFacilityInfo(userId, dto);
         return ResponseEntity.ok("Facilites info saved successfully. Proceed to Partner Details.");
     }
@@ -91,7 +78,6 @@ public class OnboardingController {
     /**
      * Saves partner details (step 3) for the authenticated partner.
      *
-     * @param authentication authenticated principal containing the user id
      * @param dto partner detail payload
      * @return status message
      */
@@ -99,9 +85,8 @@ public class OnboardingController {
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Save Partner Details", description = "Saves partner details (Step 3) for the partner.")
     public ResponseEntity<String> savePartnerDetails(
-            Authentication authentication,
             @Valid @RequestBody PartnerDetailRequestDto dto) {
-        String userId = authentication.getName();
+        String userId = securityUtils.getCurrentUserId();
         onboardingService.savePartnerDetails(userId, dto);
         return ResponseEntity.ok("Partner details saved successfully. Proceed to Bank Details.");
     }
@@ -109,7 +94,6 @@ public class OnboardingController {
     /**
      * Saves bank details (step 4) for the authenticated partner.
      *
-     * @param authentication authenticated principal containing the user id
      * @param dto bank detail payload
      * @return status message
      */
@@ -117,9 +101,8 @@ public class OnboardingController {
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Save Bank Details", description = "Saves bank details (Step 4) for the partner.")
     public ResponseEntity<String> saveBankDetails(
-            Authentication authentication,
             @Valid @RequestBody BankDetailRequestDto dto) {
-        String userId = authentication.getName();
+        String userId = securityUtils.getCurrentUserId();
         onboardingService.saveBankDetails(userId, dto);
         return ResponseEntity.ok("Bank details saved successfully. Proceed to Contract Details.");
     }
@@ -127,7 +110,6 @@ public class OnboardingController {
     /**
      * Signs the contract (step 5) for the authenticated partner and captures IP address.
      *
-     * @param authentication authenticated principal containing the user id
      * @param dto contract payload
      * @param request HTTP request used to capture client IP
      * @return status message
@@ -136,10 +118,9 @@ public class OnboardingController {
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Submit Contract", description = "Signs the contract (Step 5) for the partner and captures the user's IP address.")
     public ResponseEntity<String> submitContract(
-            Authentication authentication,
             @Valid @RequestBody ContractRequestDto dto,
             HttpServletRequest request) {
-        String userId = authentication.getName();
+        String userId = securityUtils.getCurrentUserId();
         onboardingService.signContract(userId, dto, request);
         return ResponseEntity.ok("Contract Signed successfully. Proceed to submit the application!");
     }
@@ -147,14 +128,13 @@ public class OnboardingController {
     /**
      * Finalizes and submits the onboarding application.
      *
-     * @param authentication authenticated principal containing the user id
      * @return status message
      */
     @PostMapping("/submit-application")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Submit Application", description = "Finalizes and submits the onboarding application.")
-    public ResponseEntity<String> submitApplication(Authentication authentication) {
-        String userId = authentication.getName();
+    public ResponseEntity<String> submitApplication() {
+        String userId = securityUtils.getCurrentUserId();
         onboardingService.submitApplication(userId);
         return ResponseEntity.ok("Application submitted successfully!");
     }

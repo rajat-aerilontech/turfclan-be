@@ -7,6 +7,7 @@ import com.aerilon.turfclan.facility.dto.SubFacilityUpdateDto;
 import com.aerilon.turfclan.facility.dto.FacilitiesRequestDto;
 import com.aerilon.turfclan.facility.dto.FacilityRequestDto;
 import com.aerilon.turfclan.facility.dto.SubFacilityRequestDto;
+import com.aerilon.turfclan.security.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -29,6 +30,9 @@ public class FacilityController {
 
     @Autowired
     private FacilityService facilityService;
+    
+    @Autowired
+    private SecurityUtils securityUtils;
 
     /**
      * Returns facility data for the authenticated partner.
@@ -39,8 +43,8 @@ public class FacilityController {
     @GetMapping("/user")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Get Facility For User", description = "Returns all facility data associated with the authenticated user (partner).")
-    public ResponseEntity<FacilitiesRequestDto> getFacilityByUser(Authentication authentication) {
-        String userId = authentication.getName();
+    public ResponseEntity<FacilitiesRequestDto> getFacilityByUser() {
+        String userId = securityUtils.getCurrentUserId();
         return ResponseEntity.ok(facilityService.getFacilityForUser(userId));
     }
 
@@ -130,9 +134,8 @@ public class FacilityController {
     @Operation(summary = "Update Facility Details", description = "Update facility details by the partner who owns the facility.")
     public ResponseEntity<FacilityRequestDto> updateFacility(
             @PathVariable UUID facilityId,
-            @ModelAttribute FacilityUpdateDto updateDto,
-            Authentication authentication) {
-        String userId = authentication.getName();
+            @ModelAttribute FacilityUpdateDto updateDto) {
+        String userId = securityUtils.getCurrentUserId();
         FacilityRequestDto response = facilityService.updateFacility(userId, facilityId, updateDto);
         return ResponseEntity.ok(response);
     }
@@ -152,9 +155,8 @@ public class FacilityController {
     public ResponseEntity<FacilityRequestDto> updateSubFacility(
             @PathVariable UUID facilityId,
             @PathVariable UUID sportId,
-            @RequestBody SubFacilityUpdateDto updateDto,
-            Authentication authentication) {
-        String userId = authentication.getName();
+            @RequestBody SubFacilityUpdateDto updateDto) {
+        String userId = securityUtils.getCurrentUserId();
         FacilityRequestDto response = facilityService.updateSubFacility(userId, facilityId, sportId, updateDto);
         return ResponseEntity.ok(response);
     }
@@ -172,9 +174,8 @@ public class FacilityController {
     @Operation(summary = "Update Sport Detail", description = "Update sport detail by the partner who owns the facility.")
     public ResponseEntity<FacilityRequestDto> createSubFacilityForFacility(
             @PathVariable UUID facilityId,
-            @Valid @RequestBody SubFacilityRequestDto subFacilityRequestDto,
-            Authentication authentication) {
-        String userId = authentication.getName();
+            @Valid @RequestBody SubFacilityRequestDto subFacilityRequestDto) {
+        String userId = securityUtils.getCurrentUserId();
         FacilityRequestDto response = facilityService.addSubFacilityToFacility(userId, facilityId, subFacilityRequestDto);
         return ResponseEntity.ok(response);
     }
@@ -190,9 +191,8 @@ public class FacilityController {
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Update Facility Details", description = "Update facility details by the partner who owns the facility.")
     public ResponseEntity<FacilityRequestDto> createFacilityForUser(
-            @Valid @RequestBody FacilityRequestDto facilityRequestDto,
-            Authentication authentication) {
-        String userId = authentication.getName();
+            @Valid @RequestBody FacilityRequestDto facilityRequestDto) {
+        String userId = securityUtils.getCurrentUserId();
         FacilityRequestDto response = facilityService.addFacilityForUser(userId, facilityRequestDto);
         return ResponseEntity.ok(response);
     }

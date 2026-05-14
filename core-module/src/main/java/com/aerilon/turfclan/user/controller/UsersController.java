@@ -9,6 +9,7 @@ import com.aerilon.turfclan.user.dto.SignupRequestDTO;
 import com.aerilon.turfclan.user.dto.UserDTO;
 import com.aerilon.turfclan.user.service.OtpService;
 import com.aerilon.turfclan.user.service.UserService;
+import com.aerilon.turfclan.security.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -32,6 +33,9 @@ public class UsersController {
 
     @Autowired
     private final OtpService otpService;
+    
+    @Autowired
+    private final SecurityUtils securityUtils;
 
     /**
      * Fetches a user profile by email address.
@@ -94,10 +98,9 @@ public class UsersController {
             description = "Completes the user profile after OTP verification. Requires Bearer token."
     )
     public ResponseEntity<UserDTO> signup(
-            Authentication authentication,
             @ModelAttribute @Valid SignupRequestDTO request
     ) {
-        String userId = authentication.getName();
+        String userId = securityUtils.getCurrentUserId();
         return ResponseEntity.ok(userService.signup(userId, request));
     }
 
@@ -115,10 +118,9 @@ public class UsersController {
             description = "Returns dashboard details scoped by the selected-sport-experience header for the authenticated user."
     )
     public ResponseEntity<DashboardResponseDTO> getDashboard(
-            Authentication authentication,
             @RequestHeader("selected-sport-experience") String selectedSportExperience
     ) {
-        String userId = authentication.getName();
+        String userId = securityUtils.getCurrentUserId();
         return ResponseEntity.ok(userService.getDashboard(userId, selectedSportExperience));
     }
 }

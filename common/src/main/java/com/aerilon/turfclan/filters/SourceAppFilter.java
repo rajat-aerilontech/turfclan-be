@@ -1,6 +1,7 @@
 package com.aerilon.turfclan.filters;
 
 import com.aerilon.turfclan.response.ErrorResponse;
+import com.aerilon.turfclan.security.AuthenticatedUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -72,8 +73,19 @@ public class SourceAppFilter extends OncePerRequestFilter {
         }
 
         Authentication existing = SecurityContextHolder.getContext().getAuthentication();
+        String roleFromSourceApp = extractRoleFromAuthority(normalizedSourceApp);
+        
+        // Create updated principal with role from source-app
+        Object existingPrincipal = existing.getPrincipal();
+        Object newPrincipal = existingPrincipal;
+        
+        if (existingPrincipal instanceof AuthenticatedUser) {
+            AuthenticatedUser user = (AuthenticatedUser) existingPrincipal;
+            newPrincipal = new AuthenticatedUser(user.userId(), roleFromSourceApp);
+        }
+        
         UsernamePasswordAuthenticationToken remapped = new UsernamePasswordAuthenticationToken(
-                existing.getPrincipal(),
+                newPrincipal,
                 existing.getCredentials(),
             List.of(authority)
         );
@@ -121,6 +133,16 @@ public class SourceAppFilter extends OncePerRequestFilter {
             case TURF_MOBILE -> new SimpleGrantedAuthority("ROLE_TM_USER");
             case TURF_PARTNER -> new SimpleGrantedAuthority("ROLE_TM_PARTNER");
             case TURF_WEB -> new SimpleGrantedAuthority("ROLE_TM_WEB");
+            default -> null;
+        };
+    }
+
+    private String extractRoleFromAuthority(String sourceApp) {
+        return switch (sourceApp) {
+            case TURF_ADMIN -> "TA_USER";
+            case TURF_MOBILE -> "TM_USER";
+            case TURF_PARTNER -> "TM_PARTNER";
+            case TURF_WEB -> "TM_WEB";
             default -> null;
         };
     }

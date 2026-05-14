@@ -6,7 +6,6 @@ import com.aerilon.turfclan.partner.enums.OnboardStep;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface OnboardingService {
-    OnboardStep getCurrentOnboardingStep(String userId);
     void saveBusinessInfo(String userId, BusinessInfoDto dto);
     void saveFacilityInfo(String userId, FacilitiesRequestDto dto);
     void savePartnerDetails(String userId, PartnerDetailRequestDto dto);

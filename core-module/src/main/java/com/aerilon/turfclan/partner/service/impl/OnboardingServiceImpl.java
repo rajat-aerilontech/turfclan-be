@@ -57,14 +57,6 @@ public class OnboardingServiceImpl implements OnboardingService {
     private final ContractConverter contractConverter;
 
     @Override
-    public OnboardStep getCurrentOnboardingStep(String userId) {
-        UserEntity user = getUser(userId);
-        return applicationRepository.findByUser(user)
-                .map(OnboardingApplicationEntity::getCurrentStep)
-                .orElse(OnboardStep.BUSINESS_DETAILS);
-    }
-
-    @Override
     public OnboardingFullDataDto getFullOnboardingData(String userId) {
         UserEntity user = getUser(userId);
         OnboardingApplicationEntity app = getOnboardingApplication(user);
