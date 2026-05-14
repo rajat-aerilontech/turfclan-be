@@ -4,6 +4,7 @@ import com.aerilon.turfclan.user.dto.DeviceSessionDTO;
 import com.aerilon.turfclan.user.dto.TokenRefreshRequestDTO;
 import com.aerilon.turfclan.user.dto.TokenRefreshResponseDTO;
 import com.aerilon.turfclan.user.service.AuthService;
+import com.aerilon.turfclan.security.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,6 +28,7 @@ import com.aerilon.turfclan.user.dto.UserDTO;
 public class AuthController {
 
     private final AuthService authService;
+    private final SecurityUtils securityUtils;
 
     @PostMapping("/refresh")
     @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
@@ -52,8 +54,8 @@ public class AuthController {
     @PostMapping("/logout-all")
     @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
     @Operation(summary = "Logout All Devices", description = "Revokes all active sessions for the authenticated user.")
-    public ResponseEntity<Void> logoutAll(Authentication authentication) {
-        String userId = authentication.getName();
+    public ResponseEntity<Void> logoutAll() {
+        String userId = securityUtils.getCurrentUserId();
         authService.logoutAll(userId);
         return ResponseEntity.noContent().build();
     }
@@ -61,16 +63,16 @@ public class AuthController {
     @GetMapping("/sessions")
     @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
     @Operation(summary = "Get Active Sessions", description = "Returns a list of all active device sessions for the authenticated user.")
-    public ResponseEntity<List<DeviceSessionDTO>> getSessions(Authentication authentication) {
-        String userId = authentication.getName();
+    public ResponseEntity<List<DeviceSessionDTO>> getSessions() {
+        String userId = securityUtils.getCurrentUserId();
         return ResponseEntity.ok(authService.getSessions(userId));
     }
 
     @DeleteMapping("/sessions/{sessionId}")
     @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
     @Operation(summary = "Revoke Specific Session", description = "Revokes a specific device session by its ID.")
-    public ResponseEntity<Void> revokeSession(@PathVariable UUID sessionId, Authentication authentication) {
-        String userId = authentication.getName();
+    public ResponseEntity<Void> revokeSession(@PathVariable UUID sessionId) {
+        String userId = securityUtils.getCurrentUserId();
         authService.revokeSession(sessionId, userId);
         return ResponseEntity.noContent().build();
     }
@@ -79,9 +81,8 @@ public class AuthController {
     @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
     @Operation(summary = "Get Current User", description = "Restores authenticated session, validates against Redis, and returns the current user profile.")
     public ResponseEntity<UserDTO> getMe(
-            Authentication authentication,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        String userId = authentication.getName();
+        String userId = securityUtils.getCurrentUserId();
         return ResponseEntity.ok(authService.getMe(userId, authHeader));
     }
 }

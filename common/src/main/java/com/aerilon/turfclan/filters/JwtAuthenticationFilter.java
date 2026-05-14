@@ -2,6 +2,7 @@ package com.aerilon.turfclan.filters;
 
 import com.aerilon.turfclan.jwt.JwtService;
 import com.aerilon.turfclan.response.ErrorResponse;
+import com.aerilon.turfclan.security.AuthenticatedUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -79,8 +80,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                AuthenticatedUser principal = new AuthenticatedUser(userId, role);
                 UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userId, null, authorities);
+                        new UsernamePasswordAuthenticationToken(principal, null, authorities);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }

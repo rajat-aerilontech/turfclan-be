@@ -3,6 +3,7 @@ package com.aerilon.turfclan.partner.controller;
 import com.aerilon.turfclan.partner.dto.DashboardDto;
 import com.aerilon.turfclan.partner.dto.OnboardingFullDataDto;
 import com.aerilon.turfclan.partner.service.PartnerService;
+import com.aerilon.turfclan.security.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -22,18 +23,20 @@ public class PartnerController {
 
     @Autowired
     private final PartnerService partnerService;
+    
+    @Autowired
+    private final SecurityUtils securityUtils;
 
     /**
      * Returns dashboard data for the authenticated partner.
      *
-     * @param authentication authenticated principal containing the user id
      * @return dashboard data
      */
     @GetMapping("/dashboard")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Get Dashboard Data", description = "Returns all necessary data for the partner dashboard, including any relevant metrics.")
-    public ResponseEntity<DashboardDto> getDashboard(Authentication authentication) {
-        String userId = authentication.getName();
+    public ResponseEntity<DashboardDto> getDashboard() {
+        String userId = securityUtils.getCurrentUserId();
         return ResponseEntity.ok(partnerService.getFullDashboardData(userId));
     }
 }
