@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class FacilityRequestDto {
     @NotBlank(message = "Description is required")
     private String description;
     @NotEmpty(message = "At least one Photo of facility image is required")
-    private List<S3ImageResponseDto> facilityPhotos;
+    private List<MultipartFile> facilityPhotos;
     @NotBlank(message = "Address Line is required")
     private String addressLine1;
 

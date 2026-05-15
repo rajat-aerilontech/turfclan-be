@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -65,7 +66,7 @@ public class OnboardingController {
      * @param dto facilities payload
      * @return status message
      */
-    @PostMapping("/step/sports-info")
+    @PostMapping(value = "/step/facility-info", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Save Facilities Info", description = "Saves sports and facilities information (Step 2) for the partner.")
     public ResponseEntity<String> saveFacilitiesInfo(
