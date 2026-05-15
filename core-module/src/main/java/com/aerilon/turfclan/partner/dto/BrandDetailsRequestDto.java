@@ -1,8 +1,8 @@
 package com.aerilon.turfclan.partner.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,6 +25,7 @@ public class BrandDetailsRequestDto {
     @NotBlank(message = "Long Description is required")
     private String longDescription;
     private String brandWebsite;
-    private String instagramPage;
-    private String youtubePage;
+
+    @Valid
+    private List<SocialLinkRequestDto> socialLinks;
 }

@@ -74,23 +74,11 @@ public class OnboardingServiceImpl implements OnboardingService {
                 .map(contractConverter::toDto)
                 .orElse(null);
 
-        // Fetch social links for this user
-        List<SocialLinkDto> socialLinks = socialLinkRepository.findByUser(user).stream()
-                .map(e -> SocialLinkDto.builder()
-                        .id(e.getId())
-                        .name(e.getName())
-                        .link(e.getLink())
-                        .followers(e.getFollowers())
-                        .visible(e.getVisible())
-                        .build())
-                .toList();
-
         return OnboardingFullDataDto.builder()
                 .status(app.getOnboardApplicationStatus())
                 .currentStep(app.getCurrentStep())
                 .isSubmitted(app.getIsSubmitted())
                 .businessInfo(businessInfo)
-                .socialLinks(socialLinks)
                 .facilities(facilities)
                 .partnerDetails(partnerDetails)
                 .bankDetails(bankDetails)
@@ -108,7 +96,19 @@ public class OnboardingServiceImpl implements OnboardingService {
             businessInfoDto.setBusinessDetail(businessDetailConverter.toDto(businessDetailEntity));
         }
         if (brandEntity != null) {
-            businessInfoDto.setBrandDetails(brandDetailConverter.toDto(brandEntity));
+            BrandDetailsRequestDto brandDto = brandDetailConverter.toDto(brandEntity);
+            List<SocialLinkRequestDto> socialLinks = socialLinkRepository.findByUser(user).stream()
+                    .map(e -> {
+                        SocialLinkRequestDto dto = new SocialLinkRequestDto();
+                        dto.setName(e.getName());
+                        dto.setLink(e.getLink());
+                        dto.setFollowers(e.getFollowers());
+                        dto.setVisible(e.getVisible());
+                        return dto;
+                    })
+                    .toList();
+            brandDto.setSocialLinks(socialLinks);
+            businessInfoDto.setBrandDetails(brandDto);
         }
         if (helpEntity != null) {
             businessInfoDto.setHelpUsDetail(helpUsConverter.toDto(helpEntity));
@@ -120,7 +120,8 @@ public class OnboardingServiceImpl implements OnboardingService {
     @Transactional
     public void saveBusinessInfo(String userId, BusinessInfoDto dto) {
         UserEntity user = getUser(userId);
-        OnboardingApplicationEntity app = getOrCreateApplication(user);
+        OnboardingApplicationEntity app = applicationRepository.findByUser(user)
+            .orElseGet(() -> createApplication(user));
 
         // Business Detail
         BusinessDetailEntity businessEntity = businessDetailConverter.convert(dto);
@@ -144,12 +145,15 @@ public class OnboardingServiceImpl implements OnboardingService {
         }
 
         // Social Links (clear existing and save new)
-        if (dto.getSocialLinks() != null) {
+        List<SocialLinkRequestDto> socialLinks = dto.getBrandDetails() != null
+                ? dto.getBrandDetails().getSocialLinks()
+                : null;
+        if (socialLinks != null) {
             List<SocialLinkEntity> existingLinks = socialLinkRepository.findByUser(user);
             if (!existingLinks.isEmpty()) {
                 socialLinkRepository.deleteAll(existingLinks);
             }
-            for (SocialLinkRequestDto slDto : dto.getSocialLinks()) {
+            for (SocialLinkRequestDto slDto : socialLinks) {
                 SocialLinkEntity entity = new SocialLinkEntity();
                 entity.setName(slDto.getName());
                 entity.setLink(slDto.getLink());
@@ -279,11 +283,6 @@ public class OnboardingServiceImpl implements OnboardingService {
         app.setOnboardApplicationStatus(OnboardApplicationStatus.UNDER_REVIEW);
         applicationRepository.save(app);
         log.info("Application for user {} submitted successfully.", userId);
-    }
-
-    private OnboardingApplicationEntity getOrCreateApplication(UserEntity user) {
-        return applicationRepository.findByUser(user)
-                .orElseGet(() -> createApplication(user));
     }
 
     private OnboardingApplicationEntity createApplication(UserEntity user) {

@@ -18,7 +18,6 @@ public class OnboardingFullDataDto {
     private Boolean isSubmitted;
 
     private BusinessInfoDto businessInfo;
-    private List<SocialLinkDto> socialLinks;
     private List<FacilityRequestDto> facilities;
     private PartnerDetailRequestDto partnerDetails;
     private BankDetailRequestDto bankDetails;

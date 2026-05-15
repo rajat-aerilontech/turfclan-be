@@ -47,10 +47,4 @@ public class BrandDetailEntity extends BaseAuditableEntity {
 
     @Column(name = "brand_website")
     private String brandWebsite;
-
-    @Column(name = "instagram_page")
-    private String instagramPage;
-
-    @Column(name = "youtube_page")
-    private String youtubePage;
 }

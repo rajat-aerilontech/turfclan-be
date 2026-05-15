@@ -31,8 +31,6 @@ public class BrandDetailConverter implements Converter<BusinessInfoDto, BrandDet
         entity.setDescription(detail.getDescription());
         entity.setLongDescription(detail.getLongDescription());
         entity.setBrandWebsite(detail.getBrandWebsite());
-        entity.setInstagramPage(detail.getInstagramPage());
-        entity.setYoutubePage(detail.getYoutubePage());
         entity.setCreatedAt(LocalDateTime.now());
         return entity;
     }
@@ -48,8 +46,6 @@ public class BrandDetailConverter implements Converter<BusinessInfoDto, BrandDet
         dto.setDescription(entity.getDescription());
         dto.setLongDescription(entity.getLongDescription());
         dto.setBrandWebsite(entity.getBrandWebsite());
-        dto.setInstagramPage(entity.getInstagramPage());
-        dto.setYoutubePage(entity.getYoutubePage());
         return dto;
     }
 }
