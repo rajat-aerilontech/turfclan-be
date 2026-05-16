@@ -95,15 +95,16 @@ public class OnboardingController {
 
     /**
      * Saves bank details (step 4) for the authenticated partner.
+     * Accepts cancelled cheque document as multipart form data.
      *
-     * @param dto bank detail payload
+     * @param dto bank detail payload with cancelled cheque document
      * @return status message
      */
-    @PostMapping("/step/bank-details")
+    @PostMapping(value = "/step/bank-details", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
-    @Operation(summary = "Save Bank Details", description = "Saves bank details (Step 4) for the partner.")
+    @Operation(summary = "Save Bank Details", description = "Saves bank details (Step 4) with cancelled cheque document for the partner.")
     public ResponseEntity<String> saveBankDetails(
-            @Valid @RequestBody BankDetailRequestDto dto) {
+            @Valid @ModelAttribute BankDetailRequestDto dto) {
         String userId = securityUtils.getCurrentUserId();
         onboardingService.saveBankDetails(userId, dto);
         return ResponseEntity.ok("Bank details saved successfully. Proceed to Contract Details.");

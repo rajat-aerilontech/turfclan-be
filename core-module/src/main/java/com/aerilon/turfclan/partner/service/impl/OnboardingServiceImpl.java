@@ -254,6 +254,23 @@ public class OnboardingServiceImpl implements OnboardingService {
         BankDetailEntity entity = bankDetailConverter.convert(bankDetailRequestDto);
         if (entity != null) {
             entity.setUser(user);
+            
+            // Upload cancelled cheque document to S3
+            if (bankDetailRequestDto.getCancelledCheque() != null && !bankDetailRequestDto.getCancelledCheque().isEmpty()) {
+                try {
+                    String chequeKey = s3Service.uploadFile(
+                            bankDetailRequestDto.getCancelledCheque(),
+                            "cancelled-cheque",
+                            "partner/" + user.getId() + "/bank-documents",
+                            false
+                    );
+                    entity.setCancelledChequeUrl(chequeKey);
+                } catch (IOException e) {
+                    log.error("Failed to upload cancelled cheque document for user: {}", user.getId(), e);
+                    throw new RuntimeException("Cancelled cheque upload failed", e);
+                }
+            }
+            
             bankDetailRepository.save(entity);
         }
 

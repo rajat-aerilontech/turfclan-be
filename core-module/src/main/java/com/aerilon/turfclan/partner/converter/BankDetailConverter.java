@@ -18,7 +18,6 @@ public class BankDetailConverter implements Converter<BankDetailRequestDto, Bank
         entity.setBankName(source.getBankName());
         entity.setIfscCode(source.getIfscCode());
         entity.setBranchName(source.getBranchName());
-        entity.setCancelledChequeUrl(source.getCancelledChequeUrl());
         entity.setCreatedAt(LocalDateTime.now());
         return entity;
     }
@@ -33,8 +32,6 @@ public class BankDetailConverter implements Converter<BankDetailRequestDto, Bank
         dto.setBankName(entity.getBankName());
         dto.setIfscCode(entity.getIfscCode());
         dto.setBranchName(entity.getBranchName());
-        dto.setCancelledChequeUrl(entity.getCancelledChequeUrl());
-
         return dto;
     }
 }
