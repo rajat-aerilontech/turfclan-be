@@ -117,11 +117,11 @@ public class OnboardingController {
      * @param request HTTP request used to capture client IP
      * @return status message
      */
-    @PostMapping("/step/contract")
+    @PostMapping(value = "/step/contract", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Submit Contract", description = "Signs the contract (Step 5) for the partner and captures the user's IP address.")
     public ResponseEntity<String> submitContract(
-            @Valid @RequestBody ContractRequestDto dto,
+            @Valid @ModelAttribute ContractRequestDto dto,
             HttpServletRequest request) {
         String userId = securityUtils.getCurrentUserId();
         onboardingService.signContract(userId, dto, request);

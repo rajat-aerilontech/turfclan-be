@@ -15,7 +15,6 @@ public class ContractConverter implements Converter<ContractRequestDto, Onboardi
         entity.setIsAgreed(source.getIsAgreed());
         entity.setSignatureType(source.getSignatureType());
         entity.setTypedSignatureName(source.getTypedSignatureName());
-        entity.setUploadedSignatureUrl(source.getUploadedSignatureUrl());
         return entity;
     }
 
@@ -27,8 +26,6 @@ public class ContractConverter implements Converter<ContractRequestDto, Onboardi
         dto.setIsAgreed(entity.getIsAgreed());
         dto.setSignatureType(entity.getSignatureType());
         dto.setTypedSignatureName(entity.getTypedSignatureName());
-        dto.setUploadedSignatureUrl(entity.getUploadedSignatureUrl());
-
         return dto;
     }
 }

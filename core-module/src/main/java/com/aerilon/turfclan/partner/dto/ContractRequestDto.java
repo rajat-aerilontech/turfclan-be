@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -16,5 +17,5 @@ public class ContractRequestDto {
     @NotNull(message = "Signature Type is required")
     private SignatureType signatureType;
     private String typedSignatureName;
-    private String uploadedSignatureUrl;
+    private MultipartFile uploadedSignature;
 }

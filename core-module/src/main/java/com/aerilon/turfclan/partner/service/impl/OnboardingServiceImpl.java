@@ -286,8 +286,8 @@ public class OnboardingServiceImpl implements OnboardingService {
                 throw new InvalidRequestException("Signature name is required for TYPED signature.");
             }
         } else if (contractDto.getSignatureType() == SignatureType.UPLOADED) {
-            if (contractDto.getUploadedSignatureUrl() == null || contractDto.getUploadedSignatureUrl().isBlank()) {
-                throw new InvalidRequestException("Signature URL is required for UPLOADED signature.");
+            if (contractDto.getUploadedSignature() == null || contractDto.getUploadedSignature().isEmpty()) {
+                throw new InvalidRequestException("Uploaded signature file is required for UPLOADED signature.");
             }
         }
         UserEntity user = getUser(userId);
@@ -296,6 +296,20 @@ public class OnboardingServiceImpl implements OnboardingService {
         OnboardingContractEntity entity = contractConverter.convert(contractDto);
         if (entity != null) {
             entity.setUser(user);
+            if (contractDto.getSignatureType() == SignatureType.UPLOADED) {
+                try {
+                    String signatureKey = s3Service.uploadFile(
+                            contractDto.getUploadedSignature(),
+                            "uploaded-signature",
+                            "partner/" + userId + "/contract",
+                            false
+                    );
+                    entity.setUploadedSignatureUrl(signatureKey);
+                } catch (IOException e) {
+                    log.error("Failed to upload contract signature for user: {}", userId, e);
+                    throw new RuntimeException("Contract signature upload failed", e);
+                }
+            }
             // Extract IP address from request
             String ipAddress = request.getHeader("X-Forwarded-For");
             if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
