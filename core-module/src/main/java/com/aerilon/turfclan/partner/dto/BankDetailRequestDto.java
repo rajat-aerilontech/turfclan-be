@@ -22,4 +22,5 @@ public class BankDetailRequestDto {
     @NotBlank(message = "Branch Name is required")
     private String branchName;
     private MultipartFile cancelledCheque;
+    private String cancelledChequeUrl;
 }

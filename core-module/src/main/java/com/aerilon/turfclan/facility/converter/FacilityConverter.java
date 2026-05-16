@@ -2,7 +2,7 @@ package com.aerilon.turfclan.facility.converter;
 
 import com.aerilon.turfclan.facility.dto.FacilityRequestDto;
 import com.aerilon.turfclan.facility.entity.FacilityEntity;
-import com.aerilon.turfclan.dto.S3ImageModelDto;
+import com.aerilon.turfclan.dto.S3ImageResponseDto;
 import com.aerilon.turfclan.service.S3Service;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -58,6 +58,15 @@ public class FacilityConverter implements Converter<FacilityRequestDto, Facility
         FacilityRequestDto dto = new FacilityRequestDto();
         dto.setFacilityName(entity.getFacilityName());
         dto.setDescription(entity.getDescription());
+        if (entity.getFacilityPhotos() != null) {
+            List<S3ImageResponseDto> facilityPhotoUrls = entity.getFacilityPhotos().stream()
+                    .map(img -> new S3ImageResponseDto(
+                            img.getKey(),
+                            s3Service.preSignedUrl(img.getKey(), 10)
+                    ))
+                    .toList();
+            dto.setFacilityPhotoUrls(facilityPhotoUrls);
+        }
         dto.setAddressLine1(entity.getAddressLine1());
         dto.setAddressLine2(entity.getAddressLine2());
         dto.setLandmark(entity.getLandmark());

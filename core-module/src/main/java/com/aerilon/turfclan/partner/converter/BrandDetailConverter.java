@@ -3,10 +3,12 @@ package com.aerilon.turfclan.partner.converter;
 import com.aerilon.turfclan.partner.dto.BrandDetailsRequestDto;
 import com.aerilon.turfclan.partner.dto.BusinessInfoDto;
 import com.aerilon.turfclan.partner.entity.BrandDetailEntity;
+import com.aerilon.turfclan.service.S3Service;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +18,9 @@ import java.util.HashSet;
 
 @Component
 public class BrandDetailConverter implements Converter<BusinessInfoDto, BrandDetailEntity> {
+
+    @Autowired
+    private S3Service s3Service;
 
     @Override
     public BrandDetailEntity convert(BusinessInfoDto source) {
@@ -42,9 +47,13 @@ public class BrandDetailConverter implements Converter<BusinessInfoDto, BrandDet
         BrandDetailsRequestDto dto = new BrandDetailsRequestDto();
         dto.setBrandName(entity.getBrandName());
         dto.setTagline(entity.getTagline());
-        dto.setBrandLogoUrl(entity.getBrandLogoUrl());
+        if (entity.getBrandLogoUrl() != null && !entity.getBrandLogoUrl().isBlank()) {
+            dto.setBrandLogoUrl(s3Service.preSignedUrl(entity.getBrandLogoUrl(), 10));
+        }
         dto.setBannerImageUrls(entity.getBannerImageUrls() != null ?
-                new ArrayList<>(entity.getBannerImageUrls()) : new ArrayList<>());
+                entity.getBannerImageUrls().stream()
+                        .map(key -> s3Service.preSignedUrl(key, 10))
+                        .toList() : new ArrayList<>());
         dto.setDescription(entity.getDescription());
         dto.setLongDescription(entity.getLongDescription());
         dto.setBrandWebsite(entity.getBrandWebsite());

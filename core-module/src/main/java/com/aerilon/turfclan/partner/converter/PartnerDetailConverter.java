@@ -1,6 +1,5 @@
 package com.aerilon.turfclan.partner.converter;
 
-import com.aerilon.turfclan.dto.S3ImageModelDto;
 import com.aerilon.turfclan.dto.S3ImageResponseDto;
 import com.aerilon.turfclan.partner.dto.PartnerDetailRequestDto;
 import com.aerilon.turfclan.partner.entity.PartnerDetailEntity;
@@ -43,6 +42,13 @@ public class PartnerDetailConverter implements Converter<PartnerDetailRequestDto
         dto.setAadharNumber(entity.getAadharNumber());
         dto.setPanNumber(entity.getPanNumber());
         dto.setIdProofType(entity.getIdProofType());
+        if (entity.getProfileImageUrl() != null) {
+            String imageKey = entity.getProfileImageUrl().getKey();
+            dto.setProfileImageUrl(new S3ImageResponseDto(imageKey, s3Service.preSignedUrl(imageKey, 10)));
+        }
+        if (entity.getIdDocumentUrl() != null && !entity.getIdDocumentUrl().isBlank()) {
+            dto.setIdDocumentUrl(s3Service.preSignedUrl(entity.getIdDocumentUrl(), 10));
+        }
 
         return dto;
     }

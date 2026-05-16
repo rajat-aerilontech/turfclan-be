@@ -18,4 +18,5 @@ public class ContractRequestDto {
     private SignatureType signatureType;
     private String typedSignatureName;
     private MultipartFile uploadedSignature;
+    private String uploadedSignatureUrl;
 }

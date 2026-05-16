@@ -24,6 +24,7 @@ public class FacilityRequestDto {
     private String description;
     @NotEmpty(message = "At least one Photo of facility image is required")
     private List<MultipartFile> facilityPhotos;
+    private List<S3ImageResponseDto> facilityPhotoUrls;
     @NotBlank(message = "Address Line is required")
     private String addressLine1;
 
