@@ -20,11 +20,10 @@ public class PartnerDetailRequestDto {
     private String email;
     @NotBlank(message = "Designation is required")
     private String designation;
-    private S3ImageResponseDto profileImageUrl;
+    private MultipartFile profileImage;
     private String aadharNumber;
     private String panNumber;
     @NotNull(message = "ID Proof type is required")
     private IdProofType idProofType;
-    @NotBlank(message = "Document file is required")
-    private String idDocumentUrl;
+    private MultipartFile idDocument;
 }

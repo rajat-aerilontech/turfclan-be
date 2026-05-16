@@ -78,15 +78,16 @@ public class OnboardingController {
 
     /**
      * Saves partner details (step 3) for the authenticated partner.
+     * Accepts profile image and ID document as multipart form data.
      *
-     * @param dto partner detail payload
+     * @param dto partner detail payload with profile image and ID document
      * @return status message
      */
-    @PostMapping("/step/partner-details")
+    @PostMapping(value = "/step/partner-details", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
-    @Operation(summary = "Save Partner Details", description = "Saves partner details (Step 3) for the partner.")
+    @Operation(summary = "Save Partner Details", description = "Saves partner details (Step 3) with profile image and ID document for the partner.")
     public ResponseEntity<String> savePartnerDetails(
-            @Valid @RequestBody PartnerDetailRequestDto dto) {
+            @Valid @ModelAttribute PartnerDetailRequestDto dto) {
         String userId = securityUtils.getCurrentUserId();
         onboardingService.savePartnerDetails(userId, dto);
         return ResponseEntity.ok("Partner details saved successfully. Proceed to Bank Details.");

@@ -31,14 +31,7 @@ public class FacilityConverter implements Converter<FacilityRequestDto, Facility
         FacilityEntity entity = new FacilityEntity();
         entity.setFacilityName(source.getFacilityName());
         entity.setDescription(source.getDescription());
-//        if (source.getFacilityPhotos() != null) {
-//            List<S3ImageModelDto> images = source.getFacilityPhotos().stream()
-//                    .map(dto -> new S3ImageModelDto(dto.getKey())) // ignore URL
-//                    .toList();
-//            entity.setFacilityPhotos(images);
-//        } else {
-//            entity.setFacilityPhotos(new ArrayList<>());
-//        }
+        entity.setFacilityPhotos(new ArrayList<>());
         entity.setAddressLine1(source.getAddressLine1());
         entity.setAddressLine2(source.getAddressLine2());
         entity.setLandmark(source.getLandmark());
@@ -65,15 +58,6 @@ public class FacilityConverter implements Converter<FacilityRequestDto, Facility
         FacilityRequestDto dto = new FacilityRequestDto();
         dto.setFacilityName(entity.getFacilityName());
         dto.setDescription(entity.getDescription());
-//        if (entity.getFacilityPhotos() != null) {
-//            List<com.aerilon.turfclan.dto.S3ImageResponseDto> images = entity.getFacilityPhotos().stream()
-//                    .map(img -> new com.aerilon.turfclan.dto.S3ImageResponseDto(
-//                            img.getKey(),
-//                            s3Service.preSignedUrl(img.getKey(), 10)
-//                    ))
-//                    .toList();
-//            dto.setFacilityPhotos(images);
-//        }
         dto.setAddressLine1(entity.getAddressLine1());
         dto.setAddressLine2(entity.getAddressLine2());
         dto.setLandmark(entity.getLandmark());
