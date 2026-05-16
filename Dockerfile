@@ -10,7 +10,7 @@ FROM eclipse-temurin:22-jre-jammy
 WORKDIR /app
 
 # --- Install PostGIS/GDAL dependencies ---
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-client \
     postgis \
     gdal-bin \
