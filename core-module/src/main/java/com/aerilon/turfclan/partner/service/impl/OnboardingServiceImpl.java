@@ -135,7 +135,7 @@ public class OnboardingServiceImpl implements OnboardingService {
             helpUsRepository.save(helpUsEntity);
         }
 
-        app.setCurrentStep(OnboardStep.SPORT_DETAILS);
+        app.setCurrentStep(OnboardStep.FACILITY_DETAILS);
         applicationRepository.save(app);
     }
 
@@ -274,7 +274,7 @@ public class OnboardingServiceImpl implements OnboardingService {
             bankDetailRepository.save(entity);
         }
 
-        app.setCurrentStep(OnboardStep.CONTRACT);
+        app.setCurrentStep(OnboardStep.CONTRACT_DETAILS);
         applicationRepository.save(app);
     }
 
