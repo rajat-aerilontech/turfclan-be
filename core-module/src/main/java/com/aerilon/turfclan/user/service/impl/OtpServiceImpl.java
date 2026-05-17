@@ -132,11 +132,17 @@ public class OtpServiceImpl implements OtpService {
         otpRepository.save(otpEntity);
 
         boolean isProfileComplete = user.isProfileComplete();
+        boolean isFirstTimeLogin = !user.isVerified();
         if (user.getUserName() == null || user.getUserName().isBlank()) {
             user.setUserName(UUID.randomUUID().toString().replace("-", "").substring(0, 12));
         }
-        user.setStatus(isProfileComplete ? UserStatus.ACTIVE : UserStatus.PENDING_SIGNUP);
-        user.setVerified(true);
+        if (isFirstTimeLogin) {
+            user.setStatus(
+                    isProfileComplete
+                            ? UserStatus.ACTIVE
+                            : UserStatus.PENDING_SIGNUP
+            );
+        }        user.setVerified(true);
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
 

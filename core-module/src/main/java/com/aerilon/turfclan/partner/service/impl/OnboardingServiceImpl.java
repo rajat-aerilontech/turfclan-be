@@ -18,6 +18,7 @@ import com.aerilon.turfclan.partner.repository.*;
 import com.aerilon.turfclan.partner.service.OnboardingService;
 import com.aerilon.turfclan.service.S3Service;
 import com.aerilon.turfclan.user.entity.UserEntity;
+import com.aerilon.turfclan.user.enums.UserStatus;
 import com.aerilon.turfclan.user.repository.UserRepository;
 import com.aerilon.turfclan.dto.S3ImageModelDto;
 import jakarta.servlet.http.HttpServletRequest;
@@ -337,6 +338,8 @@ public class OnboardingServiceImpl implements OnboardingService {
         app.setIsSubmitted(true);
         app.setOnboardApplicationStatus(OnboardApplicationStatus.UNDER_REVIEW);
         applicationRepository.save(app);
+        user.setStatus(UserStatus.UNDER_REVIEW);
+        userRepository.save(user);
         log.info("Application for user {} submitted successfully.", userId);
     }
 
