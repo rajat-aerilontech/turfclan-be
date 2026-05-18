@@ -1,6 +1,5 @@
 package com.aerilon.turfclan.partner.converter;
 
-import com.aerilon.turfclan.dto.S3ImageModelDto;
 import com.aerilon.turfclan.dto.S3ImageResponseDto;
 import com.aerilon.turfclan.partner.dto.PartnerDetailRequestDto;
 import com.aerilon.turfclan.partner.entity.PartnerDetailEntity;
@@ -25,15 +24,9 @@ public class PartnerDetailConverter implements Converter<PartnerDetailRequestDto
         entity.setPhonenumber(source.getPhonenumber());
         entity.setEmailId(source.getEmail());
         entity.setDesignation(source.getDesignation());
-        if (source.getProfileImageUrl() != null) {
-            S3ImageModelDto imgModel = new S3ImageModelDto();
-            imgModel.setKey(source.getProfileImageUrl().getKey());
-            entity.setProfileImageUrl(imgModel);
-        }
         entity.setAadharNumber(source.getAadharNumber());
         entity.setPanNumber(source.getPanNumber());
         entity.setIdProofType(source.getIdProofType());
-        entity.setIdDocumentUrl(source.getIdDocumentUrl());
         entity.setCreatedAt(LocalDateTime.now());
         return entity;
     }
@@ -46,18 +39,16 @@ public class PartnerDetailConverter implements Converter<PartnerDetailRequestDto
         dto.setPhonenumber(entity.getPhonenumber());
         dto.setEmail(entity.getEmailId());
         dto.setDesignation(entity.getDesignation());
-        if (entity.getProfileImageUrl() != null) {
-            String key = entity.getProfileImageUrl().getKey();
-            S3ImageResponseDto imageResponse = new S3ImageResponseDto(
-                    key,
-                    s3Service.preSignedUrl(key, 10)
-            );
-            dto.setProfileImageUrl(imageResponse);
-        }
         dto.setAadharNumber(entity.getAadharNumber());
         dto.setPanNumber(entity.getPanNumber());
         dto.setIdProofType(entity.getIdProofType());
-        dto.setIdDocumentUrl(entity.getIdDocumentUrl());
+        if (entity.getProfileImageUrl() != null) {
+            String imageKey = entity.getProfileImageUrl().getKey();
+            dto.setProfileImageUrl(new S3ImageResponseDto(imageKey, s3Service.preSignedUrl(imageKey, 10)));
+        }
+        if (entity.getIdDocumentUrl() != null && !entity.getIdDocumentUrl().isBlank()) {
+            dto.setIdDocumentUrl(s3Service.preSignedUrl(entity.getIdDocumentUrl(), 10));
+        }
 
         return dto;
     }

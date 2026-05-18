@@ -1,6 +1,5 @@
 package com.aerilon.turfclan.partner.dto;
 
-import com.aerilon.turfclan.dto.S3ImageModelDto;
 import com.aerilon.turfclan.dto.S3ImageResponseDto;
 import com.aerilon.turfclan.enums.IdProofType;
 import jakarta.validation.constraints.NotBlank;
@@ -20,11 +19,12 @@ public class PartnerDetailRequestDto {
     private String email;
     @NotBlank(message = "Designation is required")
     private String designation;
+    private MultipartFile profileImage;
     private S3ImageResponseDto profileImageUrl;
     private String aadharNumber;
     private String panNumber;
     @NotNull(message = "ID Proof type is required")
     private IdProofType idProofType;
-    @NotBlank(message = "Document file is required")
+    private MultipartFile idDocument;
     private String idDocumentUrl;
 }

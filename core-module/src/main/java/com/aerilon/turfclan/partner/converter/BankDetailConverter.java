@@ -2,6 +2,8 @@ package com.aerilon.turfclan.partner.converter;
 
 import com.aerilon.turfclan.partner.dto.BankDetailRequestDto;
 import com.aerilon.turfclan.partner.entity.BankDetailEntity;
+import com.aerilon.turfclan.service.S3Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -9,6 +11,9 @@ import java.time.LocalDateTime;
 
 @Component
 public class BankDetailConverter implements Converter<BankDetailRequestDto, BankDetailEntity> {
+
+    @Autowired
+    private S3Service s3Service;
 
     @Override
     public BankDetailEntity convert(BankDetailRequestDto source) {
@@ -18,7 +23,6 @@ public class BankDetailConverter implements Converter<BankDetailRequestDto, Bank
         entity.setBankName(source.getBankName());
         entity.setIfscCode(source.getIfscCode());
         entity.setBranchName(source.getBranchName());
-        entity.setCancelledChequeUrl(source.getCancelledChequeUrl());
         entity.setCreatedAt(LocalDateTime.now());
         return entity;
     }
@@ -33,8 +37,9 @@ public class BankDetailConverter implements Converter<BankDetailRequestDto, Bank
         dto.setBankName(entity.getBankName());
         dto.setIfscCode(entity.getIfscCode());
         dto.setBranchName(entity.getBranchName());
-        dto.setCancelledChequeUrl(entity.getCancelledChequeUrl());
-
+        if (entity.getCancelledChequeUrl() != null && !entity.getCancelledChequeUrl().isBlank()) {
+            dto.setCancelledChequeUrl(s3Service.preSignedUrl(entity.getCancelledChequeUrl(), 10));
+        }
         return dto;
     }
 }

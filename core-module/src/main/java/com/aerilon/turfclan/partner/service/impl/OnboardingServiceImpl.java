@@ -16,14 +16,19 @@ import com.aerilon.turfclan.partner.converter.*;
 import com.aerilon.turfclan.partner.enums.SignatureType;
 import com.aerilon.turfclan.partner.repository.*;
 import com.aerilon.turfclan.partner.service.OnboardingService;
+import com.aerilon.turfclan.service.S3Service;
 import com.aerilon.turfclan.user.entity.UserEntity;
+import com.aerilon.turfclan.user.enums.UserStatus;
 import com.aerilon.turfclan.user.repository.UserRepository;
+import com.aerilon.turfclan.dto.S3ImageModelDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -181,6 +186,27 @@ public class OnboardingServiceImpl implements OnboardingService {
                 FacilityEntity facilityEntity = facilityConverter.convert(facilityDto);
                 if (facilityEntity != null) {
                     facilityEntity.setUser(user);
+                    
+                    // Upload facility images to S3
+                    List<S3ImageModelDto> uploadedImages = new ArrayList<>();
+                    if (facilityDto.getFacilityPhotos() != null && !facilityDto.getFacilityPhotos().isEmpty()) {
+                        for (MultipartFile file : facilityDto.getFacilityPhotos()) {
+                            try {
+                                String key = s3Service.uploadFile(
+                                        file,
+                                        "facility",
+                                        "facility/" + user.getId() + "/images",
+                                        false
+                                );
+                                uploadedImages.add(new S3ImageModelDto(key));
+                            } catch (IOException e) {
+                                log.error("Failed to upload facility image: {}", file.getOriginalFilename(), e);
+                                throw new RuntimeException("Image upload failed: " + file.getOriginalFilename(), e);
+                            }
+                        }
+                    }
+                    facilityEntity.setFacilityPhotos(uploadedImages);
+                    
                     // Initialize sub-facility list
                     List<SubFacilityEntity> subFacilities = new ArrayList<>();
                     if (facilityDto.getSubFacilities() != null) {
@@ -211,6 +237,39 @@ public class OnboardingServiceImpl implements OnboardingService {
         PartnerDetailEntity entity = partnerDetailConverter.convert(dto);
         if (entity != null) {
             entity.setUser(user);
+            
+            // Upload profile image to S3
+            if (dto.getProfileImage() != null && !dto.getProfileImage().isEmpty()) {
+                try {
+                    String profileImageKey = s3Service.uploadFile(
+                            dto.getProfileImage(),
+                            "profile-image",
+                            "partner/" + user.getId() + "/profile",
+                            true
+                    );
+                    entity.setProfileImageUrl(new S3ImageModelDto(profileImageKey));
+                } catch (IOException e) {
+                    log.error("Failed to upload profile image for user: {}", user.getId(), e);
+                    throw new RuntimeException("Profile image upload failed", e);
+                }
+            }
+            
+            // Upload ID document to S3
+            if (dto.getIdDocument() != null && !dto.getIdDocument().isEmpty()) {
+                try {
+                    String idDocumentKey = s3Service.uploadFile(
+                            dto.getIdDocument(),
+                            "id-document",
+                            "partner/" + user.getId() + "/documents",
+                            false
+                    );
+                    entity.setIdDocumentUrl(idDocumentKey);
+                } catch (IOException e) {
+                    log.error("Failed to upload ID document for user: {}", user.getId(), e);
+                    throw new RuntimeException("ID document upload failed", e);
+                }
+            }
+            
             partnerDetailRepository.save(entity);
         }
 
@@ -230,10 +289,27 @@ public class OnboardingServiceImpl implements OnboardingService {
         BankDetailEntity entity = bankDetailConverter.convert(bankDetailRequestDto);
         if (entity != null) {
             entity.setUser(user);
+            
+            // Upload cancelled cheque document to S3
+            if (bankDetailRequestDto.getCancelledCheque() != null && !bankDetailRequestDto.getCancelledCheque().isEmpty()) {
+                try {
+                    String chequeKey = s3Service.uploadFile(
+                            bankDetailRequestDto.getCancelledCheque(),
+                            "cancelled-cheque",
+                            "partner/" + user.getId() + "/bank-documents",
+                            false
+                    );
+                    entity.setCancelledChequeUrl(chequeKey);
+                } catch (IOException e) {
+                    log.error("Failed to upload cancelled cheque document for user: {}", user.getId(), e);
+                    throw new RuntimeException("Cancelled cheque upload failed", e);
+                }
+            }
+            
             bankDetailRepository.save(entity);
         }
 
-        app.setCurrentStep(OnboardStep.CONTRACT);
+        app.setCurrentStep(OnboardStep.CONTRACT_DETAILS);
         applicationRepository.save(app);
     }
 
@@ -245,8 +321,8 @@ public class OnboardingServiceImpl implements OnboardingService {
                 throw new InvalidRequestException("Signature name is required for TYPED signature.");
             }
         } else if (contractDto.getSignatureType() == SignatureType.UPLOADED) {
-            if (contractDto.getUploadedSignatureUrl() == null || contractDto.getUploadedSignatureUrl().isBlank()) {
-                throw new InvalidRequestException("Signature URL is required for UPLOADED signature.");
+            if (contractDto.getUploadedSignature() == null || contractDto.getUploadedSignature().isEmpty()) {
+                throw new InvalidRequestException("Uploaded signature file is required for UPLOADED signature.");
             }
         }
         UserEntity user = getUser(userId);
@@ -255,6 +331,20 @@ public class OnboardingServiceImpl implements OnboardingService {
         OnboardingContractEntity entity = contractConverter.convert(contractDto);
         if (entity != null) {
             entity.setUser(user);
+            if (contractDto.getSignatureType() == SignatureType.UPLOADED) {
+                try {
+                    String signatureKey = s3Service.uploadFile(
+                            contractDto.getUploadedSignature(),
+                            "uploaded-signature",
+                            "partner/" + userId + "/contract",
+                            false
+                    );
+                    entity.setUploadedSignatureUrl(signatureKey);
+                } catch (IOException e) {
+                    log.error("Failed to upload contract signature for user: {}", userId, e);
+                    throw new RuntimeException("Contract signature upload failed", e);
+                }
+            }
             // Extract IP address from request
             String ipAddress = request.getHeader("X-Forwarded-For");
             if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
@@ -282,6 +372,8 @@ public class OnboardingServiceImpl implements OnboardingService {
         app.setIsSubmitted(true);
         app.setOnboardApplicationStatus(OnboardApplicationStatus.UNDER_REVIEW);
         applicationRepository.save(app);
+        user.setStatus(UserStatus.UNDER_REVIEW);
+        userRepository.save(user);
         log.info("Application for user {} submitted successfully.", userId);
     }
 

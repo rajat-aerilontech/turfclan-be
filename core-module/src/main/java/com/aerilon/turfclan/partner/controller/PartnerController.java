@@ -1,6 +1,7 @@
 package com.aerilon.turfclan.partner.controller;
 
 import com.aerilon.turfclan.partner.dto.DashboardDto;
+import com.aerilon.turfclan.partner.dto.FacilityDto;
 import com.aerilon.turfclan.partner.dto.OnboardingFullDataDto;
 import com.aerilon.turfclan.partner.service.PartnerService;
 import com.aerilon.turfclan.security.SecurityUtils;
@@ -14,6 +15,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/partner")
@@ -38,5 +41,20 @@ public class PartnerController {
     public ResponseEntity<DashboardDto> getDashboard() {
         String userId = securityUtils.getCurrentUserId();
         return ResponseEntity.ok(partnerService.getFullDashboardData(userId));
+    }
+
+    /**
+     * Returns Facility data for the authenticated partner.
+     *
+     * @return facility data
+     */
+    @GetMapping("/facilities")
+    @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
+    @Operation(summary = "Get Facility Data", description = "Returns all necessary data for the partner facility, including any relevant metrics.")
+    public ResponseEntity<List<FacilityDto>> getFacility() {
+        String userId = securityUtils.getCurrentUserId();
+        return ResponseEntity.ok(
+                partnerService.getFullFacilityData(userId)
+        );
     }
 }

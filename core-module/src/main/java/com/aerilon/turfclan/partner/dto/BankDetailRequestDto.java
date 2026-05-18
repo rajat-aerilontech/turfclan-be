@@ -3,6 +3,7 @@ package com.aerilon.turfclan.partner.dto;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -20,6 +21,6 @@ public class BankDetailRequestDto {
     private String ifscCode;
     @NotBlank(message = "Branch Name is required")
     private String branchName;
-    @NotBlank(message = "Cancelled cheque is required")
+    private MultipartFile cancelledCheque;
     private String cancelledChequeUrl;
 }

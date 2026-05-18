@@ -78,13 +78,14 @@ public class OnboardingController {
 
     /**
      * Saves partner details (step 3) for the authenticated partner.
+     * Accepts profile image and ID document as multipart form data.
      *
-     * @param dto partner detail payload
+     * @param dto partner detail payload with profile image and ID document
      * @return status message
      */
-    @PostMapping("/step/partner-details")
+    @PostMapping(value = "/step/partner-details", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
-    @Operation(summary = "Save Partner Details", description = "Saves partner details (Step 3) for the partner.")
+    @Operation(summary = "Save Partner Details", description = "Saves partner details (Step 3) with profile image and ID document for the partner.")
     public ResponseEntity<String> savePartnerDetails(
             @Valid @RequestBody PartnerDetailRequestDto dto) {
         String userId = securityUtils.getCurrentUserId();
@@ -94,13 +95,14 @@ public class OnboardingController {
 
     /**
      * Saves bank details (step 4) for the authenticated partner.
+     * Accepts cancelled cheque document as multipart form data.
      *
      * @param dto bank detail payload
      * @return status message
      */
-    @PostMapping("/step/bank-details")
+    @PostMapping(value = "/step/bank-details", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
-    @Operation(summary = "Save Bank Details", description = "Saves bank details (Step 4) for the partner.")
+    @Operation(summary = "Save Bank Details", description = "Saves bank details (Step 4) with cancelled cheque document for the partner.")
     public ResponseEntity<String> saveBankDetails(
             @Valid @RequestBody BankDetailRequestDto dto) {
         String userId = securityUtils.getCurrentUserId();
@@ -115,7 +117,7 @@ public class OnboardingController {
      * @param request HTTP request used to capture client IP
      * @return status message
      */
-    @PostMapping("/step/contract")
+    @PostMapping(value = "/step/contract", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(summary = "Submit Contract", description = "Signs the contract (Step 5) for the partner and captures the user's IP address.")
     public ResponseEntity<String> submitContract(

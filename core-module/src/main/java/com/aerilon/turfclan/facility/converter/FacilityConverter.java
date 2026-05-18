@@ -2,7 +2,7 @@ package com.aerilon.turfclan.facility.converter;
 
 import com.aerilon.turfclan.facility.dto.FacilityRequestDto;
 import com.aerilon.turfclan.facility.entity.FacilityEntity;
-import com.aerilon.turfclan.dto.S3ImageModelDto;
+import com.aerilon.turfclan.dto.S3ImageResponseDto;
 import com.aerilon.turfclan.service.S3Service;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
