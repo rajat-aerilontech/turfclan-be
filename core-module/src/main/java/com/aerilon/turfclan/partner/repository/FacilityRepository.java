@@ -2,6 +2,7 @@ package com.aerilon.turfclan.partner.repository;
 
 import com.aerilon.turfclan.facility.entity.FacilityEntity;
 import com.aerilon.turfclan.user.entity.UserEntity;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +14,8 @@ import java.util.UUID;
 @Repository
 public interface FacilityRepository extends JpaRepository<FacilityEntity, UUID> {
     boolean existsByUser(UserEntity app);
+
+    @EntityGraph(attributePaths = "subFacility")
     List<FacilityEntity> findByUser(UserEntity user);
 
     /**
