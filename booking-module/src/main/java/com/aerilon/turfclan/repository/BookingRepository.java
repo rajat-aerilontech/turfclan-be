@@ -1,6 +1,7 @@
 package com.aerilon.turfclan.repository;
 
 import com.aerilon.turfclan.entity.BookingEntity;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -37,4 +38,8 @@ public interface BookingRepository extends JpaRepository<BookingEntity, UUID> {
     List<BookingEntity> findPendingApprovalByFacility(
             @Param("facilityId") UUID facilityId,
             @Param("status") BookingStatus status);
+
+    @EntityGraph(attributePaths = {"sport", "sport.facility", "user"})
+    @Query("SELECT b FROM BookingEntity b WHERE b.sport.facility.user.id = :userId")
+    List<BookingEntity> findByPartnerUserId(@Param("userId") UUID userId);
 }

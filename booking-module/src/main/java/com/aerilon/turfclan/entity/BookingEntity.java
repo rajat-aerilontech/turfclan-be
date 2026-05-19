@@ -25,7 +25,7 @@ public class BookingEntity extends BaseAuditableEntity {
     private UserEntity user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sport_id", nullable = false)
+    @JoinColumn(name = "sub_facility_id", nullable = false)
     private SubFacilityEntity sport;
 
     @Column(name = "booking_date", nullable = false)

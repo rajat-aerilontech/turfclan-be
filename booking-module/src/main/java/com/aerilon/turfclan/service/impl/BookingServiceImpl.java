@@ -99,6 +99,18 @@ public class BookingServiceImpl implements BookingService {
     }
 
     /**
+     * Returns all bookings for facilities owned by the authenticated partner.
+     */
+    @Transactional(readOnly = true)
+    public List<BookingResponseDTO> getPartnerBookings(String userId) {
+        UUID partnerUserId = UUID.fromString(userId);
+        return bookingRepository.findByPartnerUserId(partnerUserId)
+                .stream()
+                .map(bookingConverter::toDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Logic: Updates status based on Partner Action (Accept/Reject).
      */
     @Transactional
