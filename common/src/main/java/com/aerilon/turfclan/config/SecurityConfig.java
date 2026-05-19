@@ -57,6 +57,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/sports/**").authenticated()
                         .requestMatchers("/api/v1/tournaments/**").authenticated()
                         .requestMatchers("/api/v1/sports-directory/**").authenticated()
+                        .requestMatchers("/api/v1/partner-onboarding/**").authenticated()
+                        .requestMatchers("/api/v1/social-links/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(exception -> exception
