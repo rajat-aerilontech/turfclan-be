@@ -73,11 +73,6 @@ public class PartnerServiceImpl implements PartnerService {
                     .bankName(bank.getBankName())
                     .ifscCode(bank.getIfscCode());
         }
-        if (brand != null) {
-            builder.instagram(brand.getInstagramPage())
-                    .youtube(brand.getYoutubePage())
-                    .build();
-        }
         return builder.build();
     }
 

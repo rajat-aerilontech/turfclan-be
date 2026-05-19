@@ -49,6 +49,7 @@ public class OnboardingServiceImpl implements OnboardingService {
     private final PartnerDetailRepository partnerDetailRepository;
     private final BankDetailRepository bankDetailRepository;
     private final OnboardingContractRepository contractRepository;
+    private final SocialLinkRepository socialLinkRepository;
     private final S3Service s3Service;
 
     // Converters
@@ -64,7 +65,8 @@ public class OnboardingServiceImpl implements OnboardingService {
     @Override
     public OnboardingFullDataDto getFullOnboardingData(String userId) {
         UserEntity user = getUser(userId);
-        OnboardingApplicationEntity app = getOnboardingApplication(user);
+        OnboardingApplicationEntity app = applicationRepository.findByUser(user)
+            .orElseGet(() -> createApplication(user));
         BusinessInfoDto businessInfo = mapToBusinessInfoDto(user);
         List<FacilityRequestDto> facilities = facilityRepository.findByUser(user).stream()
                 .map(facilityConverter::toDto)
@@ -101,7 +103,19 @@ public class OnboardingServiceImpl implements OnboardingService {
             businessInfoDto.setBusinessDetail(businessDetailConverter.toDto(businessDetailEntity));
         }
         if (brandEntity != null) {
-            businessInfoDto.setBrandDetails(brandDetailConverter.toDto(brandEntity));
+            BrandDetailsRequestDto brandDto = brandDetailConverter.toDto(brandEntity);
+            List<SocialLinkRequestDto> socialLinks = socialLinkRepository.findByUser(user).stream()
+                    .map(e -> {
+                        SocialLinkRequestDto dto = new SocialLinkRequestDto();
+                        dto.setName(e.getName());
+                        dto.setLink(e.getLink());
+                        dto.setFollowers(e.getFollowers());
+                        dto.setVisible(e.getVisible());
+                        return dto;
+                    })
+                    .toList();
+            brandDto.setSocialLinks(socialLinks);
+            businessInfoDto.setBrandDetails(brandDto);
         }
         if (helpEntity != null) {
             businessInfoDto.setHelpUsDetail(helpUsConverter.toDto(helpEntity));
@@ -113,7 +127,8 @@ public class OnboardingServiceImpl implements OnboardingService {
     @Transactional
     public void saveBusinessInfo(String userId, BusinessInfoDto dto) {
         UserEntity user = getUser(userId);
-        OnboardingApplicationEntity app = createApplication(user);
+         OnboardingApplicationEntity app = applicationRepository.findByUser(user)
+            .orElseGet(() -> createApplication(user));
 
         // Business Detail
         BusinessDetailEntity businessEntity = businessDetailConverter.convert(dto);
@@ -134,6 +149,26 @@ public class OnboardingServiceImpl implements OnboardingService {
         if (helpUsEntity != null) {
             helpUsEntity.setUser(user);
             helpUsRepository.save(helpUsEntity);
+        }
+        // Social Links (clear existing and save new)
+        List<SocialLinkRequestDto> socialLinks = dto.getBrandDetails() != null
+                ? dto.getBrandDetails().getSocialLinks()
+                : null;
+        if (socialLinks != null) {
+            List<SocialLinkEntity> existingLinks = socialLinkRepository.findByUser(user);
+            if (!existingLinks.isEmpty()) {
+                socialLinkRepository.deleteAll(existingLinks);
+            }
+            for (SocialLinkRequestDto slDto : socialLinks) {
+                SocialLinkEntity entity = new SocialLinkEntity();
+                entity.setName(slDto.getName());
+                entity.setLink(slDto.getLink());
+                entity.setFollowers(slDto.getFollowers());
+                entity.setVisible(slDto.getVisible());
+                entity.setUser(user);
+                entity.setCreatedAt(LocalDateTime.now());
+                socialLinkRepository.save(entity);
+            }
         }
 
         app.setCurrentStep(OnboardStep.FACILITY_DETAILS);
