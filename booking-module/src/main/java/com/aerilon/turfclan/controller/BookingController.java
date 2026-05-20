@@ -4,6 +4,7 @@ import com.aerilon.turfclan.dto.BookingRequestDTO;
 import com.aerilon.turfclan.dto.BookingResponseDTO;
 import com.aerilon.turfclan.dto.SlotResponseDTO;
 import com.aerilon.turfclan.enums.BookingStatus;
+import com.aerilon.turfclan.security.SecurityUtils;
 import com.aerilon.turfclan.service.BookingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,6 +29,9 @@ public class BookingController {
 
     @Autowired
     private BookingService bookingService;
+
+    @Autowired
+    private SecurityUtils securityUtils;
 
     /**
      * Returns available booking slots for a sport on a given date.
@@ -82,6 +86,22 @@ public class BookingController {
     )
     public ResponseEntity<List<BookingResponseDTO>> getRequestsForPartner(@PathVariable UUID facilityId) {
         return ResponseEntity.ok(bookingService.getPendingPartnerRequests(facilityId));
+    }
+
+    /**
+     * Returns all bookings for facilities owned by the authenticated partner.
+     *
+     * @return list of partner bookings
+     */
+    @GetMapping("/partner/bookings")
+    @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
+    @Operation(
+            summary = "Get Partner Bookings",
+            description = "Returns all bookings for facilities owned by the authenticated partner."
+    )
+    public ResponseEntity<List<BookingResponseDTO>> getPartnerBookings() {
+        String userId = securityUtils.getCurrentUserId();
+        return ResponseEntity.ok(bookingService.getPartnerBookings(userId));
     }
 
     /**
