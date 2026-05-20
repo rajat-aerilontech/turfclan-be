@@ -2,6 +2,7 @@ package com.aerilon.turfclan.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -39,6 +40,10 @@ public class BookingRequestDTO {
      * If false: Status becomes PENDING_PAYMENT (User must pay online)
      */
     private boolean payAtVenue;
+
+    @NotNull(message = "Player count is required")
+    @Min(value = 1, message = "Player count must be at least 1")
+    private Integer playerCount;
 
     private String userNote;
 }

@@ -50,6 +50,9 @@ public class BookingEntity extends BaseAuditableEntity {
     @Column(name = "total_amount", nullable = false)
     private Double totalAmount;
 
+    @Column(name = "player_count", nullable = false)
+    private Integer playerCount;
+
     @Version
     private Integer version;
 
