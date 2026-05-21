@@ -4,12 +4,14 @@ import com.aerilon.turfclan.user.entity.DeviceSessionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
 public interface DeviceSessionRepository extends JpaRepository<DeviceSessionEntity, UUID> {
     Optional<DeviceSessionEntity> findByRefreshTokenHash(String refreshTokenHash);
     List<DeviceSessionEntity> findAllByUserIdAndRevokedFalse(UUID userId);

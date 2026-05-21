@@ -58,7 +58,7 @@ public class UsersController {
      * @return OTP request result
      */
     @PostMapping("/otp/request")
-    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER', 'ROLE_TA_USER')")
     @Operation(summary = "Request OTP", description = "Generates and sends an OTP to a given phone number and confirms that the OTP was sent successfully.")
     public ResponseEntity<OtpResponseDTO> requestOtp(
             @RequestHeader(value = "source-app", required = false, defaultValue = "user") String sourceApp,
@@ -74,7 +74,7 @@ public class UsersController {
      * @return auth response and user profile
      */
     @PostMapping("/otp/verify")
-    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER', 'ROLE_TA_USER')")
     @Operation(summary = "Verify OTP", description = "Verifies a submitted OTP and returns the user profile, tokens, and whether the user is new or existing.")
     public ResponseEntity<AuthResponseDTO> verifyOtp(
             @RequestHeader(value = "source-app", required = false, defaultValue = "user") String sourceApp,
@@ -87,7 +87,6 @@ public class UsersController {
     /**
      * Completes the user profile after OTP verification.
      *
-     * @param authentication authenticated principal containing the user id
      * @param request signup payload
      * @return updated user profile
      */
@@ -107,7 +106,6 @@ public class UsersController {
     /**
      * Returns dashboard details for the authenticated user.
      *
-     * @param authentication authenticated principal containing the user id
      * @param selectedSportExperience selected sport experience header
      * @return dashboard details
      */

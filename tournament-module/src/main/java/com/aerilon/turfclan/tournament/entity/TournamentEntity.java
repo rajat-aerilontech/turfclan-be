@@ -1,8 +1,8 @@
 package com.aerilon.turfclan.tournament.entity;
 
 import com.aerilon.turfclan.entity.BaseAuditableEntity;
-import com.aerilon.turfclan.enums.RecordStatus;
 import com.aerilon.turfclan.facility.entity.FacilityEntity;
+import com.aerilon.turfclan.sportsdirectory.entity.SportOrganizationEntity;
 import com.aerilon.turfclan.tournament.enums.TournamentStatus;
 import com.aerilon.turfclan.user.entity.UserEntity;
 import jakarta.persistence.*;
@@ -12,7 +12,6 @@ import lombok.Setter;
 
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -28,6 +27,10 @@ public class TournamentEntity extends BaseAuditableEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "facility_id", referencedColumnName = "id")
     private FacilityEntity facility;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id", referencedColumnName = "id")
+    private SportOrganizationEntity organization;
 
     @Column(name = "sport_category", nullable = false, length = 100)
     private String sportCategory;

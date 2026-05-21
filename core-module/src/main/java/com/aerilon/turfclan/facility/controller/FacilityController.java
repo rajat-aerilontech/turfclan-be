@@ -37,7 +37,6 @@ public class FacilityController {
     /**
      * Returns facility data for the authenticated partner.
      *
-     * @param authentication authenticated principal containing the user id
      * @return facility data for the partner
      */
     @GetMapping("/user")
@@ -126,7 +125,6 @@ public class FacilityController {
      *
      * @param facilityId facility identifier
      * @param updateDto update payload
-     * @param authentication authenticated principal containing the user id
      * @return updated facility data
      */
     @PutMapping("/{facilityId}")
@@ -146,7 +144,6 @@ public class FacilityController {
      * @param facilityId facility identifier
      * @param sportId sport identifier
      * @param updateDto update payload
-     * @param authentication authenticated principal containing the user id
      * @return updated facility data
      */
     @PutMapping("/{facilityId}/sport/{sportId}")
@@ -166,7 +163,6 @@ public class FacilityController {
      *
      * @param facilityId facility identifier
      * @param subFacilityRequestDto sport payload
-     * @param authentication authenticated principal containing the user id
      * @return updated facility data
      */
     @PostMapping("/{facilityId}/sport")
@@ -184,7 +180,6 @@ public class FacilityController {
      * Creates a facility for the authenticated partner.
      *
      * @param facilityRequestDto facility payload
-     * @param authentication authenticated principal containing the user id
      * @return created facility data
      */
     @PostMapping("/user")

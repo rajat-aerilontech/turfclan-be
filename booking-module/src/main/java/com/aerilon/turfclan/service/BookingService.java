@@ -13,5 +13,6 @@ public interface BookingService {
     List<SlotResponseDTO> getAvailableSlots(UUID sportId, LocalDate date);
     BookingResponseDTO createBooking(BookingRequestDTO request, String userId);
     List<BookingResponseDTO> getPendingPartnerRequests(UUID facilityId);
+    List<BookingResponseDTO> getPartnerBookings(String userId);
     void handlePartnerAction(UUID bookingId, BookingStatus status);
 }
