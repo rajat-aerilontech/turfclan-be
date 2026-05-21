@@ -159,7 +159,7 @@ public class SourceAppFilter extends OncePerRequestFilter {
     private boolean isSourceAppOnlyPath(HttpServletRequest request) {
         String servletPath = request.getServletPath();
         return servletPath.startsWith("/api/v1/users/otp/")
-                || servletPath.equals("/api/v1/auth/refresh")
+                || servletPath.startsWith("/api/v1/auth/refresh")
                 || servletPath.startsWith("/api/v1/web/");
     }
 

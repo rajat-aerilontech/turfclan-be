@@ -31,7 +31,7 @@ public class AuthController {
     private final SecurityUtils securityUtils;
 
     @PostMapping("/refresh")
-    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER', 'ROLE_TA_USER')")
     @Operation(summary = "Refresh Token", description = "Issues a new access token and rotates the refresh token. Can read from request body or HttpOnly cookie.")
     public ResponseEntity<TokenRefreshResponseDTO> refresh(
             @RequestBody(required = false) TokenRefreshRequestDTO request,
@@ -41,7 +41,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER', 'ROLE_TA_USER')")
     @Operation(summary = "Logout Current Device", description = "Revokes the current session and clears the refresh token cookie if present.")
     public ResponseEntity<Void> logout(
             HttpServletRequest httpRequest,
@@ -52,7 +52,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout-all")
-    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TM_PARTNER', 'ROLE_TA_USER')")
     @Operation(summary = "Logout All Devices", description = "Revokes all active sessions for the authenticated user.")
     public ResponseEntity<Void> logoutAll() {
         String userId = securityUtils.getCurrentUserId();

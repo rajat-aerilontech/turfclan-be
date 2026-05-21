@@ -12,6 +12,7 @@ import com.aerilon.turfclan.user.dto.TokenRefreshRequestDTO;
 import com.aerilon.turfclan.user.dto.TokenRefreshResponseDTO;
 import com.aerilon.turfclan.user.entity.DeviceSessionEntity;
 import com.aerilon.turfclan.user.entity.UserEntity;
+import com.aerilon.turfclan.user.enums.UserRole;
 import com.aerilon.turfclan.user.repository.DeviceSessionRepository;
 import com.aerilon.turfclan.user.repository.UserRepository;
 import com.aerilon.turfclan.user.service.AuthService;
@@ -48,10 +49,14 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public TokenRefreshResponseDTO refresh(TokenRefreshRequestDTO request, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
-        String refreshToken = request != null ? request.getRefreshToken() : null;
-        
+        boolean extractedFromCookie = false;
+        String refreshToken = refreshToken = httpRequest.getHeader("refresh-token");
+
         if (refreshToken == null || refreshToken.isBlank()) {
             refreshToken = CookieUtil.extractCookie(httpRequest, CookieUtil.REFRESH_TOKEN_COOKIE_NAME);
+            if (refreshToken != null && !refreshToken.isBlank()) {
+                extractedFromCookie = true;
+            }
         }
 
         if (refreshToken == null || refreshToken.isBlank()) {
@@ -96,6 +101,12 @@ public class AuthServiceImpl implements AuthService {
         UserEntity user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found for id: " + userId));
 
+        boolean isWeb = user.getUserRole() != null && (user.getUserRole() == UserRole.PARTNER || user.getUserRole() == UserRole.ADMIN);
+
+        if (!isWeb && extractedFromCookie) {
+            throw new UnauthorizedAccessException("Mobile clients must not use cookie-based authentication");
+        }
+
         Map<String, Object> accessClaims = new java.util.HashMap<>();
         accessClaims.put("phoneNumber", user.getPhoneNumber());
         accessClaims.put("userName", user.getUserName());
@@ -114,13 +125,19 @@ public class AuthServiceImpl implements AuthService {
         session.setRefreshTokenHash(newTokenHash);
         session.setLastUsedAt(LocalDateTime.now());
         session.setExpiresAt(LocalDateTime.now().plus(jwtProperties.getRefreshTokenExpiryMs(), ChronoUnit.MILLIS));
+        session.setPlatform(isWeb ? "WEB" : "MOBILE");
         deviceSessionRepository.save(session);
         
         String redisKey = "session:" + session.getSessionId();
         redisTemplate.opsForValue().set(redisKey, user.getId().toString(), Duration.ofMillis(jwtProperties.getRefreshTokenExpiryMs()));
 
-        if ("WEB".equals(session.getPlatform())) {
+        if (isWeb) {
             CookieUtil.createHttpOnlyCookie(httpResponse, CookieUtil.REFRESH_TOKEN_COOKIE_NAME, newRefreshToken, (int) (jwtProperties.getRefreshTokenExpiryMs() / 1000));
+        } else {
+            // Clean up cookie for mobile or non-web clients if one was sent (e.g. by simulated/browser clients)
+            if (CookieUtil.extractCookie(httpRequest, CookieUtil.REFRESH_TOKEN_COOKIE_NAME) != null) {
+                CookieUtil.clearCookie(httpResponse, CookieUtil.REFRESH_TOKEN_COOKIE_NAME);
+            }
         }
 
         log.info("Tokens refreshed for user id: {}", userId);
@@ -131,7 +148,7 @@ public class AuthServiceImpl implements AuthService {
                 .expiresIn(expiresIn)
                 .build();
                 
-        String cacheValue = newAccessToken + "::" + newRefreshToken + "::" + expiresIn + "::" + session.getPlatform();
+        String cacheValue = newAccessToken + "::" + newRefreshToken + "::" + expiresIn + "::" + (isWeb ? "WEB" : "MOBILE");
         redisTemplate.opsForValue().set(graceKey, cacheValue, Duration.ofSeconds(45));
 
         return responseDTO;
@@ -240,6 +257,10 @@ public class AuthServiceImpl implements AuthService {
             
             if ("WEB".equals(platform)) {
                 CookieUtil.createHttpOnlyCookie(httpResponse, CookieUtil.REFRESH_TOKEN_COOKIE_NAME, cachedRefresh, (int) (jwtProperties.getRefreshTokenExpiryMs() / 1000));
+            } else {
+                if (CookieUtil.extractCookie(httpRequest, CookieUtil.REFRESH_TOKEN_COOKIE_NAME) != null) {
+                    CookieUtil.clearCookie(httpResponse, CookieUtil.REFRESH_TOKEN_COOKIE_NAME);
+                }
             }
             return TokenRefreshResponseDTO.builder()
                     .accessToken(cachedAccess)
