@@ -39,7 +39,6 @@ public class SportOrganizationServiceImpl implements SportOrganizationService {
 
     private final SportOrganizationRepository sportOrganizationRepository;
     private final SportOrganizationConverter sportOrganizationConverter;
-    private final OrganizationResolver organizationResolver;
     private final ObjectMapper objectMapper;
     private final S3Service s3Service;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
