@@ -11,7 +11,7 @@ set RDS_PASSWORD=Admin@123
 set AWS_ACCESS_KEY=
 set AWS_SECRET_KEY=
 set S3_BUCKET_NAME=
-set AWS_REGION=ap-south-1
+set AWS_REGION=
 set RECAPTCHA_SECRET_KEY=
 set RECAPTCHA_THRESHOLD_SCORE=0.5
 set EMAIL_SERVICE_HOST=smtp.gmail.com
@@ -29,4 +29,4 @@ if errorlevel 1 (
 )
 
 call .\gradlew.bat clean
-call .\gradlew.bat bootRun --debug-jvm
+call .\gradlew.bat bootRun
