@@ -12,12 +12,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+import com.aerilon.turfclan.dto.S3ImageResponseDto;
+import com.aerilon.turfclan.service.S3Service;
 
 @Component
 @RequiredArgsConstructor
 public class SportOrganizationConverter {
 
     private final ObjectMapper objectMapper;
+    private final S3Service s3Service;
 
     public OrganizationSummaryDto toSummary(SportOrganizationEntity entity) {
         OrganizationSummaryDto summary = new OrganizationSummaryDto();
@@ -43,19 +48,29 @@ public class SportOrganizationConverter {
 
     public SportOrganizationDetailDto toDetail(SportOrganizationEntity entity) {
         SportOrganizationDetailDto detail = new SportOrganizationDetailDto();
-//        detail.setId(entity.getId() != null ? entity.getId().toString() : null);
-//        detail.setSportCategory(entity.getSportCategory());
-//        detail.setImages(entity.getImages());
-//        detail.setName(entity.getName());
-//        detail.setShortName(entity.getShortName());
-//        detail.setBoard(entity.getBoard());
-//        detail.setMembersNumber(entity.getMembersNumber());
-//        detail.setFoundedYear(entity.getFoundedYear());
-//        detail.setState(entity.getState());
-//        detail.setLocationName(entity.getLocationName());
-//        detail.setMapLocation(entity.getMapLocation());
+        detail.setSportCategory(entity.getSportCategory());
+        detail.setOrganizationType(entity.getOrganizationType());
+        detail.setName(entity.getName());
+        detail.setShortName(entity.getShortName());
+        detail.setBoard(entity.getBoard());
+        detail.setMembersNumber(entity.getMembersNumber());
+        detail.setFoundedYear(entity.getFoundedYear());
+        detail.setState(entity.getState());
+        detail.setLocationName(entity.getLocationName());
+        detail.setMapLocation(entity.getMapLocation());
         detail.setAbout(entity.getAbout());
         detail.setAchievements(entity.getAchievements());
+        if (entity.getLocation() != null) {
+            detail.setLongitude(entity.getLocation().getX());
+            detail.setLatitude(entity.getLocation().getY());
+        }
+        if (entity.getImages() != null && !entity.getImages().isEmpty()) {
+            List<S3ImageResponseDto> imageResponses = entity.getImages().stream()
+                    .map(img -> new S3ImageResponseDto(img, s3Service.preSignedUrl(img, 10)))
+                    .collect(Collectors.toList());
+            detail.setImages(imageResponses);
+        }
+        detail.setContactDetails(parseContactDetails(entity.getContactDetails()));
         return detail;
     }
 

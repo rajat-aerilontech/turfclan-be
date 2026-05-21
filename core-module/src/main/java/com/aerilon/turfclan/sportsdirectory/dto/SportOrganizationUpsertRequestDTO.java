@@ -23,6 +23,8 @@ public class SportOrganizationUpsertRequestDTO {
 
     private List<MultipartFile> images;
 
+    private List<String> retainedImages;
+
     @NotBlank(message = "Organization name is required")
     @Size(max = 255, message = "Name must not exceed 255 characters")
     private String name;

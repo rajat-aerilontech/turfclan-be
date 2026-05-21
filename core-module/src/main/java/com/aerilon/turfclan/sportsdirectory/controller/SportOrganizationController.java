@@ -15,9 +15,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/sports")
@@ -48,80 +45,80 @@ public class SportOrganizationController {
         return ResponseEntity.ok(sportOrganizationService.getOrganizationBySport(organizationType, cursor, limit));
     }
 
-//    /**
-//     * Returns full details for a sports association.
-//     *
-//     * @param associationId association identifier
-//     * @return sports association detail
-//     */
-//    @GetMapping("/associations/{associationId}")
-//    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TA_USER')")
-//    @Operation(
-//            summary = "Get Sports Association Detail",
-//            description = "Returns full detail for a sports association. Requires turf-mobile source-app."
-//    )
-//    public ResponseEntity<SportAssociationDetailDTO> getAssociationDetail(
-//            @PathVariable String associationId
-//    ) {
-//        return ResponseEntity.ok(sportAssociationService.getAssociationDetail(associationId));
-//    }
-//
     /**
-     * Creates a sports association.
+     * Returns full details for a sports organization.
+     *
+     * @param organizationId organization identifier
+     * @return sports organization detail
+     */
+    @GetMapping("/organizations/{organizationId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_TM_USER', 'ROLE_TA_USER')")
+    @Operation(
+            summary = "Get Sports Organization Detail",
+            description = "Returns full detail for a sports organization. Requires turf-mobile source-app."
+    )
+    public ResponseEntity<SportOrganizationDetailDto> getOrganizationDetail(
+            @PathVariable String organizationId
+    ) {
+        return ResponseEntity.ok(sportOrganizationService.getOrganizationDetail(organizationId));
+    }
+
+    /**
+     * Creates a sports organization.
      *
      * @param request create payload (JSON)
      */
     @PostMapping(value = "/organizations", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ROLE_TA_USER')")
     @Operation(
-            summary = "Create Sports Association",
-            description = "Creates a sports association for admin web app requests. Requires turf-admin source-app. Returns 401 Unauthorized if source-app does not match expected role."
+            summary = "Create Sports Organization",
+            description = "Creates a sports organization for admin web app requests. Requires turf-admin source-app. Returns 401 Unauthorized if source-app does not match expected role."
     )
-    public ResponseEntity<Void> createAssociation(
+    public ResponseEntity<Void> createOrganization(
             @Valid @ModelAttribute SportOrganizationUpsertRequestDTO request
     ) {
-        sportOrganizationService.createAssociation(request);
+        sportOrganizationService.createOrganization(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-//
-//    /**
-//     * Updates a sports association.
-//     *
-//     * @param associationId association identifier
-//     * @param request update payload
-//     * @return updated sports association
-//     */
-//    @PutMapping("/associations/{associationId}")
-//    @PreAuthorize("hasAuthority('ROLE_TA_USER')")
-//    @Operation(
-//            summary = "Update Sports Association",
-//            description = "Updates a sports association for admin web app requests. Requires turf-admin source-app. Returns 401 Unauthorized if source-app does not match expected role."
-//    )
-//    public ResponseEntity<SportAssociationDetailDTO> updateAssociation(
-//            @PathVariable String associationId,
-//            @Valid @RequestBody SportAssociationUpsertRequestDTO request
-//    ) {
-//        return ResponseEntity.ok(
-//                sportAssociationService.updateAssociation(associationId, request)
-//        );
-//    }
-//
-//    /**
-//     * Deletes a sports association.
-//     *
-//     * @param associationId association identifier
-//     * @return empty response on success
-//     */
-//    @DeleteMapping("/associations/{associationId}")
-//    @PreAuthorize("hasAuthority('ROLE_TA_USER')")
-//    @Operation(
-//            summary = "Delete Sports Association",
-//            description = "Deletes a sports association for admin web app requests. Requires turf-admin source-app. Returns 401 Unauthorized if source-app does not match expected role."
-//    )
-//    public ResponseEntity<Void> deleteAssociation(
-//            @PathVariable String associationId
-//    ) {
-//        sportAssociationService.deleteAssociation(associationId);
-//        return ResponseEntity.noContent().build();
-//    }
+
+    /**
+     * Updates a sports organization.
+     *
+     * @param organizationId organization identifier
+     * @param request update payload
+     * @return updated sports organization
+     */
+    @PutMapping("/organizations/{organizationId}")
+    @PreAuthorize("hasAuthority('ROLE_TA_USER')")
+    @Operation(
+            summary = "Update Sports Organization",
+            description = "Updates a sports organization for admin web app requests. Requires turf-admin source-app. Returns 401 Unauthorized if source-app does not match expected role."
+    )
+    public ResponseEntity<SportOrganizationDetailDto> updateOrganization(
+            @PathVariable String organizationId,
+            @Valid @ModelAttribute SportOrganizationUpsertRequestDTO request
+    ) {
+        return ResponseEntity.ok(
+                sportOrganizationService.updateOrganization(organizationId, request)
+        );
+    }
+
+    /**
+     * Deletes a sports organization.
+     *
+     * @param organizationId organization identifier
+     * @return empty response on success
+     */
+    @DeleteMapping("/organizations/{organizationId}")
+    @PreAuthorize("hasAuthority('ROLE_TA_USER')")
+    @Operation(
+            summary = "Delete Sports Organization",
+            description = "Deletes a sports organization for admin web app requests. Requires turf-admin source-app. Returns 401 Unauthorized if source-app does not match expected role."
+    )
+    public ResponseEntity<Void> deleteOrganization(
+            @PathVariable String organizationId
+    ) {
+        sportOrganizationService.deleteOrganization(organizationId);
+        return ResponseEntity.noContent().build();
+    }
 }

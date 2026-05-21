@@ -1,6 +1,7 @@
 package com.aerilon.turfclan.sportsdirectory.service.impl;
 
 import com.aerilon.turfclan.enums.RecordStatus;
+import com.aerilon.turfclan.exception.InvalidRequestException;
 import com.aerilon.turfclan.exception.ResourceNotFoundException;
 import com.aerilon.turfclan.pagination.CursorPageResponse;
 import com.aerilon.turfclan.pagination.CursorPageToken;
@@ -13,7 +14,6 @@ import com.aerilon.turfclan.sportsdirectory.dto.SportOrganizationUpsertRequestDT
 import com.aerilon.turfclan.sportsdirectory.entity.SportOrganizationEntity;
 import com.aerilon.turfclan.sportsdirectory.enums.OrganizationType;
 import com.aerilon.turfclan.sportsdirectory.repository.SportOrganizationRepository;
-import com.aerilon.turfclan.sportsdirectory.resolver.OrganizationResolver;
 import com.aerilon.turfclan.sportsdirectory.service.SportOrganizationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -94,15 +94,20 @@ public class SportOrganizationServiceImpl implements SportOrganizationService {
         );
     }
 
-//    @Override
-//    public SportAssociationDetailDTO getAssociationDetail(String associationId) {
-//        SportAssociationEntity entity = sportAssociationResolver.requireByAssociationIdentifier(associationId);
-//        return sportAssociationConverter.toDetail(entity);
-//    }
-//
+    @Override
+    public SportOrganizationDetailDto getOrganizationDetail(String organizationId) {
+        if (organizationId == null || organizationId.isBlank()) {
+            throw new InvalidRequestException("organizationId is required");
+        }
+        UUID organizationUuid = UUID.fromString(organizationId.trim());
+        SportOrganizationEntity entity = sportOrganizationRepository.findById(organizationUuid)
+                .orElseThrow(() -> new ResourceNotFoundException("Sports organization not found for organizationId: " + organizationId));
+        return sportOrganizationConverter.toDetail(entity);
+    }
+
     @Override
     @Transactional
-    public void createAssociation(SportOrganizationUpsertRequestDTO request) {
+    public void createOrganization(SportOrganizationUpsertRequestDTO request) {
         SportOrganizationEntity entity = new SportOrganizationEntity();
         UUID organizationId = UUID.randomUUID();
         entity.setId(organizationId);
@@ -146,26 +151,112 @@ public class SportOrganizationServiceImpl implements SportOrganizationService {
         entity.setStatus(RecordStatus.ACTIVE);
         sportOrganizationRepository.save(entity);
     }
-//
-//    @Override
-//    @Transactional
-//    public SportAssociationDetailDTO updateAssociation(String associationId,
-//                                                       SportAssociationUpsertRequestDTO request) {
-//        sportAssociationResolver.validateUpsertRequest(request);
-//        SportAssociationEntity entity =
-//                sportAssociationResolver.requireByAssociationIdentifierGlobal(associationId);
-//
-//        sportAssociationConverter.applyUpsertRequest(entity, request);
-//
-//        SportAssociationEntity saved = sportAssociationRepository.save(entity);
-//        return sportAssociationConverter.toDetail(saved);
-//    }
-//
-//    @Override
-//    @Transactional
-//    public void deleteAssociation(String associationId) {
-//        SportAssociationEntity entity =
-//                sportAssociationResolver.requireByAssociationIdentifierGlobal(associationId);
-//        sportAssociationRepository.delete(entity);
-//    }
+
+    @Override
+    @Transactional
+    public SportOrganizationDetailDto updateOrganization(String associationId, SportOrganizationUpsertRequestDTO request) {
+        if (associationId == null || associationId.isBlank()) {
+            throw new InvalidRequestException("associationId is required");
+        }
+        UUID associationUuid = UUID.fromString(associationId.trim());
+        SportOrganizationEntity entity = sportOrganizationRepository.findById(associationUuid)
+                .orElseThrow(() -> new ResourceNotFoundException("Sports organization not found for associationId: " + associationId));
+
+        sportOrganizationConverter.applyUpsertRequest(entity, request);
+
+        List<String> currentImages = entity.getImages();
+        if (currentImages == null) {
+            currentImages = new ArrayList<>();
+        }
+
+        List<String> retainedImages = request.getRetainedImages();
+        List<String> updatedImages = new ArrayList<>();
+
+        // Handle old images
+        if (retainedImages != null) {
+            for (String currentImage : currentImages) {
+                if (retainedImages.contains(currentImage)) {
+                    updatedImages.add(currentImage);
+                } else {
+                    try {
+                        s3Service.deleteFile(currentImage);
+                    } catch (Exception e) {
+                        log.warn("Failed to delete image from S3: {}", currentImage, e);
+                    }
+                }
+            }
+        } else {
+            updatedImages.addAll(currentImages);
+        }
+
+        // Handle new images
+        List<MultipartFile> newImages = request.getImages();
+        if (newImages != null && !newImages.isEmpty()) {
+            for (MultipartFile file : newImages) {
+                try {
+                    String key = s3Service.uploadFile(
+                            file,
+                            "org_image",
+                            ORG_FOLDER_NAME + "/" + associationUuid,
+                            false
+                    );
+                    updatedImages.add(key);
+                } catch (IOException e) {
+                    log.error("Failed to upload organization image: {}", file.getOriginalFilename(), e);
+                    throw new RuntimeException("Organization image upload failed", e);
+                }
+            }
+        }
+        entity.setImages(updatedImages);
+
+        if (request.getLatitude() != null && request.getLongitude() != null) {
+            Point locationPoint = geometryFactory.createPoint(
+                    new Coordinate(request.getLongitude(), request.getLatitude())
+            );
+            entity.setLocation(locationPoint);
+        } else {
+            entity.setLocation(null);
+        }
+
+        if (request.getContactDetails() != null) {
+            entity.setContactDetails(objectMapper.valueToTree(request.getContactDetails()));
+        } else {
+            entity.setContactDetails(null);
+        }
+
+        if (request.getAchievements() != null && !request.getAchievements().isBlank()) {
+            try {
+                entity.setAchievements(objectMapper.readTree(request.getAchievements()));
+            } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                log.error("Failed to parse achievements JSON string", e);
+                throw new IllegalArgumentException("Invalid JSON format for achievements");
+            }
+        } else {
+            entity.setAchievements(null);
+        }
+
+        SportOrganizationEntity savedEntity = sportOrganizationRepository.save(entity);
+        return sportOrganizationConverter.toDetail(savedEntity);
+    }
+
+    @Override
+    @Transactional
+    public void deleteOrganization(String organizationId) {
+        if (organizationId == null || organizationId.isBlank()) {
+            throw new InvalidRequestException("organizationId is required");
+        }
+        UUID organizationUuid = UUID.fromString(organizationId.trim());
+        SportOrganizationEntity entity = sportOrganizationRepository.findById(organizationUuid)
+                .orElseThrow(() -> new ResourceNotFoundException("Sports organization not found for organizationId: " + organizationId));
+        if (entity.getImages() != null && !entity.getImages().isEmpty()) {
+            for (String imageKey : entity.getImages()) {
+                try {
+                    s3Service.deleteFile(imageKey);
+                } catch (Exception e) {
+                    log.warn("Failed to delete image from S3: {}", imageKey, e);
+                }
+            }
+        }
+        sportOrganizationRepository.delete(entity);
+    }
 }
