@@ -39,6 +39,16 @@ public interface BookingRepository extends JpaRepository<BookingEntity, UUID> {
             @Param("facilityId") UUID facilityId,
             @Param("status") BookingStatus status);
 
+    @Query("SELECT b FROM BookingEntity b WHERE b.sport.id = :sportId AND b.bookingDate = :date " +
+            "AND b.startTime < :end AND b.endTime > :start " +
+            "AND b.bookingStatus IN :statuses")
+    List<BookingEntity> findOverlappingByStatuses(
+            @Param("sportId") UUID sportId,
+            @Param("date") LocalDate date,
+            @Param("start") LocalTime start,
+            @Param("end") LocalTime end,
+            @Param("statuses") List<BookingStatus> statuses);
+
     @EntityGraph(attributePaths = {"sport", "sport.facility", "user"})
     @Query("SELECT b FROM BookingEntity b WHERE b.sport.facility.user.id = :userId")
     List<BookingEntity> findByPartnerUserId(@Param("userId") UUID userId);

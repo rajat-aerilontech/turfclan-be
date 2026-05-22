@@ -2,6 +2,7 @@ package com.aerilon.turfclan.controller;
 
 import com.aerilon.turfclan.dto.BookingRequestDTO;
 import com.aerilon.turfclan.dto.BookingResponseDTO;
+import com.aerilon.turfclan.dto.ManualBookingRequestDTO;
 import com.aerilon.turfclan.dto.SlotResponseDTO;
 import com.aerilon.turfclan.enums.BookingStatus;
 import com.aerilon.turfclan.security.SecurityUtils;
@@ -102,6 +103,24 @@ public class BookingController {
     public ResponseEntity<List<BookingResponseDTO>> getPartnerBookings() {
         String userId = securityUtils.getCurrentUserId();
         return ResponseEntity.ok(bookingService.getPartnerBookings(userId));
+    }
+
+    /**
+     * Creates a manual booking for a sub-facility owned by the authenticated partner.
+     *
+     * @param request manual booking payload
+     * @return created booking
+     */
+    @PostMapping("/partner/bookings/manual")
+    @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
+    @Operation(
+            summary = "Create Manual Booking",
+            description = "Creates a manual booking for a sub-facility owned by the authenticated partner."
+    )
+    public ResponseEntity<BookingResponseDTO> createManualBooking(
+            @Valid @RequestBody ManualBookingRequestDTO request) {
+        String userId = securityUtils.getCurrentUserId();
+        return ResponseEntity.ok(bookingService.createManualBooking(request, userId));
     }
 
     /**

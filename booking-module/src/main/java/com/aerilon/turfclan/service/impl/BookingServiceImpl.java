@@ -3,12 +3,14 @@ package com.aerilon.turfclan.service.impl;
 import com.aerilon.turfclan.converter.BookingConverter;
 import com.aerilon.turfclan.dto.BookingRequestDTO;
 import com.aerilon.turfclan.dto.BookingResponseDTO;
+import com.aerilon.turfclan.dto.ManualBookingRequestDTO;
 import com.aerilon.turfclan.dto.SlotResponseDTO;
 import com.aerilon.turfclan.entity.BookingEntity;
 import com.aerilon.turfclan.enums.BookingStatus;
 import com.aerilon.turfclan.exception.BookingConflictException;
 import com.aerilon.turfclan.exception.InvalidRequestException;
 import com.aerilon.turfclan.exception.ResourceNotFoundException;
+import com.aerilon.turfclan.exception.UnauthorizedAccessException;
 import com.aerilon.turfclan.facility.entity.SubFacilityEntity;
 import com.aerilon.turfclan.partner.repository.SportDetailRepository;
 import com.aerilon.turfclan.repository.BookingRepository;
@@ -84,6 +86,72 @@ public class BookingServiceImpl implements BookingService {
         booking.setBookingStatus(request.isPayAtVenue() ?
                 BookingStatus.PENDING_APPROVAL : BookingStatus.PENDING_PAYMENT);
         booking.setCreatedAt(LocalDateTime.now());
+        return bookingConverter.toDto(bookingRepository.save(booking));
+    }
+
+    /**
+     * Partner manual booking for their own sub-facility.
+     */
+    @Transactional
+    public BookingResponseDTO createManualBooking(ManualBookingRequestDTO request, String partnerUserId) {
+        SubFacilityEntity sport = sportDetailRepository.findById(request.getSubFacilityId())
+                .orElseThrow(() -> new ResourceNotFoundException("Sub-facility not found"));
+
+        UUID partnerId = UUID.fromString(partnerUserId);
+        if (sport.getFacility() == null || sport.getFacility().getUser() == null
+                || !partnerId.equals(sport.getFacility().getUser().getId())) {
+            throw new UnauthorizedAccessException("Unauthorized: Facility does not belong to this partner");
+        }
+
+        UserEntity partner = userRepository.findById(partnerId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        validateBookingTime(sport, request.getStartTime(), request.getEndTime());
+
+        LocalDate bookingDate = request.getBookingDate();
+        LocalTime startTime = request.getStartTime();
+        LocalTime endTime = request.getEndTime();
+
+        List<BookingEntity> paidOverlaps = bookingRepository.findOverlappingByStatuses(
+                request.getSubFacilityId(), bookingDate, startTime, endTime,
+                List.of(BookingStatus.CONFIRMED, BookingStatus.COMPLETED)
+        );
+        if (!paidOverlaps.isEmpty()) {
+            throw new BookingConflictException("Slot already booked and paid. Manual booking not allowed.");
+        }
+
+        List<BookingEntity> unpaidOverlaps = bookingRepository.findOverlappingByStatuses(
+                request.getSubFacilityId(), bookingDate, startTime, endTime,
+                List.of(BookingStatus.PENDING_PAYMENT)
+        );
+        if (!unpaidOverlaps.isEmpty()) {
+            for (BookingEntity pending : unpaidOverlaps) {
+                if (pending.getVersion() == null) {
+                    pending.setVersion(0);
+                }
+                pending.setBookingStatus(BookingStatus.CANCELLED);
+                pending.setUpdatedAt(LocalDateTime.now());
+                log.info("Cancelled unpaid booking {} for manual booking request", pending.getId());
+            }
+            bookingRepository.saveAll(unpaidOverlaps);
+        }
+
+        BookingEntity booking = new BookingEntity();
+        booking.setSport(sport);
+        booking.setUser(partner);
+        booking.setBookingDate(bookingDate);
+        booking.setStartTime(startTime);
+        booking.setEndTime(endTime);
+        booking.setIsPrimeTime(false);
+        booking.setUserNote(request.getUserNote());
+        booking.setPlayerCount(request.getPlayerCount());
+
+        BigDecimal backendPrice = calculateDynamicPrice(sport, startTime);
+        booking.setTotalAmount(backendPrice.doubleValue());
+        booking.setFinalPrice(backendPrice.doubleValue());
+        booking.setBookingStatus(BookingStatus.CONFIRMED);
+        booking.setCreatedAt(LocalDateTime.now());
+
         return bookingConverter.toDto(bookingRepository.save(booking));
     }
 
