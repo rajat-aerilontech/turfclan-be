@@ -111,7 +111,7 @@ public class BookingController {
      * @param request manual booking payload
      * @return created booking
      */
-    @PostMapping("/partner/bookings/manual")
+    @PostMapping("/partner/manual")
     @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
     @Operation(
             summary = "Create Manual Booking",
