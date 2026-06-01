@@ -52,4 +52,13 @@ public interface BookingRepository extends JpaRepository<BookingEntity, UUID> {
     @EntityGraph(attributePaths = {"sport", "sport.facility", "user"})
     @Query("SELECT b FROM BookingEntity b WHERE b.sport.facility.user.id = :userId")
     List<BookingEntity> findByPartnerUserId(@Param("userId") UUID userId);
+
+    @EntityGraph(attributePaths = {"sport"})
+    @Query("SELECT b FROM BookingEntity b WHERE b.sport.facility.id = :facilityId " +
+            "AND b.bookingDate BETWEEN :startDate AND :endDate " +
+            "AND b.bookingStatus <> com.aerilon.turfclan.enums.BookingStatus.BLOCKED")
+    List<BookingEntity> findByFacilityAndBookingDateBetween(
+            @Param("facilityId") UUID facilityId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 }
