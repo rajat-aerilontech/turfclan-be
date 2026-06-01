@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -17,6 +18,9 @@ public interface FacilityRepository extends JpaRepository<FacilityEntity, UUID> 
 
     @EntityGraph(attributePaths = "subFacility")
     List<FacilityEntity> findByUser(UserEntity user);
+
+        @EntityGraph(attributePaths = {"user", "subFacility"})
+        Optional<FacilityEntity> findById(UUID id);
 
     /**
      * Find all facilities sorted by distance from a given location (using PostGIS ST_Distance)

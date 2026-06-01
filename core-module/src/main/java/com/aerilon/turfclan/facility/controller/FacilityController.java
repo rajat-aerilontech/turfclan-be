@@ -1,6 +1,8 @@
 package com.aerilon.turfclan.facility.controller;
 
+import com.aerilon.turfclan.facility.service.FacilityAnalysisService;
 import com.aerilon.turfclan.facility.service.FacilityService;
+import com.aerilon.turfclan.facility.dto.FacilityAnalysisResponseDto;
 import com.aerilon.turfclan.facility.dto.FacilitiesMobileResponseDto;
 import com.aerilon.turfclan.facility.dto.FacilityUpdateDto;
 import com.aerilon.turfclan.facility.dto.SubFacilityUpdateDto;
@@ -19,7 +21,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @RestController
@@ -33,6 +37,9 @@ public class FacilityController {
     
     @Autowired
     private SecurityUtils securityUtils;
+
+    @Autowired
+    private FacilityAnalysisService facilityAnalysisService;
 
     /**
      * Returns facility data for the authenticated partner.
@@ -189,6 +196,27 @@ public class FacilityController {
             @Valid @RequestBody FacilityRequestDto facilityRequestDto) {
         String userId = securityUtils.getCurrentUserId();
         FacilityRequestDto response = facilityService.addFacilityForUser(userId, facilityRequestDto);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Returns analytics for a facility owned by the authenticated partner.
+     *
+     * @param facilityId facility identifier
+     * @param startDate optional start date (defaults to last 30 days)
+     * @param endDate optional end date (defaults to today)
+     * @return facility analytics
+     */
+    @GetMapping("/{facilityId}/analysis")
+    @PreAuthorize("hasAuthority('ROLE_TM_PARTNER')")
+    @Operation(summary = "Get Facility Analysis", description = "Returns facility analytics for the authenticated partner.")
+    public ResponseEntity<FacilityAnalysisResponseDto> getFacilityAnalysis(
+            @PathVariable UUID facilityId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        String userId = securityUtils.getCurrentUserId();
+        FacilityAnalysisResponseDto response = facilityAnalysisService.getFacilityAnalysis(
+                userId, facilityId, startDate, endDate);
         return ResponseEntity.ok(response);
     }
 }
